@@ -1,0 +1,98 @@
+﻿@page "/scraping"
+@using CommonUtils.Utils
+@using PoolScraper.Components.Shared;
+@using PoolScraper.Model
+@using PoolScraper.Model.PowerPool
+@using PoolScraper.Model.Scheduler
+@using PoolScraper.Service
+
+@attribute [StreamRendering]
+@rendermode InteractiveServer
+
+@inject IScrapingServiceClient ServiceClient
+
+<PageTitle>Scraping Info</PageTitle>
+
+<h1>Scraping Report</h1>
+
+<p>Latest scraping info:</p>
+
+@if (powerPoolScraperInfo == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <p> Latest Fetched: </p> <span> @powerPoolScraperInfo.FetchedAt  </span>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Algo</th>
+                <th>#Workers</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var workerAlgoCount in powerPoolScraperInfo.TotalWorkersAlgoCount)
+            {
+                <tr>
+                    <td>@workerAlgoCount.algo</td>
+                    <td>@workerAlgoCount.count</td>
+                </tr>
+            }
+        </tbody>    
+    </table>
+    <div>
+        <DateSelection OnSearch="@GetDetails" />
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Gap at</th>
+                <th>Gap Span</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var gap in powerPoolUsersData.gaps)
+            {
+                <tr>
+                    <td>@gap.GapTime</td>
+                    <td>@gap.MissingSpan</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Fetched at</th>
+                <th>#Workers</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var powerPoolUser in powerPoolUsersData.data)
+            {
+                <tr>
+                    <td>@powerPoolUser.FetchedAt</td>
+                    <td>@powerPoolUser.GetTotalWorkersCount()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+}
+
+@code {
+    private PowerPoolScraperInfo powerPoolScraperInfo;
+    private (IEnumerable<PowerPoolUser> data,IEnumerable<TimeGap> gaps) powerPoolUsersData = (Enumerable.Empty<PowerPoolUser>(),Enumerable.Empty<TimeGap>());
+
+    protected override async Task OnInitializedAsync()
+    {
+        powerPoolScraperInfo = await ServiceClient.GetLatestUserDataAsync();
+    }
+
+    protected async Task GetDetails(DateOnly date)
+    {
+        powerPoolUsersData = await ServiceClient.GetDayDetailsAsync(date);
+    }
+}

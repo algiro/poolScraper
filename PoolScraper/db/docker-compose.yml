@@ -1,0 +1,27 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: poolscraper_mongodb_standalone
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=PowerPoolDB
+    volumes:
+      - type: bind
+        source: ${POOL_SCRAPER_DATA_DB}
+        target: /data/db
+      - type: bind
+        source: ${POOL_SCRAPER_CONFIG_DB}
+        target: /data/configdb
+    restart: unless-stopped
+    command: mongod --bind_ip_all
+    networks:
+      - poolscraper_network
+
+volumes:
+  poolscraper_db_data:
+  poolscraper_db_config:
+
+networks:
+  poolscraper_network:
+    driver: bridge

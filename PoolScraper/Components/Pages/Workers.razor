@@ -1,0 +1,70 @@
+﻿@page "/workers"
+@using PoolScraper.Model.PowerPool
+@using PoolScraper.Model.Scheduler
+@using PoolScraper.Service
+@using PoolScraper.View
+@using System.Collections.ObjectModel
+@attribute [StreamRendering]
+@rendermode InteractiveServer
+
+@inject IScrapingServiceClient ServiceClient
+
+<PageTitle>Scraping Info</PageTitle>
+
+<h1>Scraping Report</h1>
+
+<p>Latest scraping info:</p>
+
+@if (workers == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Algo</th>
+                <th>Id</th>
+                <th>IsDisabled</th>
+                <th>Toggle</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var worker in workers)
+            {
+                <tr>
+                    <td>@worker.Name</td>
+                    <td>@worker.Algorithm</td>
+                    <td>@worker.Id</td>
+                    <td>@worker.IsDisabled</td>
+                    <td> <Button Color="ButtonColor.Primary" @onclick="() => ToggleStatusAsync(worker.PoolId, worker.Id)">Toggle</Button> </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private ObservableCollection<WorkerDTO> workers;
+
+    protected override async Task OnInitializedAsync()
+    {
+        workers = new ObservableCollection<WorkerDTO>(await ServiceClient.GetWorkersAsync());
+    }
+
+    private async Task<bool> ToggleStatusAsync(string poolId,long id)
+    {
+        var status = await ServiceClient.ToggleEnableWorkerAsync(poolId, id);
+        if (status)
+        {
+            var worker = workers.Single(w => w.PoolId == poolId && w.Id == id);
+            Console.Out.WriteLine($"Worker {worker.Name} status is {worker.IsDisabled}");
+            worker.IsDisabled = !worker.IsDisabled;
+			Console.Out.WriteLine($"Worker {worker.Name} status changed to {worker.IsDisabled}");
+        }
+        return status;
+    }
+}

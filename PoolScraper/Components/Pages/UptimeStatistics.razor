@@ -1,0 +1,86 @@
+﻿@page "/uptimeStats"
+@using PoolScraper.Components.Shared
+@using PoolScraper.Model
+@using PoolScraper.Model.Scheduler
+@using PoolScraper.Service
+@attribute [StreamRendering]
+@rendermode InteractiveServer
+
+@inject IUptimeServiceClient UptimeServiceClient
+@inject IScrapingServiceClient ScrapingServiceClient
+
+<PageTitle>Uptime Info</PageTitle>
+
+<h1>Uptime Report</h1>
+<Modal @ref="modal" />
+
+<p>Daily Uptime Statistics:</p>
+<div>
+    <DateSelection OnSearch="@GetDetails" />
+</div>
+
+@if (workersUptime == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <span> Workers Count: </span> <span> @workersUptime.Count()  </span>
+    <span> Today Coverage: </span> <span> @todayCoverage </span>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Algo</th>
+                <th>Uptime%</th>
+                <th>Id</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var workerUptime in workersUptime)
+            {
+                <tr>
+                    <td>@workerUptime.Name</td>
+                    <td>@workerUptime.Algorithm</td>
+                    <td>@workerUptime.UptimePercentage</td>
+                    <td><Button Color="ButtonColor.Primary" @onclick="() => GetWorkerDetails(workerUptime.Id)">@workerUptime.Id</Button> </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private Modal modal = default!;
+    private IEnumerable<IWorkerUptime> workersUptime;
+    private IEnumerable<IWorkerUptimeHistory> workerUptimeHistory;
+    private double todayCoverage;
+    private DateOnly selectedDate;
+    protected override async Task OnInitializedAsync()
+    {
+        selectedDate = DateOnly.FromDateTime(DateTime.Now);
+        await GetDetails(selectedDate);
+        todayCoverage = await ScrapingServiceClient.GetTodayCoverageAsync();
+    }
+
+    private async Task GetDetails(DateOnly date)
+    {
+        selectedDate = date;
+        workersUptime = (await UptimeServiceClient.GetDailyUptimeAsync(date)).OrderBy(w => w.UptimePercentage);
+		StateHasChanged();
+	}
+
+    private async Task GetWorkerDetails(long id)
+    {
+        DateTime beginOfToday = selectedDate.ToDateTime(new TimeOnly(0, 0, 0));
+        DateTime endOfToday = selectedDate.ToDateTime(new TimeOnly(23, 59, 59));
+
+        var parameters = new Dictionary<string, object>();
+        var uptimePeriods = await UptimeServiceClient.GetWorkerUptimeHistoryAsync(id, beginOfToday, endOfToday);
+        parameters.Add("uptimePeriods", uptimePeriods);
+        //parameters.Add("OnclickCallback", EventCallback.Factory.Create<IMovement>(this, UpdateMovement));
+
+        await modal.ShowAsync<WorkerUptimeDetail>(title: "Movement Details", parameters: parameters);
+    }
+
+}

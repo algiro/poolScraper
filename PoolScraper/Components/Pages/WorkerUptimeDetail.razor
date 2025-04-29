@@ -1,0 +1,38 @@
+﻿@using PoolScraper.Model
+@using PoolScraper.Service.Uptime
+@attribute [StreamRendering]
+@rendermode InteractiveServer
+
+
+<Modal @ref="modal" />
+
+<h3>WorkerUptimeDetail</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>From</th>
+            <th>To</th>
+            <th>Active</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var workerUptime in uptimePeriods)
+        {
+            <tr>
+                <td>@workerUptime.From</td>
+                <td>@workerUptime.To</td>
+                <td>@workerUptime.IsActive</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private Modal modal = default!;
+    [Parameter] public IEnumerable<IUptimePeriod> uptimePeriods { get; set; }
+
+    protected override Task OnInitializedAsync()
+    {
+        return Task.CompletedTask;
+    }
+}

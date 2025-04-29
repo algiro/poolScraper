@@ -1,0 +1,67 @@
+﻿@using CommonUtils.Utils
+<div class="form-group row mb-3">
+    <div class="col-1 col-sm-1 col-form-label"> <label>Date: </label> </div>
+    <div class="col-2 col-sm-4 ms-1">
+        <DateInput TValue="DateOnly" @bind-Value="@date" Placeholder="Date" />
+    </div>
+    <div class="col-1 col-sm-1">
+        <Button Color="ButtonColor.Primary" @onclick="Search">Search</Button>
+    </div>
+    <div class="row mt-2">
+        <div class="col-1 col-sm-2">
+            <Button Color="ButtonColor.Secondary" @onclick="Today">Today</Button>
+        </div>
+        <div class="col-1 col-sm-2">
+            <Button Color="ButtonColor.Secondary" @onclick="Forward7Day">+7</Button>
+        </div>
+        <div class="col-1 col-sm-2">
+            <Button Color="ButtonColor.Secondary" @onclick="Forward1Day">+1</Button>
+        </div>
+        <div class="col-1 col-sm-2">
+            <Button Color="ButtonColor.Secondary" @onclick="Back1Day">-1</Button>
+        </div>
+        <div class="col-1 col-sm-2">
+            <Button Color="ButtonColor.Secondary" @onclick="Back7Day">-7</Button>
+        </div>
+    </div>
+
+</div>
+
+@code {
+    private DateOnly date;
+
+    [Parameter] public EventCallback<DateOnly> OnSearch { get; set; } // Changed to a parameter with
+
+    protected override Task OnInitializedAsync()
+    {
+        var now = DateTime.UtcNow;
+        date = DateOnly.FromDateTime(now);
+        return Task.CompletedTask;
+    }
+
+    private async Task Search()
+    {
+        Console.WriteLine($"Date: {date}");
+
+        // Create a DatePeriodValues object to pass the values
+        await OnSearch.InvokeAsync(date); // Pass the DatePeriodValues object
+    }
+    private async Task Today()
+    {
+        date = DateOnly.FromDateTime(DateTime.UtcNow);
+        await Search();
+    }
+
+    private async Task Forward1Day() => await MoveDate(1);
+    private async Task Forward7Day() => await MoveDate(7);
+    private async Task Back7Day() => await MoveDate(-7);
+    private async Task Back1Day() => await MoveDate(-1);
+
+
+	private async Task MoveDate(int days)
+	{
+		date = date.AddDays(days);
+		await Search();
+	}
+
+}

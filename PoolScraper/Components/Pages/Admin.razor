@@ -1,0 +1,109 @@
+﻿@page "/admin"
+@using CommonUtils.Utils
+@using PoolScraper.Components.Shared;
+@using PoolScraper.Model
+@using PoolScraper.Model.PowerPool
+@using PoolScraper.Model.Scheduler
+@using PoolScraper.Service
+@using PoolScraper.Service.Consolidation
+
+@attribute [StreamRendering]
+@rendermode InteractiveServer
+
+@inject IUptimeConsolidateServiceClient ServiceClient
+@inject IPowerPoolScrapingService PowerPoolScrapingService
+<PageTitle>Admin Page</PageTitle>
+
+<div class="col-1 col-sm-1">
+    <Button Color="ButtonColor.Primary" @onclick="Consolidate">Consolidate</Button>
+</div>
+
+<div>
+    <DateSelection OnSearch="@GetDetails" />
+</div>
+
+@if (uptimePercentages == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>WorkerId</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Uptime%</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var workerAlgoCount in uptimePercentages.OrderBy(u => u.DateRange.From))
+            {
+                <tr>
+                    <td>@workerAlgoCount.WorkerId.Id</td>
+                    <td>@workerAlgoCount.DateRange.From</td>
+                    <td>@workerAlgoCount.DateRange.To</td>
+                    <td>@workerAlgoCount.UptimePercentage</td>
+                </tr>
+            }
+        </tbody>    
+    </table>
+    <div class="col-1 col-sm-1">
+        <input type="text" id="descr" @bind-value="@workerId" />
+    </div>
+    <div class="col-1 col-sm-1">
+        <Button Color="ButtonColor.Primary" @onclick="GetWorkerDayDetails">GetDetails</Button>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>WorkerId</th>
+                <th>From</th>
+                <th>To</th>
+                <th>Hashrate</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var workerAlgoCount in snapshotWorkerStatus.OrderBy(u => u.DateRange.From))
+            {
+                <tr>
+                    <td>@workerAlgoCount.WorkerId.Id</td>
+                    <td>@workerAlgoCount.DateRange.From</td>
+                    <td>@workerAlgoCount.DateRange.To</td>
+                    <td>@workerAlgoCount.BasicInfo.Hashrate</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<IUptimePercentage> uptimePercentages = Enumerable.Empty<IUptimePercentage>();
+    private IEnumerable<ISnapshotWorkerStatus> snapshotWorkerStatus = Enumerable.Empty<ISnapshotWorkerStatus>();
+
+    private DateOnly selectedDate;
+    private string workerId;
+    protected override async Task OnInitializedAsync()
+    {
+        selectedDate = DateOnly.FromDateTime(DateTime.Now);
+        uptimePercentages = await ServiceClient.GetHourlyUptimeAsync(selectedDate);
+    }
+
+    protected async Task GetDetails(DateOnly date)
+    {
+        selectedDate = date;
+        uptimePercentages = await ServiceClient.GetHourlyUptimeAsync(selectedDate);
+    }
+    private async Task GetWorkerDayDetails()
+    {
+        var dateFrom = selectedDate.GetBeginOfDay();
+		var dateTo = selectedDate.GetEndOfDay();
+        snapshotWorkerStatus = await PowerPoolScrapingService.GetSnapshotWorkerStatusAsync(long.Parse(workerId), dateFrom,dateTo);
+    }
+    private async Task Consolidate()
+    {
+		await ServiceClient.Consolidate(selectedDate);
+    }
+}

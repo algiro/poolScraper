@@ -1,0 +1,43 @@
+services:
+  poolscraper:
+        image: algiro/pool-scraper:latest
+        container_name: poolscraper
+        ports:
+        - "8080:8080"
+        environment:
+        - ASPNETCORE_URLS=http://+:8080
+        restart: unless-stopped
+        networks:
+        - poolscraper_network
+  mongodb:
+    image: mongo:latest
+    container_name: poolscraper_mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=PowerPoolDB
+    volumes:
+      - poolscraper_db_data:/data/db
+      - poolscraper_db_config:/data/configdb
+    restart: unless-stopped
+    command: mongod --bind_ip_all
+    networks:
+      - poolscraper_network
+
+volumes:
+  poolscraper_db_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: C:/temp/mi/data
+      o: bind
+  poolscraper_db_config:
+    driver: local
+    driver_opts:
+      type: none
+      device: C:/temp/poolScraper/config
+      o: bind
+
+networks:
+  poolscraper_network:
+    driver: bridge
