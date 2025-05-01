@@ -15,7 +15,7 @@ namespace PoolScraper.Tests.Model
         [TestCase("tmsminer007.4l79300", WorkerModel.L7)]
         [TestCase("tmsminer007.1ds21xp270", WorkerModel.S21XP)]
         [TestCase("tmsminer007.6dg111000", WorkerModel.G11)]
-        
+        [TestCase("tmsminer007.5l7930repair", WorkerModel.L7)]
         public void TryGetModel_ValidString_ReturnsTrueAndParsedModel(string modelName,WorkerModel expectedWorkerModel)
         {
             // Act

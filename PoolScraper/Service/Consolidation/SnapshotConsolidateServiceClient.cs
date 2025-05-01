@@ -17,14 +17,12 @@ namespace PoolScraper.Service.Consolidation
             var hourlySnapshotConsolidationResult = hourlySnapshotConsolidation.GetHourlySnapshots(snapshotWorkerStatus);
             foreach (var hourlySnapshot in hourlySnapshotConsolidationResult)
             {
-                Console.WriteLine("hourlySnapshot: " + hourlySnapshot.hour);
+                Console.WriteLine("hourlySnapshot  hours#: " + hourlySnapshot.hour + " storing snapshots#:" + hourlySnapshot.snapshots.Count());
                 await snapshotHourConsolidationPersistency.InsertManyAsync(hourlySnapshot.hour, hourlySnapshot.snapshots);
             }
         }
 
-        public Task<IEnumerable<ISnapshotWorkerStatus>> GetHourlySnapshotAsync(DateOnly dateOnly)
-        {
-            throw new NotImplementedException();
-        }
+        public async Task<IEnumerable<ISnapshotWorkerStatus>> GetHourlySnapshotAsync(IDateRange dateRange)
+            => await snapshotHourConsolidationPersistency.GetHourlySnapshotAsync(dateRange);
     }
 }

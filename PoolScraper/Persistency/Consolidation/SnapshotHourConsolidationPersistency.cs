@@ -23,12 +23,9 @@ namespace PoolScraper.Persistency.Consolidation
             _hourlySnapshotCollection = database.GetCollection<SnapshotWorkerStatusView>("hourlySnapshotCollection");
         }
 
-        public async Task<IEnumerable<ISnapshotWorkerStatus>> GetHourlySnapshotAsync(DateOnly dateOnly)
+        public async Task<IEnumerable<ISnapshotWorkerStatus>> GetHourlySnapshotAsync(IDateRange dateRange)
         {
-            var dayStart = dateOnly.GetBeginOfDay();
-            var dayEnd = dateOnly.GetEndOfDay();
-
-            var snapshotViews = await _hourlySnapshotCollection.Find( h => h.DateRange.From >= dayStart && h.DateRange.To <= dayEnd).ToListAsync<SnapshotWorkerStatusView>();
+            var snapshotViews = await _hourlySnapshotCollection.Find( h => h.DateRange.From >= dateRange.From && h.DateRange.To <= dateRange.To).ToListAsync<SnapshotWorkerStatusView>();
             return snapshotViews.Select(u => u.AsSnapshotWorkerStatus());
         }
 

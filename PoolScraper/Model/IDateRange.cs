@@ -1,4 +1,6 @@
-﻿namespace PoolScraper.Model
+﻿using CommonUtils.Utils;
+
+namespace PoolScraper.Model
 {
     public interface IDateRange
     {
@@ -18,6 +20,7 @@
         public static DateTime MiddleDateTime(this IDateRange dateRange)
             => dateRange.From.AddMinutes((dateRange.To - dateRange.From).TotalMinutes / 2);
         
+        public static IDateRange AsDateRange(this DateOnly dateOnly) => Create(dateOnly.GetBeginOfDay(), dateOnly.GetEndOfDay());
         private readonly struct DateRangeImpl(DateTime from, DateTime to) : IDateRange
         {
             public DateTime From { get; } = from;

@@ -1,6 +1,4 @@
-﻿using PoolScraper.Model.PowerPool;
-
-namespace PoolScraper.Model
+﻿namespace PoolScraper.Model
 {
     public interface IWorkerUptime : IWorker
     {

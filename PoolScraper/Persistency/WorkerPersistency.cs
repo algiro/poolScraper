@@ -2,7 +2,6 @@
 using MongoDB.Driver;
 using PoolScraper.Components.Pages;
 using PoolScraper.Model;
-using PoolScraper.Model.PowerPool;
 
 namespace PoolScraper.Persistency
 {

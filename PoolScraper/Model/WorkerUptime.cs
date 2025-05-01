@@ -1,6 +1,4 @@
-﻿using PoolScraper.Model.PowerPool;
-
-namespace PoolScraper.Model
+﻿namespace PoolScraper.Model
 {
     public class WorkerUptime(IWorker worker, double uptimePercentage) : IWorkerUptime
     {
@@ -13,5 +11,9 @@ namespace PoolScraper.Model
         public string PoolId { get; } = worker.PoolId;
 
         public double UptimePercentage { get; } = uptimePercentage;
+
+        public WorkerModel Model { get; } = worker.Model;
+
+        public Farm FarmId { get; } = worker.FarmId;
     }
 }

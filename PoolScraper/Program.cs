@@ -3,6 +3,7 @@ using PoolScraper.Persistency;
 using PoolScraper.Persistency.Consolidation;
 using PoolScraper.Service;
 using PoolScraper.Service.Consolidation;
+using PoolScraper.Service.Store;
 using PoolScraper.Utils;
 
 string connectionString = "mongodb://mongodb:27017";
@@ -19,13 +20,17 @@ builder.Services.AddSingleton<IPowerPoolScrapingService, PowePoolScrapingService
 builder.Services.AddSingleton<IPowerPoolScrapingPersistency>((sp) => new PowerPoolScrapingPersistency(LoggerUtils.CreateLogger<PowerPoolScrapingPersistency>(), connectionString, databaseName));
 builder.Services.AddSingleton<IWorkersService>((sp) => new WorkersService(LoggerUtils.CreateLogger<PowePoolScrapingService>(), connectionString, databaseName));
 builder.Services.AddSingleton<IUptimeHourConsolidationPersistency>( (sp) => new UptimeHourConsolidationPersistency(LoggerUtils.CreateLogger<UptimeHourConsolidationPersistency>(), connectionString, databaseName));
-builder.Services.AddSingleton<IUptimeConsolidateServiceClient, UptimeConsolidateServiceClient>();
+builder.Services.AddSingleton<ISnapshotHourConsolidationPersistency>((sp) => new SnapshotHourConsolidationPersistency(LoggerUtils.CreateLogger<SnapshotHourConsolidationPersistency>(), connectionString, databaseName));
 
+builder.Services.AddSingleton<IUptimeConsolidateServiceClient, UptimeConsolidateServiceClient>();
 builder.Services.AddSingleton<IWorkerPersistency>( (sp) => new WorkerPersistency(LoggerUtils.CreateLogger<WorkerPersistency>(), connectionString, databaseName));
 
 builder.Services.AddSingleton<IUptimeService, UptimeService>();
 builder.Services.AddSingleton<IScrapingServiceClient, ScrapingServiceClient>();
 builder.Services.AddSingleton<IUptimeServiceClient, UptimeServiceClient>();
+builder.Services.AddSingleton<ISnapshotConsolidateServiceClient, SnapshotConsolidateServiceClient>();
+builder.Services.AddSingleton<IWorkersReportService, WorkersReportService>();
+builder.Services.AddSingleton<IWorkerStore, WorkerStore>();
 
 builder.Services.AddHostedService<ScheduledService>();
 
