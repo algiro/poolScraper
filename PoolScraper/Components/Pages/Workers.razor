@@ -26,6 +26,8 @@ else
             <tr>
                 <th>Name</th>
                 <th>Algo</th>
+                <th>Model</th>
+                <th>Farm</th>
                 <th>Id</th>
                 <th>IsDisabled</th>
                 <th>Toggle</th>
@@ -38,6 +40,8 @@ else
                 <tr>
                     <td>@worker.Name</td>
                     <td>@worker.Algorithm</td>
+                    <td>@worker.Model</td>
+                    <td>@worker.FarmId</td>
                     <td>@worker.Id</td>
                     <td>@worker.IsDisabled</td>
                     <td> <Button Color="ButtonColor.Primary" @onclick="() => ToggleStatusAsync(worker.PoolId, worker.Id)">Toggle</Button> </td>

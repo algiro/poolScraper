@@ -15,6 +15,7 @@ namespace PoolScraper.Service
 
         public async Task<IEnumerable<ISnapshotDetailedView>> GetSnapshotDetailedViewsAsync(IDateRange dateRange)
         {
+            await workerStore.LoadAllWorkerAsync();
             logger.LogInformation("GetSnapshotDetailedViewsAsync called with date range: {dateRange}", dateRange);
             var snapshots = await snapshotConsolidateServiceClient.GetHourlySnapshotAsync(dateRange);
             logger.LogInformation("GetSnapshotDetailedViewsAsync {dateRange} snapshots#", snapshots.Count());

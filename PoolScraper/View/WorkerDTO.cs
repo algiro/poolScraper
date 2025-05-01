@@ -25,6 +25,8 @@ namespace PoolScraper.View
                 Algorithm = worker.Algorithm,
                 Id = worker.Id,
                 Name = worker.Name,
+                Model = worker.Model,
+                FarmId = worker.FarmId,
                 PoolId = worker.PoolId,
                 IsDisabled = isDisabled
             };

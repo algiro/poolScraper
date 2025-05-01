@@ -23,7 +23,7 @@ namespace PoolScraper.Model
         }
         public static ISnapshotDetailedView? AsSnapshotDetailedView(this ISnapshotWorkerStatus snapshotWorkerStatus, IWorkerStore workerStore)
         {
-            Console.WriteLine("AsSnapshotDetailedView called for workerId:" + snapshotWorkerStatus.WorkerId);
+            Console.WriteLine("AsSnapshotDetailedView called for workerId:" + snapshotWorkerStatus.WorkerId + " looking into workerStore: " + workerStore);
             var worker = workerStore.GetById(snapshotWorkerStatus.WorkerId.Id);
             return worker != null ? snapshotWorkerStatus.AsSnapshotDetailedView(worker) : null;
         }
