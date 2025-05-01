@@ -1,13 +1,7 @@
-﻿using CommonUtils.Utils;
-using log4net;
-using MongoDB.Bson;
-using MongoDB.Driver;
-using Newtonsoft.Json;
+﻿using MongoDB.Driver;
 using PoolScraper.Model;
 using PoolScraper.Model.PowerPool;
 using PoolScraper.View;
-using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace PoolScraper.Service
 {

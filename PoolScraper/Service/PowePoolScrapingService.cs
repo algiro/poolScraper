@@ -70,7 +70,7 @@ namespace PoolScraper.Service
                 await _powerPoolScrapingPersistency.InsertAsync(userDocument);
                 foreach (var minerData in userData.Values)
                 {
-                    var workers = minerData.Workers.GetAllWorkerStatus().Select(w => new Worker(PoolIDs.PowerPool, w.Algorithm, w.Id, w.Name)).OrderBy(w => w.Id);
+                    var workers = minerData.Workers.GetAllWorkerStatus().Select(w =>  WorkerExtensions.Create(PoolIDs.PowerPool, w.Algorithm, w.Id, w.Name)).OrderBy(w => w.Id);
                     bool areEqual =workers.SequenceEqual(_allWorkers);
                     if (!areEqual)
                     {
@@ -78,6 +78,7 @@ namespace PoolScraper.Service
                         var newWorkers = workers.Except(_allWorkers).ToList();
                         _log.LogInformation("Identified #newWorkers: {newWorkersCount} ", newWorkers.Count);
                         await _workerPersistency.InsertManyAsync(newWorkers);
+                        _allWorkers = await _workerPersistency.GetAllWorkerAsync();
                     }
                     else
                     {

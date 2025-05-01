@@ -1,4 +1,5 @@
-﻿using PoolScraper.Model.PowerPool;
+﻿using PoolScraper.Model;
+using PoolScraper.Model.PowerPool;
 
 namespace PoolScraper.View
 {
@@ -9,6 +10,8 @@ namespace PoolScraper.View
         public string Name { get; set; } = string.Empty;
         public string PoolId { get; set; } = string.Empty;
         public bool IsDisabled { get; set; }
+        public WorkerModel Model { get; set; }
+        public Farm FarmId { get; set; }
     }
 
     public static class WorkerDTOExtensions

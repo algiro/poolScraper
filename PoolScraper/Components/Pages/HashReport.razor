@@ -1,0 +1,72 @@
+﻿@page "/hashReport"
+@using PoolScraper.Components.Shared
+@using PoolScraper.Model
+@using PoolScraper.Model.Scheduler
+@using PoolScraper.Service
+@using PoolScraper.Service.Consolidation
+@attribute [StreamRendering]
+@rendermode InteractiveServer
+
+@inject IWorkersReportService WorkerReportService
+@inject IScrapingServiceClient ScrapingServiceClient
+
+<PageTitle>Hashrate Info</PageTitle>
+
+<h1>Uptime Report</h1>
+<Modal @ref="modal" />
+
+<p>HashReport:</p>
+<div>
+    <DateSelection OnSearch="@GetDetails" />
+</div>
+
+@if (snapshotWorkers == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <span> Workers Count: </span> <span> @snapshotWorkers.Count()  </span>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Model</th>
+                <th>Algo</th>
+                <th>FarmId</th>
+                <th>Hashrate</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var snapshotWorker in snapshotWorkers)
+            {
+                <tr>
+                    <td>@snapshotWorker.Worker.Name</td>
+                    <td>@snapshotWorker.Worker.Model</td>
+                    <td>@snapshotWorker.Worker.Algorithm</td>
+                    <td>@snapshotWorker.Worker.FarmId</td>
+                    <td>@snapshotWorker.BasicInfo.Hashrate</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private Modal modal = default!;
+    private IEnumerable<ISnapshotDetailedView> snapshotWorkers;
+    private DateOnly selectedDate;
+    protected override async Task OnInitializedAsync()
+    {
+        selectedDate = DateOnly.FromDateTime(DateTime.Now);
+        await GetDetails(selectedDate);
+    }
+
+    private async Task GetDetails(DateOnly date)
+    {
+        selectedDate = date;
+        snapshotWorkers = (await WorkerReportService.GetSnapshotDetailedViewsAsync(date.AsDateRange())).OrderBy(w => w.Worker.Model);
+		StateHasChanged();
+	}
+
+}
