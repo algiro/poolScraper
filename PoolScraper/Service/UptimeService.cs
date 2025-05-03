@@ -44,7 +44,7 @@ namespace PoolScraper.Service
             var snapshotWorkerStatus = documents.AsSnapshotWorkerStatus();
             var allWorkers = await workerPersistency.GetAllWorkerAsync();
             var workerUptimeResult = uptimeCalculator.CalculateTotUptime(snapshotWorkerStatus);
-            return workerUptimeResult.Select(w => new WorkerUptime(allWorkers.FirstOrDefault(wk => wk.PoolId == w.WorkerId.PoolId && wk.Id == w.WorkerId.Id), w.UptimePercentage));
+            return workerUptimeResult.Select(w => new WorkerUptime(allWorkers.FirstOrDefault(wk => wk.WorkerId == w.WorkerId), w.UptimePercentage));
         }
 
         public async Task<IEnumerable<IUptimePeriod>> GetWorkerUptimeHistoryAsync(string poolId, long workerId, DateTime from, DateTime to)

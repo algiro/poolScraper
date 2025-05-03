@@ -5,13 +5,9 @@ using PoolScraper.Service.Store;
 
 namespace PoolScraper.Model
 {
-    public interface ISnapshotDetailedView
+    public interface ISnapshotDetailedView : ISnapshotWorkerStatus
     {
-        string Id { get; }
-        Granularity Granularity { get; }
         IWorker Worker { get; }
-        IDateRange DateRange { get; }
-        IWorkerBasicInfo BasicInfo { get; }
     }
 
     public static class SnapshotDetailedView
@@ -34,6 +30,8 @@ namespace PoolScraper.Model
             public IWorker Worker { get; }
             public IDateRange DateRange { get; }
             public IWorkerBasicInfo BasicInfo { get; }
+            public IWorkerId WorkerId => Worker.WorkerId;
+
             public SnapshotDetailedViewImpl(ISnapshotWorkerStatus snapshotWorkerStatus, IWorker worker)
             {
                 Worker = worker;

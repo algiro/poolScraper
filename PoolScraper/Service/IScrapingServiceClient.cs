@@ -13,6 +13,6 @@ namespace PoolScraper.Service
         Task<double> GetTodayCoverageAsync();
         Task<(IEnumerable<PowerPoolUser> data, IEnumerable<TimeGap> gap)> GetDayDetailsAsync(DateOnly date);
         Task<IEnumerable<WorkerDTO>> GetWorkersAsync();
-        Task<bool> ToggleEnableWorkerAsync(string poolId, long workerId);
+        Task<bool> ToggleEnableWorkerAsync(IWorkerId workerId);
     }
 }

@@ -4,11 +4,9 @@
     {
         public string Algorithm { get; } = worker.Algorithm;
 
-        public long Id { get; } = worker.Id;
+        public IWorkerId WorkerId { get; } = worker.WorkerId;
 
         public string Name { get; } = worker.Name;
-
-        public string PoolId { get; } = worker.PoolId;
 
         public double UptimePercentage { get; } = uptimePercentage;
 

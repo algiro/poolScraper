@@ -22,8 +22,8 @@ namespace PoolScraper.Model.PowerPool
         {
             if (obj is IWorker other)
             {
-                return PoolId == other.PoolId &&
-                       Id == other.Id;
+                return PoolId == other.WorkerId.PoolId &&
+                       Id == other.WorkerId.Id;
             }
             return false;
         }

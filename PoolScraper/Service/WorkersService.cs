@@ -22,22 +22,22 @@ namespace PoolScraper.Service
 
         }
 
-        public async Task<bool> ToggleEnableWorkerAsync(string poolId, long workerId)
+        public async Task<bool> ToggleEnableWorkerAsync(IWorkerId workerId)
         {
             var filter = Builders<DisabledWorker>.Filter.And(
-                Builders<DisabledWorker>.Filter.Eq(x => x.PoolId, poolId),
-                Builders<DisabledWorker>.Filter.Eq(x => x.Id, workerId));
+                Builders<DisabledWorker>.Filter.Eq(x => x.PoolId, workerId.PoolId),
+                Builders<DisabledWorker>.Filter.Eq(x => x.Id, workerId.Id));
 
             if (await _disabledWorkerCollection.Find(filter).AnyAsync())
             {
-                _log.LogInformation("Worker {workerId} already disabled in pool {poolId}, re-enabled it", workerId, poolId);
+                _log.LogInformation("Worker {workerId} already disabled in pool {poolId}, re-enabled it", workerId.Id, workerId.PoolId);
                 await _disabledWorkerCollection.DeleteOneAsync(filter);
                 return true;
             }
             else
             {
-                _log.LogInformation("Disabling Worker {workerId} in pool {poolId}", workerId, poolId);
-                await _disabledWorkerCollection.InsertOneAsync(new DisabledWorker(poolId, workerId));
+                _log.LogInformation("Disabling Worker {workerId} in pool {poolId}", workerId.Id, workerId.PoolId);
+                await _disabledWorkerCollection.InsertOneAsync(new DisabledWorker(workerId.PoolId, workerId.Id));
                 return true;
             }
 

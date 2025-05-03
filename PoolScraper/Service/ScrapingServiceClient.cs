@@ -77,11 +77,11 @@ namespace PoolScraper.Service
             }
             return Enumerable.Empty<WorkerDTO>();
         }
-        public async Task<bool> ToggleEnableWorkerAsync(string poolId,long workerId)
+        public async Task<bool> ToggleEnableWorkerAsync(IWorkerId workerId)
         {
             try
             {
-                var done = await workerService.ToggleEnableWorkerAsync(poolId,workerId);
+                var done = await workerService.ToggleEnableWorkerAsync(workerId);
                 logger.LogInformation("ToggleEnableWorkerAsync status {done}", done);
                 return done;
             }

@@ -5,10 +5,9 @@ namespace PoolScraper.Model
 {
     public interface IWorker
     {
-        long Id { get; }
+        IWorkerId WorkerId { get; }
         string Algorithm { get; }
         string Name { get; }
-        string PoolId { get; }
         WorkerModel Model { get; }
         Farm FarmId { get; }
     }
@@ -39,7 +38,7 @@ namespace PoolScraper.Model
         }
         public static IEnumerable<Worker> AsWorkers(this IEnumerable<IWorker> workers)
         {
-            return workers.Select(w => new Worker(w.PoolId,w.Algorithm,w.Id,w.Name,w.Model,w.FarmId));
+            return workers.Select(w => new Worker(w.WorkerId.PoolId,w.Algorithm,w.WorkerId.Id, w.Name,w.Model,w.FarmId));
         }
     }
 }

@@ -15,6 +15,7 @@ namespace PoolScraper.Model
 
             ModelStr = model.ToString();
             FarmStr = farm.ToString();
+            WorkerId = PoolScraper.Model.WorkerId.Create(poolId, id);
         }
         [JsonProperty("poolId")]
         public string PoolId { get; set; }
@@ -60,6 +61,8 @@ namespace PoolScraper.Model
             }
         }
 
+        public IWorkerId WorkerId { get; }
+
         public override int GetHashCode()
         {
             return PoolId.GetHashCode() ^ Algorithm.GetHashCode() ^ Id.GetHashCode() ^ Model.GetHashCode() ^ FarmId.GetHashCode();
@@ -68,9 +71,8 @@ namespace PoolScraper.Model
         {
             if (obj is IWorker other)
             {
-                return PoolId == other.PoolId &&
+                return WorkerId == other.WorkerId &&
                        Algorithm == other.Algorithm &&
-                       Id == other.Id &&
                        Name == other.Name &&
                        Model == other.Model &&
                        FarmId == other.FarmId;
