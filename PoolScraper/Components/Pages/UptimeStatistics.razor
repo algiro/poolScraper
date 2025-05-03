@@ -43,7 +43,7 @@ else
                     <td>@workerUptime.Name</td>
                     <td>@workerUptime.Algorithm</td>
                     <td>@workerUptime.UptimePercentage</td>
-                    <td><Button Color="ButtonColor.Primary" @onclick="() => GetWorkerDetails(workerUptime.Id)">@workerUptime.Id</Button> </td>
+                    <td><Button Color="ButtonColor.Primary" @onclick="() => GetWorkerDetails(workerUptime.WorkerId.Id)">@workerUptime.WorkerId</Button> </td>
                 </tr>
             }
         </tbody>

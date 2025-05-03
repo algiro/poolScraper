@@ -1,4 +1,5 @@
 ﻿@page "/workers"
+@using PoolScraper.Model
 @using PoolScraper.Model.PowerPool
 @using PoolScraper.Model.Scheduler
 @using PoolScraper.Service
@@ -42,9 +43,9 @@ else
                     <td>@worker.Algorithm</td>
                     <td>@worker.Model</td>
                     <td>@worker.FarmId</td>
-                    <td>@worker.Id</td>
+                    <td>@worker.WorkerId.Id</td>
                     <td>@worker.IsDisabled</td>
-                    <td> <Button Color="ButtonColor.Primary" @onclick="() => ToggleStatusAsync(worker.PoolId, worker.Id)">Toggle</Button> </td>
+                    <td> <Button Color="ButtonColor.Primary" @onclick="() => ToggleStatusAsync(worker.WorkerId)">Toggle</Button> </td>
                 </tr>
             }
         </tbody>
@@ -59,12 +60,12 @@ else
         workers = new ObservableCollection<WorkerDTO>(await ServiceClient.GetWorkersAsync());
     }
 
-    private async Task<bool> ToggleStatusAsync(string poolId,long id)
+    private async Task<bool> ToggleStatusAsync(IWorkerId workerId)
     {
-        var status = await ServiceClient.ToggleEnableWorkerAsync(poolId, id);
+        var status = await ServiceClient.ToggleEnableWorkerAsync(workerId);
         if (status)
         {
-            var worker = workers.Single(w => w.PoolId == poolId && w.Id == id);
+            var worker = workers.Single(w => w.WorkerId == workerId);
             Console.Out.WriteLine($"Worker {worker.Name} status is {worker.IsDisabled}");
             worker.IsDisabled = !worker.IsDisabled;
 			Console.Out.WriteLine($"Worker {worker.Name} status changed to {worker.IsDisabled}");
