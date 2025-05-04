@@ -1,10 +1,11 @@
 ﻿using Newtonsoft.Json;
+using PoolScraper.Domain;
 
 namespace PoolScraper.Model
 {
-    public class Worker : IWorker
+    public class WorkerReadModel : IWorker
     {
-        public Worker(string poolId, string algorithm, long id, string name, WorkerModel model, Farm farm)
+        public WorkerReadModel(string poolId, string algorithm, long id, string name, WorkerModel model, Farm farm)
         {
             PoolId = poolId;
             Algorithm = algorithm;
@@ -15,7 +16,7 @@ namespace PoolScraper.Model
 
             ModelStr = model.ToString();
             FarmStr = farm.ToString();
-            WorkerId = PoolScraper.Model.WorkerId.Create(poolId, id);
+            WorkerId = Domain.WorkerId.Create(poolId, id);
         }
         [JsonProperty("poolId")]
         public string PoolId { get; set; }

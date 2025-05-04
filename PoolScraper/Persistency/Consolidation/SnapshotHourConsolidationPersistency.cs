@@ -1,17 +1,17 @@
 ﻿using MongoDB.Driver;
 using PoolScraper.Model.PowerPool;
 using PoolScraper.Model;
-using PoolScraper.Model.Consolidation;
 using log4net;
 using PoolScraper.View;
 using CommonUtils.Utils;
 using PoolScraper.Components.Pages;
+using PoolScraper.Domain;
 
 namespace PoolScraper.Persistency.Consolidation
 {
     public class SnapshotHourConsolidationPersistency : ISnapshotHourConsolidationPersistency
     {
-        private readonly IMongoCollection<SnapshotWorkerStatusView> _hourlySnapshotCollection;
+        private readonly IMongoCollection<SnapshotWorkerStatusReadModel> _hourlySnapshotCollection;
         private readonly ILogger _log;
 
         public SnapshotHourConsolidationPersistency(ILogger log, string connectionString, string databaseName)
@@ -20,12 +20,12 @@ namespace PoolScraper.Persistency.Consolidation
             _log.LogInformation("SnapshotHourConsolidationPersistency C.tor with connection string: {connectionString} and database name: {databaseName}", connectionString, databaseName);
             var client = new MongoClient(connectionString);
             var database = client.GetDatabase(databaseName);
-            _hourlySnapshotCollection = database.GetCollection<SnapshotWorkerStatusView>("hourlySnapshotCollection");
+            _hourlySnapshotCollection = database.GetCollection<SnapshotWorkerStatusReadModel>("hourlySnapshotCollection");
         }
 
         public async Task<IEnumerable<ISnapshotWorkerStatus>> GetHourlySnapshotAsync(IDateRange dateRange)
         {
-            var snapshotViews = await _hourlySnapshotCollection.Find( h => h.DateRange.From >= dateRange.From && h.DateRange.To <= dateRange.To).ToListAsync<SnapshotWorkerStatusView>();
+            var snapshotViews = await _hourlySnapshotCollection.Find( h => h.DateRange.From >= dateRange.From && h.DateRange.To <= dateRange.To).ToListAsync<SnapshotWorkerStatusReadModel>();
             return snapshotViews.Select(u => u.AsSnapshotWorkerStatus());
         }
 

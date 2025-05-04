@@ -1,4 +1,5 @@
 ﻿using CommonUtils.Utils;
+using PoolScraper.Domain;
 using PoolScraper.Model;
 using PoolScraper.Model.PowerPool;
 using PoolScraper.Model.Scheduler;

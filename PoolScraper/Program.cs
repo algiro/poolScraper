@@ -8,7 +8,6 @@ using PoolScraper.Utils;
 
 string connectionString = "mongodb://mongodb:27017";
 string databaseName = "PowerPoolDB";
-string apiKey = "0803cab54344474b915b42c74b5d8d8b";
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("/config/appsettings.Development.json", true, true);
 

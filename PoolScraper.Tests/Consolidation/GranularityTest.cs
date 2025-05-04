@@ -1,11 +1,12 @@
-﻿using PoolScraper.Model.Consolidation;
+﻿using PoolScraper.Domain;
+using PoolScraper.Domain.Consolidation;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static PoolScraper.Model.DateRange;
+using static PoolScraper.Domain.DateRange;
 
 namespace PoolScraper.Tests.Consolidation
 {

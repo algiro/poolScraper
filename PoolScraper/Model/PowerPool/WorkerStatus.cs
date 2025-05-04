@@ -1,7 +1,8 @@
 ﻿using Newtonsoft.Json;
-using PoolScraper.Model.Consolidation;
+using PoolScraper.Domain;
+using PoolScraper.Domain.Consolidation;
 
-namespace PoolScraper.Model
+namespace PoolScraper.Model.PowerPool
 {
     public class WorkerStatus
     {
@@ -9,10 +10,10 @@ namespace PoolScraper.Model
         public long Id { get; set; }
 
         [JsonProperty("algorithm")]
-        public string Algorithm { get; set; }
+        public string Algorithm { get; set; } = string.Empty;
 
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         [JsonProperty("valid_shares")]
         public double ValidShares { get; set; }
@@ -30,13 +31,13 @@ namespace PoolScraper.Model
         public double Hashrate { get; set; }
 
         [JsonProperty("hashrate_units")]
-        public string HashrateUnits { get; set; }
+        public string HashrateUnits { get; set; } = string.Empty;
 
         [JsonProperty("hashrate_avg")]
         public double HashrateAvg { get; set; }
 
         [JsonProperty("hashrate_avg_units")]
-        public string HashrateAvgUnits { get; set; }
+        public string HashrateAvgUnits { get; set; } = string.Empty;
     }
 
     public static class WorkerStatusExtension

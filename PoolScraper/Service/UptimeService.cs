@@ -5,8 +5,7 @@ using PoolScraper.Model.PowerPool;
 using PoolScraper.Model;
 using PoolScraper.Service.Uptime;
 using PoolScraper.Persistency;
-using PoolScraper.Model.Consolidation;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using PoolScraper.Domain;
 
 namespace PoolScraper.Service
 {
@@ -44,7 +43,7 @@ namespace PoolScraper.Service
             var snapshotWorkerStatus = documents.AsSnapshotWorkerStatus();
             var allWorkers = await workerPersistency.GetAllWorkerAsync();
             var workerUptimeResult = uptimeCalculator.CalculateTotUptime(snapshotWorkerStatus);
-            return workerUptimeResult.Select(w => new WorkerUptime(allWorkers.FirstOrDefault(wk => wk.WorkerId == w.WorkerId), w.UptimePercentage));
+            return workerUptimeResult.Select(w => WorkerUptime.Create(allWorkers.First(wk => wk.WorkerId == w.WorkerId), w.UptimePercentage));
         }
 
         public async Task<IEnumerable<IUptimePeriod>> GetWorkerUptimeHistoryAsync(string poolId, long workerId, DateTime from, DateTime to)
@@ -52,7 +51,7 @@ namespace PoolScraper.Service
             var documents = await powerPoolScrapingService.GetDataRangeAsync(from, to);
             IEnumerable<(DateTime fetchedAt,IEnumerable<AlgorithmWorkers> algo)> miners = documents.Select(d => (d.FetchedAt, d.GetAllAlgoWorkers()));
             IEnumerable<(DateTime fetchedAt,WorkerStatus workerStatus)> workers = miners.Select(m => (m.fetchedAt, m.algo.SelectMany(w => w.GetAllWorkerStatus()).Single(w => w.Id == workerId)));
-            var history =  workers.Select(w => new WorkerUptimeHistory(w.fetchedAt, w.workerStatus.Hashrate > 0));
+            var history =  workers.Select(w => WorkerUptimeHistory.Create(w.fetchedAt, w.workerStatus.Hashrate > 0));
             return UptimePeriods.CreatePeriods(history);
         }
     }

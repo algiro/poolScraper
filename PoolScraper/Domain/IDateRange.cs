@@ -1,6 +1,7 @@
 ﻿using CommonUtils.Utils;
+using PoolScraper.Model;
 
-namespace PoolScraper.Model
+namespace PoolScraper.Domain
 {
     public interface IDateRange
     {
@@ -13,9 +14,9 @@ namespace PoolScraper.Model
         {
             return new DateRangeImpl(from, to);
         }
-        public static DateRangeView AsDateRangeView(this IDateRange dateRange)
+        public static DateRangeReadModel AsDateRangeView(this IDateRange dateRange)
         {
-            return new DateRangeView(dateRange.From, dateRange.To);
+            return new DateRangeReadModel(dateRange.From, dateRange.To);
         }
         public static DateTime MiddleDateTime(this IDateRange dateRange)
             => dateRange.From.AddMinutes((dateRange.To - dateRange.From).TotalMinutes / 2);

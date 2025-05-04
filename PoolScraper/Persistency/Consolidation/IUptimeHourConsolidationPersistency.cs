@@ -1,5 +1,4 @@
-﻿using PoolScraper.Model;
-using PoolScraper.Model.Consolidation;
+﻿using PoolScraper.Domain;
 
 namespace PoolScraper.Persistency.Consolidation
 {

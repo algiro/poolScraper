@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using PoolScraper.Domain;
 
 namespace PoolScraper.Model.PowerPool
 {

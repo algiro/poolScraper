@@ -1,6 +1,6 @@
 ﻿
 using CommonUtils.Utils;
-using PoolScraper.Model;
+using PoolScraper.Domain;
 
 namespace PoolScraper.Service
 {

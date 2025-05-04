@@ -1,5 +1,5 @@
 ﻿using MongoDB.Bson.IO;
-using PoolScraper.Model;
+using PoolScraper.Domain;
 
 namespace PoolScraper.Service
 {

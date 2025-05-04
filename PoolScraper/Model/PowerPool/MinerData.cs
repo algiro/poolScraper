@@ -4,13 +4,13 @@ namespace PoolScraper.Model.PowerPool
 {
     public class MinerData
     {
-        public AlgorithmHashrates Hashrate { get; set; }
-        public List<BalanceView> Balances { get; set; }
-        public List<Payment> Payments { get; set; }
+        public AlgorithmHashrates Hashrate { get; set; } = new AlgorithmHashrates();
+        public List<BalanceView> Balances { get; set; } = new List<BalanceView>();
+        public List<Payment> Payments { get; set; } = new List<Payment>();
         [JsonProperty("earnings")]
-        public MinerEarnings Earnings { get; set; }  // Changed from List<Earning> to MinerEarnings
-       
+        public MinerEarnings Earnings { get; set; }  = new MinerEarnings();
+
         [JsonProperty("workers")]
-        public AlgorithmWorkers Workers { get; set; }
+        public AlgorithmWorkers Workers { get; set; } = new AlgorithmWorkers();
     }
 }

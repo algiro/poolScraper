@@ -1,7 +1,7 @@
 ﻿using BlazorBootstrap;
 using CommonUtils.Utils;
-using PoolScraper.Model;
-using PoolScraper.Model.Consolidation;
+using PoolScraper.Domain;
+using PoolScraper.Domain.Consolidation;
 using PoolScraper.Model.PowerPool;
 using PoolScraper.Persistency.Consolidation;
 using PoolScraper.Service.Uptime;

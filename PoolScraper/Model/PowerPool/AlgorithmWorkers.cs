@@ -5,22 +5,22 @@ namespace PoolScraper.Model.PowerPool
     public class AlgorithmWorkers
     {
         [JsonProperty("scrypt")]
-        public List<WorkerStatus> Scrypt { get; set; }
+        public List<WorkerStatus> Scrypt { get; set; } = new List<WorkerStatus>();
 
         [JsonProperty("sha256")]
-        public List<WorkerStatus> Sha256 { get; set; }
+        public List<WorkerStatus> Sha256 { get; set; } = new List<WorkerStatus>();
 
         [JsonProperty("x11")]
-        public List<WorkerStatus> X11 { get; set; }
+        public List<WorkerStatus> X11 { get; set; } = new List<WorkerStatus>();
 
         [JsonProperty("kheavyhash")]
-        public List<WorkerStatus> Kheavyhash { get; set; }
+        public List<WorkerStatus> Kheavyhash { get; set; } = new List<WorkerStatus>();
 
         [JsonProperty("eaglesong")]
-        public List<WorkerStatus> Eaglesong { get; set; }
+        public List<WorkerStatus> Eaglesong { get; set; } = new List<WorkerStatus>();
 
         [JsonProperty("blake2s")]
-        public List<WorkerStatus> Blake2s { get; set; }
+        public List<WorkerStatus> Blake2s { get; set; } = new List<WorkerStatus>();
     }
 
     public static class AlgorithmWorkersExtension

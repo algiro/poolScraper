@@ -1,4 +1,4 @@
-﻿using PoolScraper.Model;
+﻿using PoolScraper.Domain;
 
 namespace PoolScraper.Persistency
 {

@@ -3,8 +3,7 @@ using log4net;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Newtonsoft.Json;
-using PoolScraper.Model;
-using PoolScraper.Model.Consolidation;
+using PoolScraper.Domain;
 using PoolScraper.Model.PowerPool;
 using PoolScraper.Persistency;
 using PoolScraper.Persistency.Consolidation;
@@ -21,7 +20,7 @@ namespace PoolScraper.Service
         private const string API_BASE_URL = "https://api.powerpool.io/api/user";
         private readonly ILogger _log;
         private readonly OnceFlag _areWorkersLoaded = new OnceFlag();
-        private IEnumerable<IWorker> _allWorkers;
+        private IEnumerable<IWorker> _allWorkers = Enumerable.Empty<IWorker>();
         private readonly IPool powerPool = Pool.CreatePowerPool();
         private readonly IPowerPoolScrapingPersistency _powerPoolScrapingPersistency;
         private readonly IWorkerPersistency _workerPersistency;
@@ -54,40 +53,42 @@ namespace PoolScraper.Service
 
                 var jsonContent = await response.Content.ReadAsStringAsync();
                 var userData = JsonConvert.DeserializeObject<Dictionary<string, MinerData>>(jsonContent);
-
-                // Create user document
-                var userDocument = new PowerPoolUser
+                if (userData != null)
                 {
-                    Id = ObjectId.GenerateNewId().ToString(),
-                    ApiKey = apiKey,
-                    Miners = userData,
-                    FetchedAt = DateTime.UtcNow
-                };
-
-                // Create filter for upsert operation
-                var filter = Builders<PowerPoolUser>.Filter.Eq(u => u.ApiKey, apiKey);
-                                
-                await _powerPoolScrapingPersistency.InsertAsync(userDocument);
-                foreach (var minerData in userData.Values)
-                {
-                    var workers = minerData.Workers.GetAllWorkerStatus().Select(w =>  WorkerExtensions.Create(PoolIDs.PowerPool, w.Algorithm, w.Id, w.Name)).OrderBy(w => w.WorkerId);
-                    bool areEqual =workers.SequenceEqual(_allWorkers);
-                    if (!areEqual)
+                    // Create user document
+                    var userDocument = new PowerPoolUser
                     {
-                        _log.LogInformation("Workers are not equal, inserting new workers");
-                        var newWorkers = workers.Except(_allWorkers).ToList();
-                        _log.LogInformation("Identified #newWorkers: {newWorkersCount} ", newWorkers.Count);
-                        await _workerPersistency.InsertManyAsync(newWorkers);
-                        _allWorkers = await _workerPersistency.GetAllWorkerAsync();
-                    }
-                    else
+                        Id = ObjectId.GenerateNewId().ToString(),
+                        ApiKey = apiKey,
+                        Miners = userData,
+                        FetchedAt = DateTime.UtcNow
+                    };
+
+                    // Create filter for upsert operation
+                    var filter = Builders<PowerPoolUser>.Filter.Eq(u => u.ApiKey, apiKey);
+
+                    await _powerPoolScrapingPersistency.InsertAsync(userDocument);
+                    foreach (var minerData in userData.Values)
                     {
-                        _log.LogInformation("Workers are equal, no new workers to insert");
+                        var workers = minerData.Workers.GetAllWorkerStatus().Select(w => WorkerExtensions.Create(PoolIDs.PowerPool, w.Algorithm, w.Id, w.Name)).OrderBy(w => w.WorkerId);
+                        bool areEqual = workers.SequenceEqual(_allWorkers);
+                        if (!areEqual)
+                        {
+                            _log.LogInformation("Workers are not equal, inserting new workers");
+                            var newWorkers = workers.Except(_allWorkers).ToList();
+                            _log.LogInformation("Identified #newWorkers: {newWorkersCount} ", newWorkers.Count);
+                            await _workerPersistency.InsertManyAsync(newWorkers);
+                            _allWorkers = await _workerPersistency.GetAllWorkerAsync();
+                        }
+                        else
+                        {
+                            _log.LogInformation("Workers are equal, no new workers to insert");
+                        }
+
                     }
 
+                    _log.LogInformation("Data for API key {apiKey} stored successfully at {fetchedAt}", apiKey, userDocument.FetchedAt);
                 }
-
-                _log.LogInformation("Data for API key {apiKey} stored successfully at {fetchedAt}", apiKey, userDocument.FetchedAt);
             }
             catch (HttpRequestException ex)
             {
@@ -118,9 +119,9 @@ namespace PoolScraper.Service
             catch (Exception ex)
             {
                 _log.LogError("Error calculating today coverage: {message}", ex.Message);
+                return 0;
                 throw new Exception($"Error calculating today coverage: {ex.Message}");
             }
-            return 0;
         }
         public async Task<PowerPoolUser> GetLatestUserDataAsync() => await _powerPoolScrapingPersistency.GetLatestUserDataAsync();
 

@@ -1,4 +1,5 @@
-﻿using PoolScraper.Model;
+﻿using PoolScraper.Domain;
+using PoolScraper.Model;
 using PoolScraper.Model.PowerPool;
 using PoolScraper.Persistency.Consolidation;
 using PoolScraper.Service.Uptime;

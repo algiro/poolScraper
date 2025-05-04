@@ -1,6 +1,7 @@
 ﻿@page "/admin"
 @using CommonUtils.Utils
 @using PoolScraper.Components.Shared;
+@using PoolScraper.Domain
 @using PoolScraper.Model
 @using PoolScraper.Model.PowerPool
 @using PoolScraper.Model.Scheduler
@@ -109,12 +110,12 @@ else
     private IEnumerable<ISnapshotWorkerStatus> snapshotHourlyStatus = Enumerable.Empty<ISnapshotWorkerStatus>();
 
     private DateOnly selectedDate;
-    private string workerId;
+    private string? workerId;
     protected override async Task OnInitializedAsync()
     {
         selectedDate = DateOnly.FromDateTime(DateTime.Now);
         uptimePercentages = await ServiceClient.GetHourlyUptimeAsync(selectedDate);
-		snapshotHourlyStatus = await SnapshotConsolidateServiceClient.GetHourlySnapshotAsync(selectedDate.AsDateRange());
+        snapshotHourlyStatus = await SnapshotConsolidateServiceClient.GetHourlySnapshotAsync(selectedDate.AsDateRange());
     }
 
     protected async Task GetDetails(DateOnly date)
@@ -125,9 +126,12 @@ else
     }
     private async Task GetWorkerDayDetails()
     {
-        var dateFrom = selectedDate.GetBeginOfDay();
-		var dateTo = selectedDate.GetEndOfDay();
-        snapshotWorkerStatus = await PowerPoolScrapingService.GetSnapshotWorkerStatusAsync(long.Parse(workerId), dateFrom,dateTo);
+        if (workerId != null)
+        {
+            var dateFrom = selectedDate.GetBeginOfDay();
+            var dateTo = selectedDate.GetEndOfDay();
+            snapshotWorkerStatus = await PowerPoolScrapingService.GetSnapshotWorkerStatusAsync(long.Parse(workerId), dateFrom, dateTo);
+        }
     }
     private async Task Consolidate()
     {

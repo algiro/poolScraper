@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc.Formatters;
 using Newtonsoft.Json;
+using PoolScraper.Model;
 
-namespace PoolScraper.Model
+namespace PoolScraper.Domain
 {
     public interface IWorker
     {
@@ -18,9 +19,9 @@ namespace PoolScraper.Model
         {
             WorkerModelExtensions.TryGetModel(name, out var workerModel);
             FarmExtension.TryGetFarm(name, out var farm);
-            return new Worker(poolId, algorithm, id, name, workerModel, farm);
+            return new WorkerReadModel(poolId, algorithm, id, name, workerModel, farm);
         }
-        public static string GetWorkerSuffix(string workerName)
+        public static string? GetWorkerSuffix(string workerName)
         {
             if (string.IsNullOrEmpty(workerName))
                 return null;
@@ -34,11 +35,11 @@ namespace PoolScraper.Model
 
         public static IWorker Create(string poolId, string algorithm, long id, string name, WorkerModel model, Farm farm)
         {            
-            return new Worker(poolId, algorithm, id, name, model, farm);
+            return new WorkerReadModel(poolId, algorithm, id, name, model, farm);
         }
-        public static IEnumerable<Worker> AsWorkers(this IEnumerable<IWorker> workers)
+        public static IEnumerable<WorkerReadModel> AsWorkers(this IEnumerable<IWorker> workers)
         {
-            return workers.Select(w => new Worker(w.WorkerId.PoolId,w.Algorithm,w.WorkerId.Id, w.Name,w.Model,w.FarmId));
+            return workers.Select(w => new WorkerReadModel(w.WorkerId.PoolId,w.Algorithm,w.WorkerId.Id, w.Name,w.Model,w.FarmId));
         }
     }
 }

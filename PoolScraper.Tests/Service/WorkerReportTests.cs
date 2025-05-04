@@ -1,12 +1,12 @@
-﻿using PoolScraper.Model.Consolidation;
-using PoolScraper.Model;
-using PoolScraper.Service;
+﻿using PoolScraper.Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
+using PoolScraper.Domain;
+using PoolScraper.Domain.Consolidation;
 
 namespace PoolScraper.Tests.Service
 {

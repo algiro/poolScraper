@@ -1,17 +1,18 @@
 ﻿using MongoDB.Driver;
 using PoolScraper.Model.PowerPool;
 using PoolScraper.Model;
-using PoolScraper.Model.Consolidation;
 using log4net;
 using PoolScraper.View;
 using CommonUtils.Utils;
 using PoolScraper.Components.Pages;
+using PoolScraper.Domain;
+using PoolScraper.Domain.Consolidation;
 
 namespace PoolScraper.Persistency.Consolidation
 {
     public class UptimeHourConsolidationPersistency : IUptimeHourConsolidationPersistency
     {
-        private readonly IMongoCollection<UptimePercentageView> _hourlyUptimeCollection;
+        private readonly IMongoCollection<UptimePercentageReadModel> _hourlyUptimeCollection;
         private readonly ILogger _log;
 
         public UptimeHourConsolidationPersistency(ILogger log, string connectionString, string databaseName)
@@ -20,7 +21,7 @@ namespace PoolScraper.Persistency.Consolidation
             _log.LogInformation("WorkerStatusDayHourConsolidationPersistency C.tor with connection string: {connectionString} and database name: {databaseName}", connectionString, databaseName);
             var client = new MongoClient(connectionString);
             var database = client.GetDatabase(databaseName);
-            _hourlyUptimeCollection = database.GetCollection<UptimePercentageView>("hourlyUptimeCollection");
+            _hourlyUptimeCollection = database.GetCollection<UptimePercentageReadModel>("hourlyUptimeCollection");
         }
 
         public async Task<IEnumerable<IUptimePercentage>> GetHourlyUptimeAsync(DateOnly dateOnly)
@@ -28,7 +29,7 @@ namespace PoolScraper.Persistency.Consolidation
             var dayStart = dateOnly.GetBeginOfDay();
             var dayEnd = dateOnly.GetEndOfDay();
 
-            var uptimePercViews = await _hourlyUptimeCollection.Find( h => h.DateRange.From >= dayStart && h.DateRange.To <= dayEnd).ToListAsync<UptimePercentageView>();
+            var uptimePercViews = await _hourlyUptimeCollection.Find( h => h.DateRange.From >= dayStart && h.DateRange.To <= dayEnd).ToListAsync<UptimePercentageReadModel>();
             return uptimePercViews.Select(u => u.AsUptimePercentage());
         }
 

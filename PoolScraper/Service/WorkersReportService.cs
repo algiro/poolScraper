@@ -1,5 +1,5 @@
 ﻿using CommonUtils.Utils;
-using PoolScraper.Model;
+using PoolScraper.Domain;
 using PoolScraper.Persistency;
 using PoolScraper.Service.Consolidation;
 using PoolScraper.Service.Store;

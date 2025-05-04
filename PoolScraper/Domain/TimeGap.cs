@@ -1,4 +1,4 @@
-﻿namespace PoolScraper.Model
+﻿namespace PoolScraper.Domain
 {
     public class TimeGap
     {

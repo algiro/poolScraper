@@ -1,8 +1,8 @@
 ﻿using CommonUtils.Utils;
-using PoolScraper.Model.Consolidation;
+using PoolScraper.Domain.Consolidation;
 using PoolScraper.Model.PowerPool;
 
-namespace PoolScraper.Model
+namespace PoolScraper.Domain
 {
     public interface ISnapshotWorkerStatus
     {
@@ -98,7 +98,7 @@ namespace PoolScraper.Model
                             if (gapSize >= TimeSpan.FromSeconds(60))
                             {
                                 // Create the gap snapshot.
-                                var gapSnapshot = SnapshotWorkerStatus.Create(current.WorkerId, Granularity.Custom, DateRange.Create(gapFrom, gapTo), current.BasicInfo); // Copy the BasicInfo from the current snapshot
+                                var gapSnapshot = Create(current.WorkerId, Granularity.Custom, DateRange.Create(gapFrom, gapTo), current.BasicInfo); // Copy the BasicInfo from the current snapshot
                                 outputGroup.Add(gapSnapshot);
                             }
                         }
@@ -110,7 +110,7 @@ namespace PoolScraper.Model
                 var last = outputGroup.Last();
                 if (last.DateRange.To < globalMaxTo)
                 {
-                    var gapSnapshot = SnapshotWorkerStatus.Create(last.WorkerId, Granularity.Custom, DateRange.Create(last.DateRange.To, globalMaxTo), last.BasicInfo); // Copy the BasicInfo from the current snapshot
+                    var gapSnapshot = Create(last.WorkerId, Granularity.Custom, DateRange.Create(last.DateRange.To, globalMaxTo), last.BasicInfo); // Copy the BasicInfo from the current snapshot
                     outputGroup.Add(gapSnapshot);
                 }
 
@@ -158,7 +158,7 @@ namespace PoolScraper.Model
                     // accumulate the time from the previous checkpoint until now.
                     if (lastEventTime.HasValue && activeCount >= 2)
                     {
-                        totalOverlapDuration += (evt.Time - lastEventTime.Value);
+                        totalOverlapDuration += evt.Time - lastEventTime.Value;
                     }
 
                     activeCount += evt.Delta;

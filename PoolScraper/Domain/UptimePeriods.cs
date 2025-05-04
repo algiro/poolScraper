@@ -1,6 +1,6 @@
 ﻿using CommonUtils.Utils;
 
-namespace PoolScraper.Model
+namespace PoolScraper.Domain
 {
     public class UptimePeriods
     {

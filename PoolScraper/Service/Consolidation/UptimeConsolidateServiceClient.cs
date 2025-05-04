@@ -1,10 +1,9 @@
 ﻿
 using CommonUtils.Utils;
-using PoolScraper.Model.Consolidation;
-using PoolScraper.Model;
 using PoolScraper.Model.PowerPool;
 using PoolScraper.Service.Uptime;
 using PoolScraper.Persistency.Consolidation;
+using PoolScraper.Domain;
 
 namespace PoolScraper.Service.Consolidation
 {

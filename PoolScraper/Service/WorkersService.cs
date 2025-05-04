@@ -1,4 +1,5 @@
 ﻿using MongoDB.Driver;
+using PoolScraper.Domain;
 using PoolScraper.Model;
 using PoolScraper.Model.PowerPool;
 using PoolScraper.View;
@@ -7,7 +8,7 @@ namespace PoolScraper.Service
 {
     public class WorkersService : IWorkersService
     {
-        private readonly IMongoCollection<Worker> _workerCollection;
+        private readonly IMongoCollection<WorkerReadModel> _workerCollection;
         private readonly IMongoCollection<DisabledWorker> _disabledWorkerCollection;
 
         private readonly ILogger _log;
@@ -17,7 +18,7 @@ namespace PoolScraper.Service
             _log.LogInformation("PowerPoolService C.tor with connection string: {connectionString} and database name: {databaseName}", connectionString, databaseName);
             var client = new MongoClient(connectionString);
             var database = client.GetDatabase(databaseName);
-            _workerCollection = database.GetCollection<Worker>("workers");
+            _workerCollection = database.GetCollection<WorkerReadModel>("workers");
             _disabledWorkerCollection = database.GetCollection<DisabledWorker>("disabled_workers");
 
         }
@@ -47,7 +48,7 @@ namespace PoolScraper.Service
         {
             try
             {
-                var workers = await _workerCollection.Find<Worker>(_ => true).ToListAsync();
+                var workers = await _workerCollection.Find<WorkerReadModel>(_ => true).ToListAsync();
                 var disabledWorkers = await _disabledWorkerCollection.Find<DisabledWorker>(_ => true).ToListAsync();
 
                 _log.LogInformation("GetWorkers # {count} Disabled # {disabled}", workers.Count(),disabledWorkers.Count());

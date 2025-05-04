@@ -1,6 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using PoolScraper.Model;
+using System.Diagnostics.CodeAnalysis;
 
-namespace PoolScraper.Model
+namespace PoolScraper.Domain
 {
     public interface IWorkerId
     {
@@ -10,13 +11,14 @@ namespace PoolScraper.Model
 
     public static class WorkerId
     {
+        public static IWorkerId UNINITIALIZED = new WorkerIdImpl(string.Empty, 0);
         public static IWorkerId Create(string poolId, long workerId)
         {
             return new WorkerIdImpl(poolId, workerId);
         }
-        public static WorkerIdView AsWorkerIdView(this IWorkerId workerId)
+        public static WorkerIdReadModel AsWorkerIdView(this IWorkerId workerId)
         {
-            return new WorkerIdView(workerId.PoolId, workerId.Id);
+            return new WorkerIdReadModel(workerId.PoolId, workerId.Id);
         }
 
         private readonly struct WorkerIdImpl(string poolId, long workerId) : IWorkerId

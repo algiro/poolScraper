@@ -1,10 +1,11 @@
 ﻿using CommonUtils.Utils;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using MongoDB.Driver.Linq;
+using PoolScraper.Domain;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
-namespace PoolScraper.Model.Consolidation
+namespace PoolScraper.Domain.Consolidation
 {
     public enum Granularity
     {

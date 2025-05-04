@@ -2,9 +2,9 @@
 {
     public class PowerPoolUser
     {
-        public string Id { get; set; }
-        public string ApiKey { get; set; }
-        public Dictionary<string, MinerData> Miners { get; set; }
+        public string Id { get; set; } = string.Empty;
+        public string ApiKey { get; set; } = string.Empty;
+        public Dictionary<string, MinerData> Miners { get; set; } = new Dictionary<string, MinerData>();
         public DateTime FetchedAt { get; set; }
     }
 

@@ -1,4 +1,4 @@
-﻿using PoolScraper.Model;
+﻿using PoolScraper.Domain;
 using PoolScraper.Model.PowerPool;
 
 namespace PoolScraper.View
@@ -6,7 +6,7 @@ namespace PoolScraper.View
     public class WorkerDTO : IWorker
     {
         public string Algorithm { get; set; } = string.Empty;
-        public IWorkerId WorkerId { get; set; }
+        public IWorkerId WorkerId { get; set; } = Domain.WorkerId.UNINITIALIZED;
         public string Name { get; set; } = string.Empty;
         public bool IsDisabled { get; set; }
         public WorkerModel Model { get; set; }

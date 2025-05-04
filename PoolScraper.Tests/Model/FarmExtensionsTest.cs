@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
-using PoolScraper.Model;
-using PoolScraper.Model.Consolidation;
+using PoolScraper.Domain;
 using System;
 using System.Collections.Generic;
 using System.Linq;

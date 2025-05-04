@@ -1,6 +1,7 @@
 ﻿using CommonUtils.Utils;
 using log4net;
 using MongoDB.Driver;
+using PoolScraper.Domain;
 using PoolScraper.Model;
 using PoolScraper.Model.PowerPool;
 using PoolScraper.Persistency.Consolidation;

@@ -1,6 +1,7 @@
 ﻿@page "/scraping"
 @using CommonUtils.Utils
 @using PoolScraper.Components.Shared;
+@using PoolScraper.Domain
 @using PoolScraper.Model
 @using PoolScraper.Model.PowerPool
 @using PoolScraper.Model.Scheduler
@@ -83,7 +84,7 @@ else
 }
 
 @code {
-    private PowerPoolScraperInfo powerPoolScraperInfo;
+    private PowerPoolScraperInfo? powerPoolScraperInfo;
     private (IEnumerable<PowerPoolUser> data,IEnumerable<TimeGap> gaps) powerPoolUsersData = (Enumerable.Empty<PowerPoolUser>(),Enumerable.Empty<TimeGap>());
 
     protected override async Task OnInitializedAsync()

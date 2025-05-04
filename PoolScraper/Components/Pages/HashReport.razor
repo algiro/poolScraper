@@ -1,5 +1,6 @@
 ﻿@page "/hashReport"
 @using PoolScraper.Components.Shared
+@using PoolScraper.Domain
 @using PoolScraper.Model
 @using PoolScraper.Model.Scheduler
 @using PoolScraper.Service
@@ -54,7 +55,7 @@ else
 
 @code {
     private Modal modal = default!;
-    private IEnumerable<ISnapshotDetailedView> snapshotWorkers;
+    private IEnumerable<ISnapshotDetailedView> snapshotWorkers = Enumerable.Empty<ISnapshotDetailedView>();
     private DateOnly selectedDate;
     protected override async Task OnInitializedAsync()
     {

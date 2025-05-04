@@ -1,6 +1,6 @@
 ﻿using CommonUtils.Utils;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using PoolScraper.Model;
+using PoolScraper.Domain;
 using PoolScraper.Model.PowerPool;
 using PoolScraper.Model.Scheduler;
 using PoolScraper.View;

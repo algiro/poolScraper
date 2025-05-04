@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace PoolScraper.Model
+namespace PoolScraper.Domain
 {
     public enum Farm
     {
@@ -25,7 +25,7 @@ namespace PoolScraper.Model
             if (string.IsNullOrWhiteSpace(workerName))
                 return false;
 
-            string suffix = WorkerExtensions.GetWorkerSuffix(workerName);
+            var suffix = WorkerExtensions.GetWorkerSuffix(workerName);
             if (suffix == null)
                 return false;
 

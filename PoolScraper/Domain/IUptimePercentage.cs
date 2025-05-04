@@ -1,7 +1,8 @@
-﻿using PoolScraper.Model.Consolidation;
+﻿using PoolScraper.Domain.Consolidation;
+using PoolScraper.Model;
 using System.Diagnostics.CodeAnalysis;
 
-namespace PoolScraper.Model
+namespace PoolScraper.Domain
 {
     public interface IUptimePercentage
     {
@@ -15,9 +16,9 @@ namespace PoolScraper.Model
         {
             return new UptimePercentageImpl(workerId, dateRange, uptimePercentage);
         }
-        public static UptimePercentageView AsUptimePercentageView(this IUptimePercentage uptimePercentage,Granularity granularity)
+        public static UptimePercentageReadModel AsUptimePercentageView(this IUptimePercentage uptimePercentage,Granularity granularity)
         {
-            return new UptimePercentageView(granularity, uptimePercentage.WorkerId, uptimePercentage.DateRange, uptimePercentage.UptimePercentage);
+            return new UptimePercentageReadModel(granularity, uptimePercentage.WorkerId, uptimePercentage.DateRange, uptimePercentage.UptimePercentage);
         }
         private readonly struct UptimePercentageImpl(IWorkerId workerId, IDateRange dateRange, double uptimePercentage) : IUptimePercentage
         {

@@ -1,9 +1,9 @@
 ﻿using CommonUtils.Utils;
-using PoolScraper.Model.Consolidation;
+using PoolScraper.Domain.Consolidation;
 using PoolScraper.Model.PowerPool;
 using PoolScraper.Service.Store;
 
-namespace PoolScraper.Model
+namespace PoolScraper.Domain
 {
     public interface ISnapshotDetailedView : ISnapshotWorkerStatus
     {

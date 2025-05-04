@@ -1,5 +1,6 @@
 ﻿@page "/uptimeStats"
 @using PoolScraper.Components.Shared
+@using PoolScraper.Domain
 @using PoolScraper.Model
 @using PoolScraper.Model.Scheduler
 @using PoolScraper.Service
@@ -52,8 +53,8 @@ else
 
 @code {
     private Modal modal = default!;
-    private IEnumerable<IWorkerUptime> workersUptime;
-    private IEnumerable<IWorkerUptimeHistory> workerUptimeHistory;
+    private IEnumerable<IWorkerUptime> workersUptime = Enumerable.Empty<IWorkerUptime>();
+    private IEnumerable<IWorkerUptimeHistory> workerUptimeHistory = Enumerable.Empty<IWorkerUptimeHistory>();
     private double todayCoverage;
     private DateOnly selectedDate;
     protected override async Task OnInitializedAsync()
