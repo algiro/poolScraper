@@ -22,13 +22,14 @@ namespace PoolScraper.Persistency
         
         public async Task<IEnumerable<IWorker>> GetAllWorkerAsync()
         {
-            return await _workerCollection.Find(_ => true).SortBy(w => w.Id).ToListAsync<WorkerReadModel>();
+            var workersReadModel = await _workerCollection.Find(_ => true).SortBy(w => w.Id).ToListAsync<WorkerReadModel>();
+            return workersReadModel.Select(w => w.AsWorker());
         }
         public async Task<bool> InsertManyAsync(IEnumerable<IWorker> workers)
         {
             try
             {
-                await _workerCollection.InsertManyAsync(workers.AsWorkers());
+                await _workerCollection.InsertManyAsync(workers.AsWorkersReadModel());
                 return true;
             }
             catch (Exception ex)

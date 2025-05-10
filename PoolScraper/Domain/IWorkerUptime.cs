@@ -25,6 +25,15 @@
             public WorkerModel Model { get; } = worker.Model;
 
             public Farm FarmId { get; } = worker.FarmId;
+
+            public int CompareTo(object? obj)
+            {
+                if (obj is IWorkerUptime other)
+                {                 
+                    return WorkerId.CompareTo(other.WorkerId);
+                }
+                return 0;
+            }
         }
     }
 }

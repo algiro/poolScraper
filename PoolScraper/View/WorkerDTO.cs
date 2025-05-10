@@ -3,10 +3,10 @@ using PoolScraper.Model.PowerPool;
 
 namespace PoolScraper.View
 {
-    public class WorkerDTO : IWorker
+    public class WorkerDTO 
     {
         public string Algorithm { get; set; } = string.Empty;
-        public IWorkerId WorkerId { get; set; } = Domain.WorkerId.UNINITIALIZED;
+        public WorkerIdDTO WorkerId { get; set; } = Domain.WorkerId.UNINITIALIZED.AsWorkerIdDTO();
         public string Name { get; set; } = string.Empty;
         public bool IsDisabled { get; set; }
         public WorkerModel Model { get; set; }
@@ -22,7 +22,7 @@ namespace PoolScraper.View
             return new WorkerDTO
             {
                 Algorithm = worker.Algorithm,
-                WorkerId = worker.WorkerId,
+                WorkerId = worker.WorkerId.AsWorkerIdDTO(),
                 Name = worker.Name,
                 Model = worker.Model,
                 FarmId = worker.FarmId,

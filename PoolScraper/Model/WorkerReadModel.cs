@@ -3,7 +3,7 @@ using PoolScraper.Domain;
 
 namespace PoolScraper.Model
 {
-    public class WorkerReadModel : IWorker
+    public class WorkerReadModel
     {
         public WorkerReadModel(string poolId, string algorithm, long id, string name, WorkerModel model, Farm farm)
         {
@@ -20,7 +20,7 @@ namespace PoolScraper.Model
         }
         [JsonProperty("poolId")]
         public string PoolId { get; set; }
-        [JsonProperty("id")] 
+        [JsonProperty("id")]
         public long Id { get; set; }
         [JsonProperty("algorithm")]
         public string Algorithm { get; set; }
@@ -31,7 +31,8 @@ namespace PoolScraper.Model
         [JsonProperty("farmId")]
         public string FarmStr { get; set; }
         private WorkerModel? _model;
-        public WorkerModel Model { 
+        public WorkerModel Model
+        {
             get
             {
                 if (_model == null)
@@ -39,11 +40,11 @@ namespace PoolScraper.Model
                     _model = Enum.Parse<WorkerModel>(ModelStr);
                 }
                 return _model ?? WorkerModel.UNKNOWN;
-            } 
-            private set 
-            { 
+            }
+            private set
+            {
                 _model = value;
-            }             
+            }
         }
         private Farm? _farm;
         public Farm FarmId
@@ -79,6 +80,27 @@ namespace PoolScraper.Model
                        FarmId == other.FarmId;
             }
             return false;
+        }
+
+        public int CompareTo(object? obj)
+        {
+            if (obj is IWorker other)
+            {
+                return WorkerId.Id.CompareTo(other.WorkerId.Id);
+            }
+            throw new ArgumentException("Object is not a Worker");
+        }
+    }
+
+    public static class WorkerReadModelExtensions
+    {
+        public static IWorker AsWorker(this WorkerReadModel workerReadModel)
+        {
+            return Worker.Create(workerReadModel.PoolId, workerReadModel.Algorithm, workerReadModel.Id, workerReadModel.Name, workerReadModel.Model, workerReadModel.FarmId);
+        }
+        public static WorkerReadModel AsWorkerReadModel(this IWorker worker)
+        {
+            return new WorkerReadModel(worker.WorkerId.PoolId, worker.Algorithm, worker.WorkerId.Id, worker.Name, worker.Model, worker.FarmId);
         }
     }
 }

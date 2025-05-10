@@ -52,7 +52,7 @@ namespace PoolScraper.Service
                 var disabledWorkers = await _disabledWorkerCollection.Find<DisabledWorker>(_ => true).ToListAsync();
 
                 _log.LogInformation("GetWorkers # {count} Disabled # {disabled}", workers.Count(),disabledWorkers.Count());
-                return workers.Select(w => w.ToWorkerDTO(disabledWorkers));
+                return workers.Select(w => w.AsWorker().ToWorkerDTO(disabledWorkers));
             }
             catch (Exception ex)
             {

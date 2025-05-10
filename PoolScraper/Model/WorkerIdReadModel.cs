@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace PoolScraper.Model
 {
-    public class WorkerIdReadModel(string poolId, long id) : IWorkerId
+    public class WorkerIdReadModel(string poolId, long id)
     {
         public string PoolId { get; set; } = poolId;
         public long Id { get; set; } = id;
