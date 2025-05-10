@@ -14,12 +14,10 @@ namespace PoolScraper.Domain
     {
         public static ISnapshotDetailedView? AsSnapshotDetailedView(this ISnapshotWorkerStatus snapshotWorkerStatus, IWorker worker)
         {
-            Console.WriteLine("AsSnapshotDetailedView called identified worker:" + worker);
             return new SnapshotDetailedViewImpl(snapshotWorkerStatus, worker);
         }
         public static ISnapshotDetailedView? AsSnapshotDetailedView(this ISnapshotWorkerStatus snapshotWorkerStatus, IWorkerStore workerStore)
         {
-            Console.WriteLine("AsSnapshotDetailedView called for workerId:" + snapshotWorkerStatus.WorkerId + " looking into workerStore: " + workerStore);
             var worker = workerStore.GetById(snapshotWorkerStatus.WorkerId.Id);
             return worker != null ? snapshotWorkerStatus.AsSnapshotDetailedView(worker) : null;
         }

@@ -1,4 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
 using PoolScraper.Components;
+using PoolScraper.Domain.Consolidation;
 using PoolScraper.Persistency;
 using PoolScraper.Persistency.Consolidation;
 using PoolScraper.Service;
@@ -19,7 +21,10 @@ builder.Services.AddSingleton<IPowerPoolScrapingService, PowePoolScrapingService
 builder.Services.AddSingleton<IPowerPoolScrapingPersistency>((sp) => new PowerPoolScrapingPersistency(LoggerUtils.CreateLogger<PowerPoolScrapingPersistency>(), connectionString, databaseName));
 builder.Services.AddSingleton<IWorkersService>((sp) => new WorkersService(LoggerUtils.CreateLogger<PowePoolScrapingService>(), connectionString, databaseName));
 builder.Services.AddSingleton<IUptimeHourConsolidationPersistency>( (sp) => new UptimeHourConsolidationPersistency(LoggerUtils.CreateLogger<UptimeHourConsolidationPersistency>(), connectionString, databaseName));
-builder.Services.AddSingleton<ISnapshotHourConsolidationPersistency>((sp) => new SnapshotHourConsolidationPersistency(LoggerUtils.CreateLogger<SnapshotHourConsolidationPersistency>(), connectionString, databaseName));
+
+builder.Services.AddKeyedSingleton<ISnapshotConsolidationPersistency>("hourSnapConsolidation", (sp,name) => new SnapshotConsolidationPersistency(LoggerUtils.CreateLogger<SnapshotConsolidationPersistency>(), connectionString, databaseName,Granularity.Hours));
+builder.Services.AddKeyedSingleton<ISnapshotConsolidationPersistency>("daySnapConsolidation", (sp, name) => new SnapshotConsolidationPersistency(LoggerUtils.CreateLogger<SnapshotConsolidationPersistency>(), connectionString, databaseName, Granularity.Days));
+builder.Services.AddSingleton<ISnapshotDataConsolidationPersistency>((sp) => new SnapshotDataConsolidationPersistency(LoggerUtils.CreateLogger<SnapshotDataConsolidationPersistency>(), connectionString, databaseName, Granularity.Hours));
 
 builder.Services.AddSingleton<IUptimeConsolidateServiceClient, UptimeConsolidateServiceClient>();
 builder.Services.AddSingleton<IWorkerPersistency>( (sp) => new WorkerPersistency(LoggerUtils.CreateLogger<WorkerPersistency>(), connectionString, databaseName));
@@ -29,7 +34,7 @@ builder.Services.AddSingleton<IScrapingServiceClient, ScrapingServiceClient>();
 builder.Services.AddSingleton<IUptimeServiceClient, UptimeServiceClient>();
 builder.Services.AddSingleton<ISnapshotConsolidateServiceClient, SnapshotConsolidateServiceClient>();
 builder.Services.AddSingleton<IWorkersReportService, WorkersReportService>();
-builder.Services.AddSingleton<IWorkerStore, WorkerStore>();
+builder.Services.AddSingleton<IWorkerStore>((sp) => new WorkerStore(LoggerUtils.CreateLogger<WorkerStore>(),sp.GetService<IWorkerPersistency>()));
 
 builder.Services.AddHostedService<ScheduledService>();
 

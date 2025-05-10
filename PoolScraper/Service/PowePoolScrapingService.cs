@@ -52,26 +52,18 @@ namespace PoolScraper.Service
                 response.EnsureSuccessStatusCode();
 
                 var jsonContent = await response.Content.ReadAsStringAsync();
-                var userData = JsonConvert.DeserializeObject<Dictionary<string, MinerData>>(jsonContent);
-                if (userData != null)
+                var powerPoolData = PowerPoolUserExtension.Create(jsonContent, apiKey);
+                if (powerPoolData != null)
                 {
-                    // Create user document
-                    var userDocument = new PowerPoolUser
-                    {
-                        Id = ObjectId.GenerateNewId().ToString(),
-                        ApiKey = apiKey,
-                        Miners = userData,
-                        FetchedAt = DateTime.UtcNow
-                    };
-
                     // Create filter for upsert operation
                     var filter = Builders<PowerPoolUser>.Filter.Eq(u => u.ApiKey, apiKey);
 
-                    await _powerPoolScrapingPersistency.InsertAsync(userDocument);
-                    foreach (var minerData in userData.Values)
+                    await _powerPoolScrapingPersistency.InsertAsync(powerPoolData);
+                    foreach (var minerData in powerPoolData.Miners.Values)
                     {
-                        var workers = minerData.Workers.GetAllWorkerStatus().Select(w => WorkerExtensions.Create(PoolIDs.PowerPool, w.Algorithm, w.Id, w.Name)).OrderBy(w => w.WorkerId);
-                        bool areEqual = workers.SequenceEqual(_allWorkers);
+                        var workers = minerData.Workers.GetAllWorkerStatus().Select(w => Worker.Create(PoolIDs.PowerPool, w.Algorithm, w.Id, w.Name)).OrderBy(w => w.WorkerId);
+                        _log.LogInformation("Workers from current scraping count: {count}", workers.Count());
+                        bool areEqual = workers.ToList().SequenceEqual(_allWorkers);
                         if (!areEqual)
                         {
                             _log.LogInformation("Workers are not equal, inserting new workers");
@@ -87,18 +79,18 @@ namespace PoolScraper.Service
 
                     }
 
-                    _log.LogInformation("Data for API key {apiKey} stored successfully at {fetchedAt}", apiKey, userDocument.FetchedAt);
+                    _log.LogInformation("Data for API key {apiKey} stored successfully at {fetchedAt}", apiKey, powerPoolData.FetchedAt);
                 }
             }
             catch (HttpRequestException ex)
             {
-                _log.LogError("Error fetching data from PowerPool API: {message}", ex.Message);
-                throw new Exception($"Error fetching data from PowerPool API: {ex.Message}");
+                _log.LogError("Error fetching data from PowerPool API: {message} {stackTrace} ", ex.Message, ex.StackTrace);
+                throw new Exception($"Error fetching data from PowerPool API: {ex.Message} {ex.StackTrace}");
             }
             catch (Exception ex)
             {
-                _log.LogError("Error fetching data from PowerPool API: {message}", ex.Message);
-                throw new Exception($"Error storing data in MongoDB: {ex.Message}");
+                _log.LogError("Error fetching data from PowerPool API: {message} {stackTrace}", ex.Message, ex.StackTrace);
+                throw new Exception($"Error storing data in MongoDB: {ex.Message} {ex.StackTrace}");
             }
         }
         public async Task<double> GetTodayCoverageAsync()

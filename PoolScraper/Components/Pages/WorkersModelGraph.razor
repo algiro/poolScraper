@@ -1,0 +1,104 @@
+﻿@using PoolScraper.Domain
+<Modal @ref="modal" />
+
+<h3>WorkersModelGraph</h3>
+
+<div class="container-fluid overflow-x-auto">
+    <LineChart @ref="lineChart" Width="800" />
+</div>
+
+@code {
+    private Modal modal = default!;
+    private LineChart lineChart = default!;
+    private LineChartOptions lineChartOptions = default!;
+    private ChartData chartData = default!;
+
+    private int datasetsCount;
+    private int labelsCount;
+
+    private Random random = new();
+    [Parameter] public IEnumerable<ISnapshotDetailedView> workersModelData { get; set; }
+
+    protected override void OnInitialized()
+    {
+        chartData = new ChartData { Labels = GetDefaultDataLabels(), Datasets = GetDefaultDataSets() };
+        lineChartOptions = new()
+            {
+                IndexAxis = "x",
+                Interaction = new Interaction { Mode = InteractionMode.Index, Intersect = false },
+                Responsive = true,
+            };
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await lineChart.InitializeAsync(chartData, lineChartOptions);
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    #region Data Preparation
+
+    private List<IChartDataset> GetDefaultDataSets()
+    {
+        var datasets = new List<IChartDataset>();
+        foreach (var model in Enum.GetValues<WorkerModel>())
+        {
+            var dataSetForModel = workersModelData.Where(w => w.Worker.Model == model);
+            datasets.Add(GetLineChartDataset(model, dataSetForModel));
+        }
+
+        return datasets;
+    }
+
+    private LineChartDataset GetLineChartDataset(WorkerModel model, IEnumerable<ISnapshotDetailedView> snapData)
+    {
+        var c = ColorUtility.CategoricalTwelveColors[datasetsCount].ToColor();
+
+        datasetsCount += 1;
+
+        return new LineChartDataset
+            {
+                Label = $"{model.ToString()}",
+                Data = GetData(snapData),
+                BackgroundColor = c.ToRgbaString(),
+                BorderColor = c.ToRgbString(),
+                PointRadius = new List<double> { 5 },
+                PointHoverRadius = new List<double> { 8 },
+            };
+    }
+
+    private List<double?> GetData(IEnumerable<ISnapshotDetailedView> snapData)
+    {
+        var data = new List<double?>();
+        foreach (var snap in snapData)
+        {
+            data.Add(snap.BasicInfo.Hashrate);
+        }
+
+        return data;
+    }
+
+    private List<string> GetDefaultDataLabels()
+    {
+        var labels = new List<string>();
+        var dateRanges = workersModelData.Select(w => w.DateRange).Distinct();
+        foreach (var dateRange in dateRanges)
+        {
+            labels.Add(dateRange.From.ToString());
+        }
+
+        return labels;
+    }
+
+    private string GetNextDataLabel()
+    {
+        labelsCount += 1;
+        return $"Day {labelsCount}";
+    }
+
+    #endregion Data Preparation
+
+}

@@ -1,4 +1,8 @@
-﻿namespace PoolScraper.Model.PowerPool
+﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using MongoDB.Bson;
+using Newtonsoft.Json;
+
+namespace PoolScraper.Model.PowerPool
 {
     public class PowerPoolUser
     {
@@ -10,6 +14,24 @@
 
     public static class PowerPoolUserExtension
     {
+        public static PowerPoolUser? Create(string jsonContent, string apiKey)
+        {
+            var userData = JsonConvert.DeserializeObject<Dictionary<string, MinerData>>(jsonContent);
+            if (userData != null)
+            {
+                // Create user document
+                return  new PowerPoolUser
+                {
+                    Id = ObjectId.GenerateNewId().ToString(),
+                    ApiKey = apiKey,
+                    Miners = userData,
+                    FetchedAt = DateTime.UtcNow
+                };
+
+            }
+            return null;
+        }
+
         public static IEnumerable<AlgorithmWorkers> GetAllAlgoWorkers(this PowerPoolUser user) => user.Miners.Values.Select(m => m.Workers);
         
         public static int GetTotalWorkersCount(this PowerPoolUser user)

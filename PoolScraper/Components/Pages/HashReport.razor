@@ -1,10 +1,12 @@
 ﻿@page "/hashReport"
+@using CommonUtils.Utils
 @using PoolScraper.Components.Shared
 @using PoolScraper.Domain
 @using PoolScraper.Model
 @using PoolScraper.Model.Scheduler
 @using PoolScraper.Service
 @using PoolScraper.Service.Consolidation
+@using PoolScraper.View
 @attribute [StreamRendering]
 @rendermode InteractiveServer
 
@@ -14,20 +16,23 @@
 <PageTitle>Hashrate Info</PageTitle>
 
 <h1>Uptime Report</h1>
-<Modal @ref="modal" />
 
 <p>HashReport:</p>
-<div>
-    <DateSelection OnSearch="@GetDetails" />
+
+<div class="col-12 col-sm-12">
+    <DatePeriod OnSearch="@GetDetails" />
 </div>
 
+<Modal @ref="modal" title="Extra large modal" Fullscreen="ModalFullscreen.Always">
+	<WorkersGraph/>
+</Modal>
 @if (snapshotWorkers == null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-    <span> Workers Count: </span> <span> @snapshotWorkers.Count()  </span>
+    <span> Workers Count: </span> <span> @snapshotWorkersPerWorker.Count()  </span>
     <table class="table">
         <thead>
             <tr>
@@ -36,10 +41,11 @@ else
                 <th>Algo</th>
                 <th>FarmId</th>
                 <th>Hashrate</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var snapshotWorker in snapshotWorkers)
+            @foreach (var snapshotWorker in snapshotWorkersPerWorker)
             {
                 <tr>
                     <td>@snapshotWorker.Worker.Name</td>
@@ -47,27 +53,68 @@ else
                     <td>@snapshotWorker.Worker.Algorithm</td>
                     <td>@snapshotWorker.Worker.FarmId</td>
                     <td>@snapshotWorker.BasicInfo.Hashrate</td>
+                    <td> <Button Color="ButtonColor.Primary" @onclick="() => ShowGraph(snapshotWorker)">Graph</Button> </td>
+
                 </tr>
             }
         </tbody>
     </table>
+    <span> Model Count: </span> <span> @snapshotWorkersPerModel.Count()  </span> <span> <Button Color="ButtonColor.Primary" @onclick="() => ShowModelGraph()"> Graph </Button> </span>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Model</th>
+                <th>Algo</th>
+                <th>Hashrate</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var snapshotWorker in snapshotWorkersPerModel)
+            {
+                <tr>
+                    <td>@snapshotWorker.Worker.Model</td>
+                    <td>@snapshotWorker.Worker.Algorithm</td>
+                    <td>@snapshotWorker.BasicInfo.Hashrate</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
 }
 
 @code {
     private Modal modal = default!;
     private IEnumerable<ISnapshotDetailedView> snapshotWorkers = Enumerable.Empty<ISnapshotDetailedView>();
-    private DateOnly selectedDate;
+    private IEnumerable<ISnapshotDetailedView> snapshotWorkersPerWorker = Enumerable.Empty<ISnapshotDetailedView>();
+    private IEnumerable<ISnapshotDetailedView> snapshotWorkersPerModel = Enumerable.Empty<ISnapshotDetailedView>();
+    private IDateRange dateRange;
+	private WorkersReport workersReport = new WorkersReport();
     protected override async Task OnInitializedAsync()
     {
-        selectedDate = DateOnly.FromDateTime(DateTime.Now);
-        await GetDetails(selectedDate);
+        dateRange = DateOnly.FromDateTime(DateTime.Now).AsDateRange();
+        await GetDetails(dateRange);
     }
 
-    private async Task GetDetails(DateOnly date)
+    private async Task GetDetails(IDateRange dateRange)
     {
-        selectedDate = date;
-        snapshotWorkers = (await WorkerReportService.GetSnapshotDetailedViewsAsync(date.AsDateRange())).OrderBy(w => w.Worker.Model);
+        snapshotWorkers = (await WorkerReportService.GetSnapshotDetailedViewsAsync(dateRange)).OrderBy(w => w.Worker.Model);
+        snapshotWorkersPerWorker = workersReport.CalculateAveragePerWorker(snapshotWorkers);
+        snapshotWorkersPerModel = workersReport.CalculateAveragePerModel(snapshotWorkers);
+
 		StateHasChanged();
 	}
+    private async Task ShowGraph(ISnapshotDetailedView snapshotDetailedView)
+    {
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("workersData", snapshotWorkers.Where(s => s.WorkerId == snapshotDetailedView.WorkerId));
+        await modal.ShowAsync<WorkersGraph>(title: "Worker Graph", parameters: parameters);
+    }
 
+    private async Task ShowModelGraph()
+    {
+        var modelAndDate = workersReport.CalculateAveragePerModelAndDate(snapshotWorkers);
+        var parameters = new Dictionary<string, object>();       
+        parameters.Add("workersModelData", modelAndDate);
+        await modal.ShowAsync<WorkersModelGraph>(title: "Worker Graph", parameters: parameters);
+    }
 }

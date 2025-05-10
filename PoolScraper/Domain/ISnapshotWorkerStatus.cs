@@ -61,6 +61,8 @@ namespace PoolScraper.Domain
         {
             if (snapshots is null)
                 throw new ArgumentNullException(nameof(snapshots));
+            if (snapshots.IsEmpty())
+                return snapshots;
 
             // Find the global maximum "To" value across all snapshots.
             var globalMaxTo = snapshots.Max(s => s.DateRange.To);

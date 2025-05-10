@@ -16,6 +16,18 @@ namespace PoolScraper.Domain.Consolidation
         Months = 50,
         Custom = 60
     }
+    public static class GranularityHelper
+    {
+        public static Granularity Parse(string granularity)
+        {
+            if (Enum.TryParse<Granularity>(granularity, true, out var result))
+            {
+                return result;
+            }
+            throw new ArgumentException($"Invalid granularity: {granularity}");
+        }
+    }
+
     public static class ConsolidationGranularityExtension
     {
         delegate string GetIdDelegate(DateTime dateTime);
@@ -40,8 +52,17 @@ namespace PoolScraper.Domain.Consolidation
         public static int GetWeight(this Granularity granularity)
             => _granularityToIdMap[granularity].Weight;
 
-        private static DateTime GetDateTimeFromId(string id,string format)
-            =>  DateTime.ParseExact(id, format, CultureInfo.InvariantCulture, DateTimeStyles.None);
-        
+        private static DateTime GetDateTimeFromId(string id, string format)
+            => DateTime.ParseExact(id, format, CultureInfo.InvariantCulture, DateTimeStyles.None);
+
+        public static string GetDBCollectionName(this Granularity granularity)
+        {
+            return granularity switch
+            {
+                Granularity.Hours => "hourlySnapshotCollection",
+                Granularity.Days => "dailySnapshotCollection",
+                _ => throw new ArgumentOutOfRangeException(nameof(granularity), granularity, null)
+            };
+        }
     }
 }

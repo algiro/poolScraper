@@ -1,0 +1,103 @@
+﻿@using PoolScraper.Domain
+<Modal @ref="modal" />
+
+<h3>WorkersGraph</h3>
+
+<div class="container-fluid overflow-x-auto">
+    <LineChart @ref="lineChart" Width="800" />
+</div>
+
+@code {
+    private Modal modal = default!;
+    private LineChart lineChart = default!;
+    private LineChartOptions lineChartOptions = default!;
+    private ChartData chartData = default!;
+
+    private int datasetsCount;
+    private int labelsCount;
+
+    private Random random = new();
+    [Parameter] public IEnumerable<ISnapshotDetailedView> workersData { get; set; }
+
+    protected override void OnInitialized()
+    {
+        chartData = new ChartData { Labels = GetDefaultDataLabels(), Datasets = GetDefaultDataSets(1) };
+        lineChartOptions = new()
+            {
+                IndexAxis = "x",
+                Interaction = new Interaction { Mode = InteractionMode.Index, Intersect = false },
+                Responsive = true,
+            };
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await lineChart.InitializeAsync(chartData, lineChartOptions);
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    #region Data Preparation
+
+    private List<IChartDataset> GetDefaultDataSets(int numberOfDatasets)
+    {
+        var datasets = new List<IChartDataset>();
+
+        for (var index = 0; index < numberOfDatasets; index++)
+        {
+            datasets.Add(GetRandomLineChartDataset());
+        }
+
+        return datasets;
+    }
+
+    private LineChartDataset GetRandomLineChartDataset()
+    {
+        var c = ColorUtility.CategoricalTwelveColors[datasetsCount].ToColor();
+
+        datasetsCount += 1;
+
+        return new LineChartDataset
+            {
+                Label = $"Team {datasetsCount}",
+                Data = GetRandomData(),
+                BackgroundColor = c.ToRgbaString(),
+                BorderColor = c.ToRgbString(),
+                PointRadius = new List<double> { 5 },
+                PointHoverRadius = new List<double> { 8 },
+            };
+    }
+
+    private List<double?> GetRandomData()
+    {
+        var data = new List<double?>();
+        foreach (var snap in workersData)
+        {
+            data.Add(snap.BasicInfo.Hashrate);
+        }
+
+        return data;
+    }
+
+    private List<string> GetDefaultDataLabels()
+    {
+        var labels = new List<string>();
+        foreach (var snap in workersData)
+        {
+            labels.Add(snap.DateRange.From.ToString());
+        }
+
+        return labels;
+    }
+
+    private string GetNextDataLabel()
+    {
+        labelsCount += 1;
+        return $"Day {labelsCount}";
+    }
+
+    #endregion Data Preparation
+
+}

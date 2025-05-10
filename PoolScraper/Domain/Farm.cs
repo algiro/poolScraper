@@ -25,7 +25,7 @@ namespace PoolScraper.Domain
             if (string.IsNullOrWhiteSpace(workerName))
                 return false;
 
-            var suffix = WorkerExtensions.GetWorkerSuffix(workerName);
+            var suffix = Worker.GetWorkerSuffix(workerName);
             if (suffix == null)
                 return false;
 

@@ -26,6 +26,29 @@ namespace PoolScraper.Service
                 });
             return groupedByHourAndWorker;
         }
+        public IEnumerable<ISnapshotDetailedView> CalculateAveragePerModelAndDate(IEnumerable<ISnapshotDetailedView> snapshots)
+        {
+            var groupedByHourAndWorker = snapshots
+                .GroupBy(s => new { s.Worker.Model, s.DateRange })
+                .SelectNotNull(group =>
+                {
+                    double weightedHashRateTotal = group.Sum(x => x.Weight() * x.BasicInfo.Hashrate);
+                    double totalWeight = group.Sum(x => x.Weight());
+                    var representative = group.First();
+                    var workerGrouped = Worker.Create("","",0,group.Key.Model.ToString(), group.Key.Model,Farm.UNKNOWN);
+                    var baseDateFrom = group.Min(g => g.DateRange.From);
+                    var baseDateTo = group.Max(g => g.DateRange.To);
+                    var groupDateRange = DateRange.Create(baseDateFrom, baseDateTo);
+                    var snapshotAverage = SnapshotWorkerStatus.Create(
+                        WorkerId.UNINITIALIZED,
+                        Granularity.Custom,
+                        groupDateRange,
+                        WorkerBasicInfo.Create(weightedHashRateTotal / totalWeight, 0)
+                    );
+                    return snapshotAverage.AsSnapshotDetailedView(workerGrouped);
+                });
+            return groupedByHourAndWorker;
+        }
 
         private static ISnapshotDetailedView? CreateAverageSnapshot<T>(IGrouping<T, ISnapshotDetailedView> group)
         {

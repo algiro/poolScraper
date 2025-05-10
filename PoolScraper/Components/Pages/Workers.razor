@@ -46,7 +46,7 @@ else
                     <td>@worker.FarmId</td>
                     <td>@worker.WorkerId.Id</td>
                     <td>@worker.IsDisabled</td>
-                    <td> <Button Color="ButtonColor.Primary" @onclick="() => ToggleStatusAsync(worker.WorkerId)">Toggle</Button> </td>
+                    <td> <Button Color="ButtonColor.Primary" @onclick="() => ToggleStatusAsync(worker.WorkerId.AsWorkerId())">Toggle</Button> </td>
                 </tr>
             }
         </tbody>

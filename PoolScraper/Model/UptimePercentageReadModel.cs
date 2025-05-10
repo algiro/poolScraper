@@ -18,7 +18,7 @@ namespace PoolScraper.Model
     {
         public static IUptimePercentage AsUptimePercentage(this UptimePercentageReadModel uptimePercentageView)
         {
-            return UptimePercentage.Create(uptimePercentageView.WorkerId, uptimePercentageView.DateRange, uptimePercentageView.UptimePercentage);
+            return UptimePercentage.Create(uptimePercentageView.WorkerId.AsWorkerId(), uptimePercentageView.DateRange, uptimePercentageView.UptimePercentage);
         }
     }
 }
