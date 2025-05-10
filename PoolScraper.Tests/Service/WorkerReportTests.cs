@@ -17,7 +17,7 @@ namespace PoolScraper.Tests.Service
         public void CalculateAveragePerWorker_WithMultipleSnapshotsForOneWorker_ReturnsSingleSnapshotWithCorrectAverage()
         {
             // Arrange
-            var worker = WorkerExtensions.Create("pool1", "alg1", 1, "worker1");
+            var worker = Worker.Create("pool1", "alg1", 1, "worker1");
             var snapshots = new List<ISnapshotDetailedView> {
               CreateSnapshot(worker, 10, DateTime.Now.AddHours(-2), DateTime.Now.AddHours(-1)), // Hashrate 10, 1 hour
               CreateSnapshot(worker, 20, DateTime.Now.AddHours(-1), DateTime.Now),  // Hashrate 20, 1 hour
@@ -41,8 +41,8 @@ namespace PoolScraper.Tests.Service
         public void CalculateAveragePerWorker_WithMultipleWorkers_ReturnsCorrectAveragesForEachWorker()
         {
             // Arrange
-            var worker1 = WorkerExtensions.Create("pool1", "alg1", 1, "worker1");
-            var worker2 = WorkerExtensions.Create("pool1", "alg1", 2, "worker2");
+            var worker1 = Worker.Create("pool1", "alg1", 1, "worker1");
+            var worker2 = Worker.Create("pool1", "alg1", 2, "worker2");
 
             var snapshots = new List<ISnapshotDetailedView> {
                 CreateSnapshot(worker1, 10, DateTime.Now.AddHours(-1), DateTime.Now),
@@ -85,7 +85,7 @@ namespace PoolScraper.Tests.Service
         public void CalculateAveragePerWorker_WithSnapshotHavingZeroWeight_ReturnsValidAverage()
         {
             // Arrange
-            var worker = WorkerExtensions.Create("pool1", "alg1", 1, "worker1");
+            var worker = Worker.Create("pool1", "alg1", 1, "worker1");
             var snapshots = new List<ISnapshotDetailedView> {
               CreateSnapshot(worker, 10, DateTime.Now.AddHours(-1), DateTime.Now), // 1 hour
               CreateSnapshot(worker, 20, DateTime.Now, DateTime.Now),  // 0 hour
@@ -109,9 +109,9 @@ namespace PoolScraper.Tests.Service
         public void CalculateAveragePerModel_WithMultipleWorkers_ReturnsCorrectAveragesForEachWorker()
         {
             // Arrange
-            var worker1 = WorkerExtensions.Create("pool1", "alg1", 1, "tmsminer007.8mrs21216");
-            var worker2 = WorkerExtensions.Create("pool1", "alg1", 2, "tmsminer007.4l79300");
-            var worker3 = WorkerExtensions.Create("pool1", "alg1", 2, "tmsminer007.9l79300");
+            var worker1 = Worker.Create("pool1", "alg1", 1, "tmsminer007.8mrs21216");
+            var worker2 = Worker.Create("pool1", "alg1", 2, "tmsminer007.4l79300");
+            var worker3 = Worker.Create("pool1", "alg1", 2, "tmsminer007.9l79300");
 
             var snapshots = new List<ISnapshotDetailedView> {
                 CreateSnapshot(worker1, 10, DateTime.Now.AddHours(-1), DateTime.Now),
@@ -146,7 +146,12 @@ namespace PoolScraper.Tests.Service
             var dateRange = DateRange.Create(from, to);
             var basicInfo = WorkerBasicInfo.Create(hashrate, 0);
             var snapshotStatus = SnapshotWorkerStatus.Create(workerId, Granularity.Custom, dateRange, basicInfo);
-            return SnapshotDetailedView.AsSnapshotDetailedView(snapshotStatus, worker);
+            var detailView = SnapshotDetailedView.AsSnapshotDetailedView(snapshotStatus, worker);
+            if (detailView == null)
+            {
+                throw new InvalidOperationException("Failed to create ISnapshotDetailedView");
+            }
+            return detailView;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using PoolScraper.Domain;
+﻿using FluentAssertions;
+using PoolScraper.Domain;
 using PoolScraper.Domain.Consolidation;
 using System;
 using System.Collections.Generic;
@@ -21,8 +22,8 @@ namespace PoolScraper.Tests.Consolidation
         public void GetId_And_GetWeight_Return_Expected_For_Common_Granularities(Granularity granularity, string expectedId, int expectedWeight)
         {
             var id = granularity.GetId(_testDateTime);
-            Assert.AreEqual(expectedId, id, $"GetId for {granularity}");
-            Assert.AreEqual(expectedWeight, granularity.GetWeight(), $"GetWeight for {granularity}");
+            expectedId.Should().Be(id, $"GetId for {granularity}");
+            expectedWeight.Should().Be(granularity.GetWeight(), $"GetWeight for {granularity}");
         }
 
         [Test]
@@ -39,7 +40,7 @@ namespace PoolScraper.Tests.Consolidation
             {
                 var idDirect = granularity.GetId(expectedMiddle);
                 var idViaRange = granularity.GetId(range);
-                Assert.AreEqual(idDirect, idViaRange, $"GetId with DateRange should match GetId with middle DateTime for {granularity}");
+                idDirect.Should().Be(idViaRange, $"GetId with DateRange should match GetId with middle DateTime for {granularity}");
             }
         }
 
@@ -51,7 +52,7 @@ namespace PoolScraper.Tests.Consolidation
         {
             var dt = granularity.GetDateTime(id);
             var expectedDt = DateTime.ParseExact(expectedDate, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
-            Assert.AreEqual(expectedDt, dt, $"GetDateTime for {granularity}");
+            expectedDt.Should().Be(dt, $"GetDateTime for {granularity}");
         }
 
         [Test]
@@ -60,14 +61,12 @@ namespace PoolScraper.Tests.Consolidation
             var weekNumber = ISOWeek.GetWeekOfYear(_testDateTime);
             var expectedId = $"{_testDateTime.Year}.{weekNumber}";
             var id = Granularity.Weeks.GetId(_testDateTime);
-            Assert.AreEqual(expectedId, id, "GetId for Weeks granularity");
-
-            // Parsing expects "yyyy.ww"--may need zero-padded week number for parsing.
+            expectedId.Should().Be(id, "GetId for Weeks granularity"); // Parsing expects "yyyy.ww"--may need zero-padded week number for parsing.
             string weekIdFormatted = $"{_testDateTime.Year}.{weekNumber:D2}";
             try
             {
                 var dt = Granularity.Weeks.GetDateTime(weekIdFormatted);
-                Assert.AreEqual(new DateTime(2023, 4, 24, 0, 0, 0), dt, "Parsed week start date for week id");
+                new DateTime(2023, 4, 24, 0, 0, 0).Should().Be(dt, "Parsed week start date for week id");
             }
             catch (FormatException)
             {
@@ -80,12 +79,12 @@ namespace PoolScraper.Tests.Consolidation
         {
             var expectedId = $"{_testDateTime.Year}.{_testDateTime.Month}";
             var id = Granularity.Months.GetId(_testDateTime);
-            Assert.AreEqual(expectedId, id, "GetId for Months granularity");
+            expectedId.Should().Be(id, "GetId for Months granularity");
 
             // Parsing expects "yyyy.MM"--needs zero-padded month for parsing.
             string monthIdFormatted = $"{_testDateTime.Year}.{_testDateTime.Month:D2}";
             var dt = Granularity.Months.GetDateTime(monthIdFormatted);
-            Assert.AreEqual(new DateTime(2023, 4, 1, 0, 0, 0), dt, "Parsed month start date");
+            new DateTime(2023, 4, 1, 0, 0, 0).Should().Be(dt, "Parsed month start date");
         }
 
         [Test]
@@ -96,7 +95,7 @@ namespace PoolScraper.Tests.Consolidation
             var range = Create(from, to);
             var expectedMiddle = from.AddMinutes(((to - from).TotalMinutes) / 2);
 
-            Assert.AreEqual(expectedMiddle, range.MiddleDateTime());
+            expectedMiddle.Should().Be(range.MiddleDateTime());
         }
     }
 }
