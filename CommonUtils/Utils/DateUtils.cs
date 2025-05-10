@@ -259,7 +259,14 @@ public static class DateUtils
     public static DateTime ToMidnightDateTime(this DateOnly dateOnly) => dateOnly.ToDateTime(MIDNIGHT, DateTimeKind.Utc);
     public static DateTime GetBeginOfDay(this DateOnly dateOnly) => dateOnly.ToMidnightDateTime();
     public static DateTime GetEndOfDay(this DateOnly dateOnly) => dateOnly.ToDateTime(LAST_MOMENT_OF_A_DAY,DateTimeKind.Utc);
+    public static DateTime GetBeginOfDay(this DateTime dateTime) => DateOnly.FromDateTime(dateTime).ToMidnightDateTime();
+    public static DateTime GetEndOfDay(this DateTime dateTime) => DateOnly.FromDateTime(dateTime).ToDateTime(LAST_MOMENT_OF_A_DAY, DateTimeKind.Utc);
 
+    public static DateTime GetBeginOfWeek(this DateTime dt, DayOfWeek startOfWeek = DayOfWeek.Monday)
+    {
+        int diff = (7 + (dt.DayOfWeek - startOfWeek)) % 7;
+        return dt.AddDays(-1 * diff).Date;
+    }
     public static int DaysToNow(this DateTime date) => DaysToNow(date.ToDateOnly());
     public static int DaysToNow(this DateOnly date) => DaysDiff(date, DateOnly.FromDateTime(TimeProvider.Current.UtcNow));
 
