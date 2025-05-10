@@ -7,6 +7,7 @@
 @using PoolScraper.Model.Scheduler
 @using PoolScraper.Service
 @using PoolScraper.Service.Consolidation
+@using PoolScraper.View
 
 @attribute [StreamRendering]
 @rendermode InteractiveServer
@@ -17,12 +18,14 @@
 
 <PageTitle>Admin Page</PageTitle>
 
-<div class="col-1 col-sm-1">
-    <Button Color="ButtonColor.Primary" @onclick="Consolidate">Consolidate</Button>
+<div class="col-12 col-sm-12">
+    <DatePeriod OnSearch="@ConfirmRange" />
+    <Button Color="ButtonColor.Primary" @onclick="ConsolidateDays">ConsolidateDays</Button>
 </div>
 
 <div>
     <DateSelection OnSearch="@GetDetails" />
+    <Button Color="ButtonColor.Primary" @onclick="Consolidate">Consolidate</Button>
 </div>
 
 @if (uptimePercentages == null)
@@ -124,6 +127,12 @@ else
         uptimePercentages = await ServiceClient.GetHourlyUptimeAsync(selectedDate);
         snapshotHourlyStatus = await SnapshotConsolidateServiceClient.GetHourlySnapshotAsync(selectedDate.AsDateRange());
     }
+    private IDateRange? dateRange;
+    private async Task ConfirmRange(IDateRange dateRange)
+    {
+        this.dateRange = dateRange;
+    }
+
     private async Task GetWorkerDayDetails()
     {
         if (workerId != null)
@@ -135,6 +144,14 @@ else
     }
     private async Task Consolidate()
     {
-        await SnapshotConsolidateServiceClient.Consolidate(selectedDate);
+        await SnapshotConsolidateServiceClient.ConsolidateHours(selectedDate);
+    }
+
+    private async Task ConsolidateDays()
+    {
+        if (dateRange != null)
+        {
+            await SnapshotConsolidateServiceClient.ConsolidateDays(dateRange);
+        }
     }
 }
