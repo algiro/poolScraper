@@ -22,6 +22,11 @@ namespace PoolScraper.Domain
             => dateRange.From.AddMinutes((dateRange.To - dateRange.From).TotalMinutes / 2);
         
         public static IDateRange AsDateRange(this DateOnly dateOnly) => Create(dateOnly.GetBeginOfDay(), dateOnly.GetEndOfDay());
+
+        public static bool IsSameDateRange(this IDateRange dateRange1, IDateRange dateRange2)
+            => dateRange1.From.Date == dateRange2.From.Date && dateRange1.To.Date == dateRange2.To.Date;
+
+
         private readonly struct DateRangeImpl(DateTime from, DateTime to) : IDateRange
         {
             public DateTime From { get; } = from;

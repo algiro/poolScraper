@@ -7,7 +7,8 @@ namespace PoolScraper.Service.Consolidation
 {
     public interface ISnapshotConsolidateServiceClient
     {
-        Task Consolidate(DateOnly date);
+        Task ConsolidateHours(DateOnly date);
+        Task ConsolidateDays(IDateRange dateRange);
         Task<IEnumerable<ISnapshotWorkerStatus>> GetHourlySnapshotAsync(IDateRange dateRange);
     }
 }
