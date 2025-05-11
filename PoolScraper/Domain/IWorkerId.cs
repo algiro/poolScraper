@@ -17,7 +17,7 @@ namespace PoolScraper.Domain
         {
             return new WorkerIdImpl(poolId, workerId);
         }
-        public static WorkerIdReadModel AsWorkerIdView(this IWorkerId workerId)
+        public static WorkerIdReadModel AsWorkerIdReadModel(this IWorkerId workerId)
         {
             return new WorkerIdReadModel(workerId.PoolId, workerId.Id);
         }
@@ -25,7 +25,7 @@ namespace PoolScraper.Domain
         {
             return new WorkerIdDTO(workerId.PoolId, workerId.Id);
         }
-        private readonly struct WorkerIdImpl(string poolId, long workerId) : IWorkerId
+        private class WorkerIdImpl(string poolId, long workerId) : IWorkerId
         {
             public string PoolId { get; } = poolId;
             public long Id { get; } = workerId;
@@ -36,7 +36,7 @@ namespace PoolScraper.Domain
             }
             public override bool Equals([NotNullWhen(true)] object? obj)
             {
-                if (obj is WorkerIdImpl other)
+                if (obj is IWorkerId other)
                 {
                     return PoolId == other.PoolId && Id == other.Id;
                 }

@@ -63,33 +63,5 @@ namespace PoolScraper.Service
             }
             return gaps;
         }
-        public async Task<IEnumerable<WorkerDTO>> GetWorkersAsync()
-        {
-            try
-            {
-                var workers = await workerService.GetWorkersAsync();
-                logger.LogInformation("GetWorkers # {count}", workers.Count());
-                return workers;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Error fetching workers data : {message}", ex.Message);
-            }
-            return Enumerable.Empty<WorkerDTO>();
-        }
-        public async Task<bool> ToggleEnableWorkerAsync(IWorkerId workerId)
-        {
-            try
-            {
-                var done = await workerService.ToggleEnableWorkerAsync(workerId);
-                logger.LogInformation("ToggleEnableWorkerAsync status {done}", done);
-                return done;
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Error ToggleEnableWorkerAsync on {workerId}: {message}", workerId, ex.Message);
-                return false;
-            }
-        }
     }
 }

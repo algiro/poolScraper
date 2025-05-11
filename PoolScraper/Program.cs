@@ -19,7 +19,7 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddBlazorBootstrap();
 builder.Services.AddSingleton<IPowerPoolScrapingService, PowePoolScrapingService>();
 builder.Services.AddSingleton<IPowerPoolScrapingPersistency>((sp) => new PowerPoolScrapingPersistency(LoggerUtils.CreateLogger<PowerPoolScrapingPersistency>(), connectionString, databaseName));
-builder.Services.AddSingleton<IWorkersService>((sp) => new WorkersService(LoggerUtils.CreateLogger<PowePoolScrapingService>(), connectionString, databaseName));
+builder.Services.AddSingleton<IWorkersService,WorkersService>();
 builder.Services.AddSingleton<IUptimeHourConsolidationPersistency>( (sp) => new UptimeHourConsolidationPersistency(LoggerUtils.CreateLogger<UptimeHourConsolidationPersistency>(), connectionString, databaseName));
 
 builder.Services.AddKeyedSingleton<ISnapshotConsolidationPersistency>("hourSnapConsolidation", (sp,name) => new SnapshotConsolidationPersistency(LoggerUtils.CreateLogger<SnapshotConsolidationPersistency>(), connectionString, databaseName,Granularity.Hours));

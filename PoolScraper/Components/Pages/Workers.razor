@@ -9,7 +9,7 @@
 @attribute [StreamRendering]
 @rendermode InteractiveServer
 
-@inject IScrapingServiceClient ServiceClient
+@inject IWorkersService WorkerService
 
 <PageTitle>Scraping Info</PageTitle>
 
@@ -51,6 +51,7 @@ else
             }
         </tbody>
     </table>
+    <Button Color="ButtonColor.Danger" @onclick="() => RemoveAllWorkersAsync()">Remove All</Button>
 }
 
 @code {
@@ -58,18 +59,29 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        workers = new ObservableCollection<WorkerDTO>(await ServiceClient.GetWorkersAsync());
+        workers = new ObservableCollection<WorkerDTO>(await WorkerService.GetWorkersAsync());
     }
 
     private async Task<bool> ToggleStatusAsync(IWorkerId workerId)
     {
-        var status = await ServiceClient.ToggleEnableWorkerAsync(workerId);
+        Console.Out.WriteLine($"ToggleStatusAsync on {workerId.PoolId}.{workerId.Id}");
+        var status = await WorkerService.ToggleEnableWorkerAsync(workerId);
         if (status)
         {
-            var worker = workers.Single(w => w.WorkerId == workerId);
-            Console.Out.WriteLine($"Worker {worker.Name} status is {worker.IsDisabled}");
+            var worker = workers.Single(w => w.WorkerId.AsWorkerId().Equals(workerId));
             worker.IsDisabled = !worker.IsDisabled;
-			Console.Out.WriteLine($"Worker {worker.Name} status changed to {worker.IsDisabled}");
+            Console.Out.WriteLine($"Worker {worker.Name} status changed to {worker.IsDisabled}");
+        }
+        return status;
+    }
+
+    private async Task<bool> RemoveAllWorkersAsync()
+    {
+        var status = await WorkerService.RemoveAllWorkerAsync();
+        if (status)
+        {
+            workers.Clear();
+            Console.Out.WriteLine($"All workers removed");
         }
         return status;
     }

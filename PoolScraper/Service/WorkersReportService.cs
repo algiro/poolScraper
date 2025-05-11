@@ -24,7 +24,7 @@ namespace PoolScraper.Service
             try
             {
                 logger.LogInformation("GetSnapshotDetailedViewsAsync called with date range: {dateRange}", dateRange);
-                await workerStore.LoadAllWorkerAsync();
+                await workerStore.LoadAllWorkerAsync(excludeDisabled:true);
                 var yesterdayEndOfDay = DateOnly.FromDateTime(DateTime.Now.AddDays(-1)).GetEndOfDay();
 
                 var todayNow = DateTime.Now;

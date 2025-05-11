@@ -9,7 +9,7 @@ namespace PoolScraper.Model
         [BsonId]
         public string Id { get; } = snapshotWorkerStatus.Id;
         public Granularity Granularity { get; set; } = snapshotWorkerStatus.Granularity;
-        public WorkerIdReadModel WorkerId { get; set; } = snapshotWorkerStatus.WorkerId.AsWorkerIdView();
+        public WorkerIdReadModel WorkerId { get; set; } = snapshotWorkerStatus.WorkerId.AsWorkerIdReadModel();
         public DateRangeReadModel DateRange { get; set; } = snapshotWorkerStatus.DateRange.AsDateRangeView();
         public WorkerBasicInfoReadModel BasicInfo { get; set; } = snapshotWorkerStatus.BasicInfo.AsWorkerBasicInfoView();
     }

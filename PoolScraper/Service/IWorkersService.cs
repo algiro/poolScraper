@@ -8,5 +8,6 @@ namespace PoolScraper.Service
     {
         Task<IEnumerable<WorkerDTO>> GetWorkersAsync();
         Task<bool> ToggleEnableWorkerAsync(IWorkerId workerId);
+        Task<bool> RemoveAllWorkerAsync();
     }
 }

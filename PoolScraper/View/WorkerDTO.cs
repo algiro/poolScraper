@@ -1,5 +1,4 @@
 ﻿using PoolScraper.Domain;
-using PoolScraper.Model.PowerPool;
 
 namespace PoolScraper.View
 {
@@ -16,7 +15,7 @@ namespace PoolScraper.View
     public static class WorkerDTOExtensions
     {
         public static WorkerDTO ToWorkerDTO(this IWorker worker, IEnumerable<IDisabledWorker> disabledWorkers)
-            => ToWorkerDTO(worker, disabledWorkers.Any(dw => dw.PoolId == worker.WorkerId.PoolId && dw.Id == worker.WorkerId.Id));
+            => ToWorkerDTO(worker, disabledWorkers.Any(dw => dw.WorkerId.Equals(worker.WorkerId)));
         public static WorkerDTO ToWorkerDTO(this IWorker worker, bool isDisabled)
         {
             return new WorkerDTO

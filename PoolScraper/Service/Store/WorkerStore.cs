@@ -6,6 +6,7 @@ namespace PoolScraper.Service.Store
     public class WorkerStore(ILogger logger, IWorkerPersistency workerPersistency) : IWorkerStore
     {
         private IEnumerable<IWorker> _allWorkers = Enumerable.Empty<IWorker>();
+        private IEnumerable<IDisabledWorker> _disabledWorkers = Enumerable.Empty<IDisabledWorker>();
         public IEnumerable<IWorker> GetAllWorker() => _allWorkers;
 
         public WorkerStore(ILogger logger, IEnumerable<IWorker> workers) : this (logger, (IWorkerPersistency) null)
@@ -13,15 +14,22 @@ namespace PoolScraper.Service.Store
             _allWorkers = workers;
         }
 
-        public async Task<IEnumerable<IWorker>> LoadAllWorkerAsync()
+        public async Task<IEnumerable<IWorker>> LoadAllWorkerAsync(bool excludeDisabled=true)
         {
             logger.LogInformation("GetAllWorkerAsync called");
             _allWorkers = (await workerPersistency.GetAllWorkerAsync()).ToList();
-            logger.LogInformation("GetAllWorkerAsync called, workers count: {count}", _allWorkers.Count());
+            _disabledWorkers = (await workerPersistency.GetDisabledWorkersAsync()).ToList();
+            logger.LogInformation("GetAllWorkerAsync called, workers count: {count}, excluded: {disabledWorkersCount}", _allWorkers.Count(), _disabledWorkers.Count());
+
+            if (excludeDisabled)
+            {
+                _allWorkers = _allWorkers.Where(w => !_disabledWorkers.Any(dw => dw.WorkerId == w.WorkerId)).ToList();
+            }
+            logger.LogInformation("GetAllWorkerAsync called, final workers count: {count}", _allWorkers.Count());
             return _allWorkers;
         }
 
-        public IWorker? GetById(long id)
+        public (IWorker? worker,bool isDisabled) GetById(long id)
         {
             try
             {
@@ -30,7 +38,7 @@ namespace PoolScraper.Service.Store
                 {
                     logger.LogWarning("Worker not found fetching from allWorkers#: {workerStore} worker by id: {id}", _allWorkers.Count(), id);
                 }
-                return worker;
+                return (worker,_disabledWorkers.Any(d=> d.WorkerId.Id == id));
             }
             catch (Exception ex)
             {
@@ -39,7 +47,7 @@ namespace PoolScraper.Service.Store
                 {
                     logger.LogError("Worker: {worker}", worker.ToString());
                 }
-                return null;
+                return (null,true);
             }
         }
         public IEnumerable<IWorker> GetWorkerByAlgo(string algo) => _allWorkers.Where(w => w.Algorithm == algo);
