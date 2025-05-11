@@ -37,7 +37,7 @@ namespace PoolScraper.Model
             {
                 if (_model == null)
                 {
-                    _model = Enum.Parse<WorkerModel>(ModelStr);
+                    _model = (ModelStr != null) ? Enum.Parse<WorkerModel>(ModelStr) : WorkerModel.UNKNOWN;
                 }
                 return _model ?? WorkerModel.UNKNOWN;
             }
@@ -53,7 +53,7 @@ namespace PoolScraper.Model
             {
                 if (_farm == null)
                 {
-                    _farm = Enum.Parse<Farm>(FarmStr);
+                    _farm = (FarmStr != null) ? Enum.Parse<Farm>(FarmStr) : Farm.UNKNOWN;
                 }
                 return _farm ?? Farm.UNKNOWN;
             }

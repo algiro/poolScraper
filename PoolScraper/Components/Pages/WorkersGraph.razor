@@ -4,7 +4,7 @@
 <h3>WorkersGraph</h3>
 
 <div class="container-fluid overflow-x-auto">
-    <LineChart @ref="lineChart" Width="800" />
+    <LineChart @ref="lineChart" WidthUnit=Unit.Percentage Width="90" />
 </div>
 
 @code {
@@ -15,12 +15,13 @@
 
     private int datasetsCount;
     private int labelsCount;
-
+    private IWorker worker = default!;
     private Random random = new();
     [Parameter] public IEnumerable<ISnapshotDetailedView> workersData { get; set; }
 
     protected override void OnInitialized()
     {
+        worker = workersData.FirstOrDefault().Worker;
         chartData = new ChartData { Labels = GetDefaultDataLabels(), Datasets = GetDefaultDataSets(1) };
         lineChartOptions = new()
             {
@@ -61,7 +62,7 @@
 
         return new LineChartDataset
             {
-                Label = $"Team {datasetsCount}",
+                Label = $"{worker.Name} Algo:{worker.Algorithm} Model: {worker.Model} Farm:{worker.FarmId}",
                 Data = GetRandomData(),
                 BackgroundColor = c.ToRgbaString(),
                 BorderColor = c.ToRgbString(),
@@ -86,7 +87,7 @@
         var labels = new List<string>();
         foreach (var snap in workersData)
         {
-            labels.Add(snap.DateRange.From.ToString());
+            labels.Add(snap.DateRange.From.ToString("yyyy-MM-dd"));
         }
 
         return labels;

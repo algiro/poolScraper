@@ -23,7 +23,7 @@
     <DatePeriod OnSearch="@GetDetails" />
 </div>
 
-<Modal @ref="modal" title="Extra large modal" Fullscreen="ModalFullscreen.Always">
+<Modal @ref="modal" title="Line Chart Graph" Fullscreen="ModalFullscreen.Always">
 	<WorkersGraph/>
 </Modal>
 @if (snapshotWorkers == null)
@@ -32,54 +32,65 @@
 }
 else
 {
-    <span> Workers Count: </span> <span> @snapshotWorkersPerWorker.Count()  </span>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Model</th>
-                <th>Algo</th>
-                <th>FarmId</th>
-                <th>Hashrate</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var snapshotWorker in snapshotWorkersPerWorker)
-            {
-                <tr>
-                    <td>@snapshotWorker.Worker.Name</td>
-                    <td>@snapshotWorker.Worker.Model</td>
-                    <td>@snapshotWorker.Worker.Algorithm</td>
-                    <td>@snapshotWorker.Worker.FarmId</td>
-                    <td>@snapshotWorker.BasicInfo.Hashrate</td>
-                    <td> <Button Color="ButtonColor.Primary" @onclick="() => ShowGraph(snapshotWorker)">Graph</Button> </td>
+    <Tabs>
+        <Tab Title="Workers" Active="true">
+            <Content>
+                <span> Workers Count: </span> <span> @snapshotWorkersPerWorker.Count()  </span>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Model</th>
+                            <th>Algo</th>
+                            <th>FarmId</th>
+                            <th>Hashrate</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var snapshotWorker in snapshotWorkersPerWorker)
+                        {
+                            <tr>
+                                <td>@snapshotWorker.Worker.Name</td>
+                                <td>@snapshotWorker.Worker.Model</td>
+                                <td>@snapshotWorker.Worker.Algorithm</td>
+                                <td>@snapshotWorker.Worker.FarmId</td>
+                                <td>@snapshotWorker.BasicInfo.Hashrate</td>
+                                <td> <Button Color="ButtonColor.Primary" @onclick="() => ShowGraph(snapshotWorker)">Graph</Button> </td>
 
-                </tr>
-            }
-        </tbody>
-    </table>
-    <span> Model Count: </span> <span> @snapshotWorkersPerModel.Count()  </span> <span> <Button Color="ButtonColor.Primary" @onclick="() => ShowModelGraph()"> Graph </Button> </span>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Model</th>
-                <th>Algo</th>
-                <th>Hashrate</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var snapshotWorker in snapshotWorkersPerModel)
-            {
-                <tr>
-                    <td>@snapshotWorker.Worker.Model</td>
-                    <td>@snapshotWorker.Worker.Algorithm</td>
-                    <td>@snapshotWorker.BasicInfo.Hashrate</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </Content>
+        </Tab>
+        <Tab Title="Models">
+            <Content>
 
+                <span> Model Count: </span> <span> @snapshotWorkersPerModel.Count()  </span> <span> <Button Color="ButtonColor.Primary" @onclick="() => ShowModelGraph()"> Graph </Button> </span>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th>Algo</th>
+                            <th>Hashrate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var snapshotWorker in snapshotWorkersPerModel)
+                        {
+                            <tr>
+                                <td>@snapshotWorker.Worker.Model</td>
+                                <td>@snapshotWorker.Worker.Algorithm</td>
+                                <td>@snapshotWorker.BasicInfo.Hashrate</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </Content>
+	    </Tab>
+
+    </Tabs>
 }
 
 @code {
@@ -91,7 +102,7 @@ else
 	private WorkersReport workersReport = new WorkersReport();
     protected override async Task OnInitializedAsync()
     {
-        dateRange = DateOnly.FromDateTime(DateTime.Now).AsDateRange();
+        dateRange = DateOnly.FromDateTime(DateTime.Now.AddDays(-1)).AsDateRange();
         await GetDetails(dateRange);
     }
 

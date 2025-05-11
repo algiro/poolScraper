@@ -4,7 +4,7 @@
 <h3>WorkersModelGraph</h3>
 
 <div class="container-fluid overflow-x-auto">
-    <LineChart @ref="lineChart" Width="800" />
+    <LineChart @ref="lineChart" WidthUnit=Unit.Percentage Width="90" />
 </div>
 
 @code {
@@ -87,7 +87,7 @@
         var dateRanges = workersModelData.Select(w => w.DateRange).Distinct();
         foreach (var dateRange in dateRanges)
         {
-            labels.Add(dateRange.From.ToString());
+            labels.Add(dateRange.From.ToString("yyyy-MM-dd"));
         }
 
         return labels;
