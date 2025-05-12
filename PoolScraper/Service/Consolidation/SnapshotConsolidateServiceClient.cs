@@ -20,54 +20,70 @@ namespace PoolScraper.Service.Consolidation
     {
         public async Task ConsolidateHours(DateOnly date)
         {
-            var powerPoolScrapings = await powerPoolScrapingService.GetDataRangeAsync(date.GetBeginOfDay(), date.GetEndOfDay());
-            var snapshotWorkerStatus = powerPoolScrapings.AsSnapshotWorkerStatus();
-            var hourlySnapshotConsolidation = new HourlySnapshotsConsolidation();
-            var hourlySnapshotConsolidationResult = hourlySnapshotConsolidation.GetHourlySnapshots(snapshotWorkerStatus);
-            DateTime currentDateTime = date.GetBeginOfDay();
-            foreach (var hourlySnapshot in hourlySnapshotConsolidationResult)
+            try
             {
-                var snapshotsCount = hourlySnapshot.snapshots.Count();
-                logger.LogInformation("hourlySnapshot  hours#: {hourCount} storing snapshots#: {snapCount}",  hourlySnapshot.hour , snapshotsCount);
-                if (snapshotsCount > 0)
+                var powerPoolScrapings = await powerPoolScrapingService.GetDataRangeAsync(date.GetBeginOfDay(), date.GetEndOfDay());
+                var snapshotWorkerStatus = powerPoolScrapings.AsSnapshotWorkerStatus();
+                var hourlySnapshotConsolidation = new HourlySnapshotsConsolidation();
+                var hourlySnapshotConsolidationResult = hourlySnapshotConsolidation.GetHourlySnapshots(snapshotWorkerStatus);
+                DateTime currentDateTime = date.GetBeginOfDay();
+                foreach (var hourlySnapshot in hourlySnapshotConsolidationResult)
                 {
-                    await snapshotHourConsolidationPersistency.InsertManyAsync(hourlySnapshot.snapshots);
-                    var currentDateRange = DateRange.Create(currentDateTime.AddHours(hourlySnapshot.hour), currentDateTime.AddHours(hourlySnapshot.hour + 1));
-                    await snapshotDataConsolidationPersistency.InsertAsync(SnapshotDataConsolidationInfo.Create(Granularity.Hours, currentDateRange));
+                    var snapshotsCount = hourlySnapshot.snapshots.Count();
+                    logger.LogInformation("hourlySnapshot  hours#: {hourCount} storing snapshots#: {snapCount}", hourlySnapshot.hour, snapshotsCount);
+                    if (snapshotsCount > 0)
+                    {
+                        await snapshotHourConsolidationPersistency.InsertManyAsync(hourlySnapshot.snapshots);
+                        var currentDateRange = DateRange.Create(currentDateTime.AddHours(hourlySnapshot.hour), currentDateTime.AddHours(hourlySnapshot.hour + 1));
+                        await snapshotDataConsolidationPersistency.InsertAsync(SnapshotDataConsolidationInfo.Create(Granularity.Hours, currentDateRange));
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("ConsolidateHours error: {message} {stackTrace}", ex.Message, ex.StackTrace);
+                throw;
             }
         }
         public async Task ConsolidateDays(IDateRange dateRange)
         {
-            var currentDate = DateOnly.FromDateTime(dateRange.From);
-            var finalDate = DateOnly.FromDateTime(dateRange.To);
-
-            while (currentDate <= finalDate)
+            try
             {
-                logger.LogInformation("ConsolidateDays  processing: {currentDate}", currentDate);
-                var powerPoolScrapings = await powerPoolScrapingService.GetDataRangeAsync(currentDate.GetBeginOfDay(),currentDate.GetEndOfDay());
-                var snapshotWorkerStatus = powerPoolScrapings.AsSnapshotWorkerStatus();
-                logger.LogInformation("ConsolidateDays  processing: {currentDate} found #: {snapCount}", currentDate , snapshotWorkerStatus.Count());
+                var currentDate = DateOnly.FromDateTime(dateRange.From);
+                var finalDate = DateOnly.FromDateTime(dateRange.To);
 
-                var dailySnapshotConsolidation = new DailySnapshotsConsolidation();
-                var dailySnapshotConsolidationResult = dailySnapshotConsolidation.GetDailySnapshots(snapshotWorkerStatus);
-                logger.LogInformation("ConsolidateDays  processing: {currentDate} Consolidated #: {consolidCount}",  currentDate , dailySnapshotConsolidationResult.Count());
-                if  (dailySnapshotConsolidationResult.Count() > 1)
+                while (currentDate <= finalDate)
                 {
-                    throw new InvalidOperationException("ConsolidateDays  processing: " + currentDate + " Consolidated #:" + dailySnapshotConsolidationResult.Count() + " is greater than 1");
-                }
-                if (dailySnapshotConsolidationResult.Count() == 1)
-                {
-                    var daySnapshot = dailySnapshotConsolidationResult.Single();
-                    var snapshotsCount = daySnapshot.snapshots.Count();
-                    logger.LogInformation("ConsolidateDays daySnapshot  day: {snapDay} snapCount#: {snapCount}" , daySnapshot.date ,snapshotsCount);
-                    if (snapshotsCount > 0)
+                    logger.LogInformation("ConsolidateDays  processing: {currentDate}", currentDate);
+                    var powerPoolScrapings = await powerPoolScrapingService.GetDataRangeAsync(currentDate.GetBeginOfDay(), currentDate.GetEndOfDay());
+                    var snapshotWorkerStatus = powerPoolScrapings.AsSnapshotWorkerStatus();
+                    logger.LogInformation("ConsolidateDays  processing: {currentDate} found #: {snapCount}", currentDate, snapshotWorkerStatus.Count());
+
+                    var dailySnapshotConsolidation = new DailySnapshotsConsolidation();
+                    var dailySnapshotConsolidationResult = dailySnapshotConsolidation.GetDailySnapshots(snapshotWorkerStatus);
+                    logger.LogInformation("ConsolidateDays  processing: {currentDate} Consolidated #: {consolidCount}", currentDate, dailySnapshotConsolidationResult.Count());
+                    if (dailySnapshotConsolidationResult.Count() > 1)
                     {
-                        await snapshotDayConsolidationPersistency.InsertManyAsync(daySnapshot.snapshots);
-                        await snapshotDataConsolidationPersistency.InsertAsync(SnapshotDataConsolidationInfo.Create(Granularity.Days, currentDate.AsDateRange()));
+                        throw new InvalidOperationException("ConsolidateDays  processing: " + currentDate + " Consolidated #:" + dailySnapshotConsolidationResult.Count() + " is greater than 1");
                     }
+                    if (dailySnapshotConsolidationResult.Count() == 1)
+                    {
+                        var daySnapshot = dailySnapshotConsolidationResult.Single();
+                        var snapshotsCount = daySnapshot.snapshots.Count();
+                        logger.LogInformation("ConsolidateDays daySnapshot  day: {snapDay} snapCount#: {snapCount}", daySnapshot.date, snapshotsCount);
+                        if (snapshotsCount > 0)
+                        {
+                            await snapshotDayConsolidationPersistency.InsertManyAsync(daySnapshot.snapshots);
+                            await snapshotDataConsolidationPersistency.InsertAsync(SnapshotDataConsolidationInfo.Create(Granularity.Days, currentDate.AsDateRange()));
+                        }
+                    }
+                    currentDate = currentDate.AddDays(1);
                 }
-                currentDate = currentDate.AddDays(1);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("ConsolidateDays error: {message} {stackTrace}", ex.Message, ex.StackTrace);
+                throw;
             }
         }
 

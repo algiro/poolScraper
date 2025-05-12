@@ -26,7 +26,7 @@ namespace PoolScraper.Domain
             List<ISnapshotWorkerStatus> snapshotWorkerStatus = new List<ISnapshotWorkerStatus>();
             DateTime? previousSnapshotTime = null;
             foreach (var document in powerPoolScrapings)
-            {
+            {                
                 var snapshotTime = document.FetchedAt;
                 var workersStatus = document.GetAllAlgoWorkers().SelectMany(algo => algo.GetAllWorkerStatus());
 
