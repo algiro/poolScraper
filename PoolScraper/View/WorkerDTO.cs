@@ -8,8 +8,8 @@ namespace PoolScraper.View
         public WorkerIdDTO WorkerId { get; set; } = Domain.WorkerId.UNINITIALIZED.AsWorkerIdDTO();
         public string Name { get; set; } = string.Empty;
         public bool IsDisabled { get; set; }
-        public WorkerModel Model { get; set; }
-        public Farm FarmId { get; set; }
+        public WorkerModelDTO Model { get; set; }
+        public FarmDTO Farm { get; set; }
     }
 
     public static class WorkerDTOExtensions
@@ -23,8 +23,8 @@ namespace PoolScraper.View
                 Algorithm = worker.Algorithm,
                 WorkerId = worker.WorkerId.AsWorkerIdDTO(),
                 Name = worker.Name,
-                Model = worker.Model,
-                FarmId = worker.FarmId,
+                Model = worker.Model.AsModelDTO(),
+                Farm = worker.Farm.AsFarmDTO(),
                 IsDisabled = isDisabled
             };
         }

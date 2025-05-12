@@ -44,7 +44,7 @@
     private List<IChartDataset> GetDefaultDataSets()
     {
         var datasets = new List<IChartDataset>();
-        foreach (var model in Enum.GetValues<WorkerModel>())
+        foreach (var model in WorkerModel.GetAllModels())
         {
             var dataSetForModel = workersModelData.Where(w => w.Worker.Model == model);
             datasets.Add(GetLineChartDataset(model, dataSetForModel));
@@ -53,7 +53,7 @@
         return datasets;
     }
 
-    private LineChartDataset GetLineChartDataset(WorkerModel model, IEnumerable<ISnapshotDetailedView> snapData)
+    private LineChartDataset GetLineChartDataset(IWorkerModel model, IEnumerable<ISnapshotDetailedView> snapData)
     {
         var c = ColorUtility.CategoricalTwelveColors[datasetsCount].ToColor();
 
@@ -61,7 +61,7 @@
 
         return new LineChartDataset
             {
-                Label = $"{model.ToString()}",
+                Label = $"{model.Name}",
                 Data = GetData(snapData),
                 BackgroundColor = c.ToRgbaString(),
                 BorderColor = c.ToRgbString(),

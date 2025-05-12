@@ -10,27 +10,27 @@ namespace PoolScraper.Tests.Model
 {
     public class FarmExtensionsTest
     {
-        [TestCase("tmsminer007.8mrs21216", Farm.Myrig)]
-        [TestCase("tmsminer007.1ds21xp270", Farm.Dubai)]
-        [TestCase("tmsminer007.2eths21200", Farm.Ethiopia)]
-        [TestCase("tmsminer007.eths21200", Farm.Ethiopia)]
+        [TestCase("tmsminer007.8mrs21216",  "Myrig")]
+        [TestCase("tmsminer007.1ds21xp270", "Dubai")]
+        [TestCase("tmsminer007.2eths21200", "Ethiopia")]
+        [TestCase("tmsminer007.eths21200",  "Ethiopia")]
 
-        public void TryGetModel_ValidString_ReturnsTrueAndParsedModel(string modelName,Farm expectedFarm)
+        public void TryGetModel_ValidString_ReturnsTrueAndParsedModel(string modelName,string expectedFarmId)
         {
             // Act
-            bool parsed = FarmExtension.TryGetFarm(modelName, out Farm parsedFarm);
+            bool parsed = Farm.TryGetFarm(modelName, out var parsedFarm);
             // Assert
             parsed.Should().BeTrue();
-            parsedFarm.Should().Be(expectedFarm);
+            parsedFarm.Id.Should().Be(expectedFarmId);
         }
 
-        [TestCase("tmsminer007.4l79300", Farm.UNKNOWN)]
-        [TestCase("tmsminer007.l79300", Farm.UNKNOWN)]
-        [TestCase("tmsminer007.1mtl79300", Farm.UNKNOWN)]
+        [TestCase("tmsminer007.4l79300", "UNKNOWN")]
+        [TestCase("tmsminer007.l79300", "UNKNOWN")]
+        [TestCase("tmsminer007.1mtl79300", "UNKNOWN")]
 
-        public void TryGetModel_InvalidString_ReturnsFalse(string modelName, Farm expectedFarm)
+        public void TryGetModel_InvalidString_ReturnsFalse(string modelName, string expectedFarmId)
         {
-            FarmExtension.TryGetFarm(modelName, out Farm parsedFarm).Should().BeFalse();
+            Farm.TryGetFarm(modelName, out var parsedFarm).Should().BeFalse();
         }
     }
 }

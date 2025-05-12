@@ -22,9 +22,9 @@
 
             public double UptimePercentage { get; } = uptimePercentage;
 
-            public WorkerModel Model { get; } = worker.Model;
+            public IWorkerModel Model { get; } = worker.Model;
 
-            public Farm FarmId { get; } = worker.FarmId;
+            public IFarm Farm { get; } = worker.Farm;
 
             public int CompareTo(object? obj)
             {

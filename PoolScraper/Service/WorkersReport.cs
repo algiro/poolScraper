@@ -22,7 +22,7 @@ namespace PoolScraper.Service
                 .GroupBy(s => s.Worker.Model)
                 .SelectNotNull(group =>
                 {
-                    return CreateAverageSnapshot<WorkerModel>(group);
+                    return CreateAverageSnapshot<IWorkerModel>(group);
                 });
             return groupedByHourAndWorker;
         }

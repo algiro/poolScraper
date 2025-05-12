@@ -9,8 +9,8 @@ namespace PoolScraper.Domain
         IWorkerId WorkerId { get; }
         string Algorithm { get; }
         string Name { get; }
-        WorkerModel Model { get; }
-        Farm FarmId { get; }
+        IWorkerModel Model { get; }
+        IFarm Farm { get; }
     }
 
     public static class Worker
@@ -18,7 +18,7 @@ namespace PoolScraper.Domain
         public static IWorker Create(string poolId, string algorithm, long id, string name)
         {
             WorkerModelExtensions.TryGetModel(name, out var workerModel);
-            FarmExtension.TryGetFarm(name, out var farm);
+            Farm.TryGetFarm(name, out var farm);
             return Create(poolId, algorithm, id, name, workerModel, farm);
         }
         public static string? GetWorkerSuffix(string workerName)
@@ -33,32 +33,32 @@ namespace PoolScraper.Domain
             return workerName.Substring(idx + 1);
         }
 
-        public static IWorker Create(string poolId, string algorithm, long id, string name, WorkerModel model, Farm farm)
+        public static IWorker Create(string poolId, string algorithm, long id, string name, IWorkerModel model, IFarm farm)
         {            
             return new DefaultWorker(poolId, algorithm, id, name, model, farm);
         }
         public static IEnumerable<WorkerReadModel> AsWorkersReadModel(this IEnumerable<IWorker> workers)
         {
-            return workers.Select(w => new WorkerReadModel(w.WorkerId.PoolId,w.Algorithm,w.WorkerId.Id, w.Name,w.Model,w.FarmId));
+            return workers.Select(w => new WorkerReadModel(w.WorkerId.PoolId,w.Algorithm,w.WorkerId.Id, w.Name,w.Model,w.Farm));
         }
 
         private class DefaultWorker : IWorker
         {
-            public DefaultWorker(string poolId, string algorithm, long id, string name, WorkerModel model, Farm farm)
+            public DefaultWorker(string poolId, string algorithm, long id, string name, IWorkerModel model, IFarm farm)
             {
                 WorkerId = PoolScraper.Domain.WorkerId.Create(poolId, id);
                 Algorithm = algorithm;
                 Id = id;
                 Name = name;
                 Model = model;
-                FarmId = farm;
+                Farm = farm;
             }
             public IWorkerId WorkerId { get; }
             public string Algorithm { get; }
             public long Id { get; }
             public string Name { get; }
-            public WorkerModel Model { get; }
-            public Farm FarmId { get; }
+            public IWorkerModel Model { get; }
+            public IFarm Farm { get; }
             public int CompareTo(object? obj)
             {
                 if (obj is IWorker other)

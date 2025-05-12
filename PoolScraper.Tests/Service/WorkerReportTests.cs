@@ -129,8 +129,8 @@ namespace PoolScraper.Tests.Service
             // Assert
             result.Should().HaveCount(2);
 
-            var avgWorkerS21 = result.FirstOrDefault(x => x.Worker.Model == WorkerModel.S21);
-            var avgWorkerL7 = result.FirstOrDefault(x => x.Worker.Model == WorkerModel.L7);
+            var avgWorkerS21 = result.FirstOrDefault(x => x.Worker.Model.Name == "S21");
+            var avgWorkerL7 = result.FirstOrDefault(x => x.Worker.Model.Name == "L7");
 
             avgWorkerS21.Should().NotBeNull();
             avgWorkerL7.Should().NotBeNull();

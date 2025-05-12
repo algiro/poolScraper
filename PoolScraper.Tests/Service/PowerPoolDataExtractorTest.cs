@@ -27,19 +27,17 @@ namespace PoolScraper.Tests.Service
         [SetUp]
         public async Task SetUp()
         {
-            /*            var loggerFactory = (ILoggerFactory)new LoggerFactory();
+                        var loggerFactory = (ILoggerFactory)new LoggerFactory();
                         var logger = loggerFactory.CreateLogger<WorkerStore>();
-                        WorkerPersistency workerPersistency = new WorkerPersistency(logger, "mongodb://localhost:27017", "PowerPoolDB");
+                        /*WorkerPersistency workerPersistency = new WorkerPersistency(logger, "mongodb://localhost:27017", "PowerPoolDB");
                         workerStore = new WorkerStore(logger, workerPersistency);
                         await workerStore.LoadAllWorkerAsync();
                         var allWorkers = workerStore.GetAllWorker();
                         var workerDTO = allWorkers.Select(w => w.ToWorkerDTO(false));
-                        File.WriteAllText("c:\\temp\\worker.json", JsonConvert.SerializeObject(workerDTO));*/
-            var loggerFactory = (ILoggerFactory)new LoggerFactory();
-            var logger = loggerFactory.CreateLogger<WorkerStore>();
+                        File.WriteAllText("c:\\temp\\workers.json", JsonConvert.SerializeObject(workerDTO));*/
 
             var workers = JsonConvert.DeserializeObject<IEnumerable<WorkerDTO>>(File.ReadAllText("./Resources/workers.json"));
-            allWorkers = workers.Select(w => Worker.Create(w.WorkerId.PoolId, w.Algorithm, w.WorkerId.Id, w.Name));
+            allWorkers = workers!.Select(w => Worker.Create(w.WorkerId.PoolId, w.Algorithm, w.WorkerId.Id, w.Name));
             workerStore = new WorkerStore(logger,allWorkers);
         }
 
@@ -64,7 +62,7 @@ namespace PoolScraper.Tests.Service
             averagePerWorker.ElementAt(0).BasicInfo.Hashrate.Should().BeApproximately(hashRate4602360, 0.001);
 
             var averagePerModelAndDate = workersReport.CalculateAveragePerModelAndDate(snapshotDetails);
-            var averagePerL9 = averagePerModelAndDate.Where(a => a.Worker.Model == WorkerModel.L9);
+            var averagePerL9 = averagePerModelAndDate.Where(a => a.Worker.Name == "L9");
 
         }
     }

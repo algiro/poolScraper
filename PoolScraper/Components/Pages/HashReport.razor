@@ -52,9 +52,9 @@ else
                         {
                             <tr>
                                 <td>@snapshotWorker.Worker.Name</td>
-                                <td>@snapshotWorker.Worker.Model</td>
+                                <td>@snapshotWorker.Worker.Model.Name</td>
                                 <td>@snapshotWorker.Worker.Algorithm</td>
-                                <td>@snapshotWorker.Worker.FarmId</td>
+                                <td>@snapshotWorker.Worker.Farm.Id</td>
                                 <td>@snapshotWorker.BasicInfo.Hashrate</td>
                                 <td> <Button Color="ButtonColor.Primary" @onclick="() => ShowGraph(snapshotWorker)">Graph</Button> </td>
 
@@ -80,7 +80,7 @@ else
                         @foreach (var snapshotWorker in snapshotWorkersPerModel)
                         {
                             <tr>
-                                <td>@snapshotWorker.Worker.Model</td>
+                                <td>@snapshotWorker.Worker.Model.Name</td>
                                 <td>@snapshotWorker.Worker.Algorithm</td>
                                 <td>@snapshotWorker.BasicInfo.Hashrate</td>
                             </tr>
@@ -108,7 +108,7 @@ else
 
     private async Task GetDetails(IDateRange dateRange)
     {
-        snapshotWorkers = (await WorkerReportService.GetSnapshotDetailedViewsAsync(dateRange)).OrderBy(w => w.Worker.Model);
+        snapshotWorkers = (await WorkerReportService.GetSnapshotDetailedViewsAsync(dateRange)).OrderBy(w => w.Worker.Model.Name);
         snapshotWorkersPerWorker = workersReport.CalculateAveragePerWorker(snapshotWorkers);
         snapshotWorkersPerModel = workersReport.CalculateAveragePerModel(snapshotWorkers);
 

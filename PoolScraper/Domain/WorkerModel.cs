@@ -1,21 +1,56 @@
-﻿using System.Text.RegularExpressions;
+﻿using CommonUtils.Utils;
+using PoolScraper.View;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 
 namespace PoolScraper.Domain
 {
-    public enum WorkerModel
+    public interface IWorkerModel
     {
-        L7 = 10,
-        L9 = 20,
-        G11 = 30,
-        T21 = 40,
-        S21 = 50,
-        S21XP = 60,
-        UNKNOWN = 100,
+        int Id { get; }
+        string Name { get; }
+    }
+
+    public class WorkerModel
+    {
+        public static readonly IWorkerModel UNKNOWN = new DefaultWorkerModel(0, "UNKNOWN");
+        public static readonly IWorkerModel[] DEFAULT_MODELS = [
+            UNKNOWN,
+            new DefaultWorkerModel(10, "L7"),
+            new DefaultWorkerModel(20, "L9"),
+            new DefaultWorkerModel(30, "DG1"),
+            new DefaultWorkerModel(40, "T21"),
+            new DefaultWorkerModel(50, "S21"),
+            new DefaultWorkerModel(55, "S21XP"),
+            new DefaultWorkerModel(60, "KS5"),
+            new DefaultWorkerModel(65, "KS5M"),
+            new DefaultWorkerModel(70, "M60"),
+        ];
+        private static IWorkerModelStore _modelStore = WorkerModelStore.Create(DEFAULT_MODELS);
+        public static void UpdateStore(IEnumerable<IWorkerModel> models)
+        {
+            _modelStore = WorkerModelStore.Create(models);
+        }
+        public static IEnumerable<IWorkerModel> GetAllModels() => _modelStore.GetAllModels();
+        public static bool TryGet(int modelId, [NotNullWhen(true)] out IWorkerModel? model) => _modelStore.TryGetModel(modelId, out model);
+
+        private class DefaultWorkerModel : IWorkerModel
+        {
+            public DefaultWorkerModel(int id, string name)
+            {
+                Id = id;
+                Name = name;
+            }
+            public int Id { get; }
+            public string Name { get; }
+        }        
     }
 
     public static class WorkerModelExtensions
     {
-        public static bool TryGetModel(string workerName, out WorkerModel model)
+        public static WorkerModelDTO AsModelDTO(this IWorkerModel model) => new WorkerModelDTO(model.Id, model.Name);
+        
+        public static bool TryGetModel(string workerName, out IWorkerModel model)
         {
             model = WorkerModel.UNKNOWN;
             if (string.IsNullOrWhiteSpace(workerName))
@@ -26,20 +61,18 @@ namespace PoolScraper.Domain
                 return false;
 
             // Iterate over all model names (longest first to prevent partial matches)
-            var modelNames = Enum.GetNames(typeof(WorkerModel));
-            Array.Sort(modelNames, (a, b) => b.Length.CompareTo(a.Length)); // Descending by length
-
-            foreach (string mn in modelNames)
+            var modelNames = WorkerModel.GetAllModels().OrderByDescending(m => m.Name.Length);            
+            foreach (var mn in modelNames)
             {
-                if (mn.Equals("UNKNOWN", StringComparison.OrdinalIgnoreCase))
+                if (mn.Name.Equals("UNKNOWN", StringComparison.OrdinalIgnoreCase))
                     continue;
 
                 // Use word boundary, case-insensitive matching for model name
-                var pattern = Regex.Escape(mn);
+                var pattern = Regex.Escape(mn.Name);
                 var match = Regex.Match(suffix, pattern, RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
-                    model = (WorkerModel)Enum.Parse(typeof(WorkerModel), mn, true);
+                    model = mn;
                     return true;
                 }
             }
