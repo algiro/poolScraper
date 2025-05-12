@@ -26,6 +26,8 @@
 
             public IFarm Farm { get; } = worker.Farm;
 
+            public long NominalHashRate { get; } = worker.NominalHashRate;
+
             public int CompareTo(object? obj)
             {
                 if (obj is IWorkerUptime other)

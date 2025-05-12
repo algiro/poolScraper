@@ -34,6 +34,27 @@ namespace PoolScraper.Tests.Model
             // Act
             WorkerModelExtensions.TryGetModel(modelName, out IWorkerModel parsedModel).Should().BeFalse();
         }
+        
+        [TestCase("tmsminer007.8mrs21216", 216)]
+        [TestCase("tmsminer007.4l79300", 9300)]
+        [TestCase("tmsminer007.1ds21xp270", 270)]
+        [TestCase("tmsminer007.6dg111000", 11000)]
+        public void TryGetNominalHashRate_ValidString_ReturnsTrueAndParsedHashRate(string modelName, long expectedHashRate)
+        {
+            // Act
+            bool parsed = WorkerModelExtensions.TryGetNominalHashRate(modelName, out var hashRate);
+            // Assert
+            parsed.Should().BeTrue();
+            hashRate.Should().Be(expectedHashRate);
+        }
+
+        [TestCase("tmsminer007.5l7930repair")]
+
+        public void TryGetNominalHashRate_InvalidValidString_ReturnsFalse(string modelName)
+        {
+            // Act
+            WorkerModelExtensions.TryGetNominalHashRate(modelName, out var hashRate).Should().BeFalse();
+        }
 
     }
 }

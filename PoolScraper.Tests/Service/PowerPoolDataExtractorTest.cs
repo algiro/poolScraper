@@ -25,16 +25,16 @@ namespace PoolScraper.Tests.Service
         private WorkerStore workerStore;
 
         [SetUp]
-        public async Task SetUp()
+        public void SetUp()
         {
-                        var loggerFactory = (ILoggerFactory)new LoggerFactory();
-                        var logger = loggerFactory.CreateLogger<WorkerStore>();
-                        /*WorkerPersistency workerPersistency = new WorkerPersistency(logger, "mongodb://localhost:27017", "PowerPoolDB");
-                        workerStore = new WorkerStore(logger, workerPersistency);
-                        await workerStore.LoadAllWorkerAsync();
-                        var allWorkers = workerStore.GetAllWorker();
-                        var workerDTO = allWorkers.Select(w => w.ToWorkerDTO(false));
-                        File.WriteAllText("c:\\temp\\workers.json", JsonConvert.SerializeObject(workerDTO));*/
+            var loggerFactory = (ILoggerFactory)new LoggerFactory();
+            var logger = loggerFactory.CreateLogger<WorkerStore>();
+            /*WorkerPersistency workerPersistency = new WorkerPersistency(logger, "mongodb://localhost:27017", "PowerPoolDB");
+            workerStore = new WorkerStore(logger, workerPersistency);
+            await workerStore.LoadAllWorkerAsync();
+            var allWorkers = workerStore.GetAllWorker();
+            var workerDTO = allWorkers.Select(w => w.ToWorkerDTO(false));
+            File.WriteAllText("c:\\temp\\workers.json", JsonConvert.SerializeObject(workerDTO));*/
 
             var workers = JsonConvert.DeserializeObject<IEnumerable<WorkerDTO>>(File.ReadAllText("./Resources/workers.json"));
             allWorkers = workers!.Select(w => Worker.Create(w.WorkerId.PoolId, w.Algorithm, w.WorkerId.Id, w.Name));
@@ -54,14 +54,14 @@ namespace PoolScraper.Tests.Service
             var snapshotDetails = snapshots.Select( s => s.AsSnapshotDetailedView(workerStore)).ToArray();
 
             var worker4Test = Worker.Create("pool1", "alg1", 1, "worker1");
-            var workerId4602360 = snapshotDetails.Where(s => s.WorkerId.Id == 4602360);
-            var hashRate4602360 = workerId4602360.Average(w => w.BasicInfo.Hashrate);
+            var workerId4602360 = snapshotDetails.Where(s => s!.WorkerId.Id == 4602360);
+            var hashRate4602360 = workerId4602360.Average(w => w!.BasicInfo.Hashrate);
             WorkersReport workersReport = new WorkersReport();
-            var averagePerWorker = workersReport.CalculateAveragePerWorker(workerId4602360);
+            var averagePerWorker = workersReport.CalculateAveragePerWorker(workerId4602360!);
             averagePerWorker.Should().HaveCount(1);
             averagePerWorker.ElementAt(0).BasicInfo.Hashrate.Should().BeApproximately(hashRate4602360, 0.001);
 
-            var averagePerModelAndDate = workersReport.CalculateAveragePerModelAndDate(snapshotDetails);
+            var averagePerModelAndDate = workersReport.CalculateAveragePerModelAndDate(snapshotDetails!);
             var averagePerL9 = averagePerModelAndDate.Where(a => a.Worker.Name == "L9");
 
         }

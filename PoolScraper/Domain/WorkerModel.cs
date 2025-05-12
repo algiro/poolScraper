@@ -80,5 +80,20 @@ namespace PoolScraper.Domain
             return false;
         }
 
+        public static bool TryGetNominalHashRate(string workerName, out long nominalHashRate)
+        {
+            nominalHashRate = 0;
+            if (TryGetModel(workerName, out var model))
+            {
+                var modelNameIndex = workerName.IndexOf(model.Name, StringComparison.OrdinalIgnoreCase);
+                var modelNameLenght = model.Name.Length;
+                if (workerName.Length > modelNameIndex + modelNameLenght)
+                {
+                    var hashRateString = workerName.Substring(modelNameIndex + modelNameLenght);
+                    return long.TryParse(hashRateString, out nominalHashRate);
+                }
+            }
+            return false;
+        }
     }
 }

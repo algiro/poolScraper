@@ -7,7 +7,7 @@ namespace PoolScraper.Model
 {
     public class WorkerReadModel
     {
-        public WorkerReadModel(string poolId, string algorithm, long id, string name, IWorkerModel model, IFarm farm)
+        public WorkerReadModel(string poolId, string algorithm, long id, string name, long nominalHashRate,IWorkerModel model, IFarm farm)
         {
             PoolId = poolId;
             Algorithm = algorithm;
@@ -15,7 +15,7 @@ namespace PoolScraper.Model
             Name = name;
             ModelId = model.Id;
             FarmId = farm.Id;
-
+            NominalHashRate = nominalHashRate;
             WorkerId = Domain.WorkerId.Create(poolId, id);
         }
         [JsonProperty("poolId")]
@@ -31,6 +31,9 @@ namespace PoolScraper.Model
         
         [JsonProperty("farmId")]
         public string FarmId { get; set; }
+
+        [JsonProperty("nominalHashRate")]
+        public long NominalHashRate{ get; set; }
 
         public IWorkerId WorkerId { get; }
 
@@ -73,11 +76,11 @@ namespace PoolScraper.Model
             {
                 logger.LogWarning("Farm id not found for id: {farmId}", workerReadModel.FarmId);
             }
-            return Worker.Create(workerReadModel.PoolId, workerReadModel.Algorithm, workerReadModel.Id, workerReadModel.Name, model, farm );
+            return Worker.Create(workerReadModel.PoolId, workerReadModel.Algorithm, workerReadModel.Id, workerReadModel.Name, workerReadModel.NominalHashRate, model, farm );
         }
         public static WorkerReadModel AsWorkerReadModel(this IWorker worker)
         {
-            return new WorkerReadModel(worker.WorkerId.PoolId, worker.Algorithm, worker.WorkerId.Id, worker.Name, worker.Model, worker.Farm);
+            return new WorkerReadModel(worker.WorkerId.PoolId, worker.Algorithm, worker.WorkerId.Id, worker.Name, worker.NominalHashRate, worker.Model, worker.Farm);
         }
     }
 }
