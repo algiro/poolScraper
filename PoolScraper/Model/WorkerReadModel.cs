@@ -1,7 +1,9 @@
 ﻿using CommonUtils.Utils.Logs;
 using Microsoft.Extensions.Logging;
+using MongoDB.Bson.Serialization.Attributes;
 using Newtonsoft.Json;
 using PoolScraper.Domain;
+using PoolScraper.Domain.Consolidation;
 
 namespace PoolScraper.Model
 {
@@ -18,10 +20,11 @@ namespace PoolScraper.Model
             NominalHashRate = nominalHashRate;
             WorkerId = Domain.WorkerId.Create(poolId, id);
         }
+        
+        [BsonId]
+        public long Id { get; set; }
         [JsonProperty("poolId")]
         public string PoolId { get; set; }
-        [JsonProperty("id")]
-        public long Id { get; set; }
         [JsonProperty("algorithm")]
         public string Algorithm { get; set; }
         [JsonProperty("name")]

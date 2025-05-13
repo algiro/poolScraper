@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using PoolScraper.Model;
 using PoolScraper.View;
 using System;
 using System.Collections.Generic;

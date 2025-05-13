@@ -7,13 +7,13 @@ using PoolScraper.Domain;
 
 namespace PoolScraper.Service.Consolidation
 {
-    public class UptimeConsolidateServiceClient(IPowerPoolScrapingService powerPoolScrapingService, IUptimeHourConsolidationPersistency uptimeHourConsolidationPersistency) : IUptimeConsolidateServiceClient
+    public class UptimeConsolidateServiceClient(IPowerPoolScrapingService powerPoolScrapingService, IUptimeHourConsolidationPersistency uptimeHourConsolidationPersistency,IWorkerIdMap workerIdMap) : IUptimeConsolidateServiceClient
     {
         public async Task Consolidate(DateOnly date)
         {
             var powerPoolScrapings = await powerPoolScrapingService.GetDataRangeAsync(date.GetBeginOfDay(), date.GetEndOfDay());
             var hourlyUptimePowerPoolConsolidation = new HourlyUptimePowerPoolConsolidation();
-            var hourlyUptimeConsolidation = hourlyUptimePowerPoolConsolidation.GetHourlyUptime(powerPoolScrapings);
+            var hourlyUptimeConsolidation = hourlyUptimePowerPoolConsolidation.GetHourlyUptime(powerPoolScrapings, workerIdMap);
 
             foreach (var hourlyUptime in hourlyUptimeConsolidation)
             {

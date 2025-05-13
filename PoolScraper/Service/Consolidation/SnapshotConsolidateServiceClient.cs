@@ -16,14 +16,15 @@ namespace PoolScraper.Service.Consolidation
                     IPowerPoolScrapingService powerPoolScrapingService, 
                     [FromKeyedServices("hourSnapConsolidation")] ISnapshotConsolidationPersistency snapshotHourConsolidationPersistency,
                     [FromKeyedServices("daySnapConsolidation")] ISnapshotConsolidationPersistency snapshotDayConsolidationPersistency,
-                    ISnapshotDataConsolidationPersistency snapshotDataConsolidationPersistency) : ISnapshotConsolidateServiceClient
+                    ISnapshotDataConsolidationPersistency snapshotDataConsolidationPersistency,
+                    IWorkerIdMap workerIdMap) : ISnapshotConsolidateServiceClient
     {
         public async Task ConsolidateHours(DateOnly date)
         {
             try
             {
                 var powerPoolScrapings = await powerPoolScrapingService.GetDataRangeAsync(date.GetBeginOfDay(), date.GetEndOfDay());
-                var snapshotWorkerStatus = powerPoolScrapings.AsSnapshotWorkerStatus();
+                var snapshotWorkerStatus = powerPoolScrapings.AsSnapshotWorkerStatus(workerIdMap);
                 var hourlySnapshotConsolidation = new HourlySnapshotsConsolidation();
                 var hourlySnapshotConsolidationResult = hourlySnapshotConsolidation.GetHourlySnapshots(snapshotWorkerStatus);
                 DateTime currentDateTime = date.GetBeginOfDay();
@@ -56,7 +57,7 @@ namespace PoolScraper.Service.Consolidation
                 {
                     logger.LogInformation("ConsolidateDays  processing: {currentDate}", currentDate);
                     var powerPoolScrapings = await powerPoolScrapingService.GetDataRangeAsync(currentDate.GetBeginOfDay(), currentDate.GetEndOfDay());
-                    var snapshotWorkerStatus = powerPoolScrapings.AsSnapshotWorkerStatus();
+                    var snapshotWorkerStatus = powerPoolScrapings.AsSnapshotWorkerStatus(workerIdMap);
                     logger.LogInformation("ConsolidateDays  processing: {currentDate} found #: {snapCount}", currentDate, snapshotWorkerStatus.Count());
 
                     var dailySnapshotConsolidation = new DailySnapshotsConsolidation();

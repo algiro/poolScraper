@@ -24,13 +24,15 @@ namespace PoolScraper.Service
         private readonly IPool powerPool = Pool.CreatePowerPool();
         private readonly IPowerPoolScrapingPersistency _powerPoolScrapingPersistency;
         private readonly IWorkerPersistency _workerPersistency;
+        private readonly IWorkerIdMap _workerIdMap;
 
-        public PowePoolScrapingService(ILogger<PowePoolScrapingService> log, IPowerPoolScrapingPersistency powerPoolScrapingPersistency, IWorkerPersistency workerPersistency)
+        public PowePoolScrapingService(ILogger<PowePoolScrapingService> log, IPowerPoolScrapingPersistency powerPoolScrapingPersistency, IWorkerPersistency workerPersistency, IWorkerIdMap workerIdMap)
         {
             _log = log;
             _httpClient = new HttpClient();
             _powerPoolScrapingPersistency = powerPoolScrapingPersistency;
             _workerPersistency = workerPersistency;
+            _workerIdMap = workerIdMap;
         }
         private string apiKey => powerPool.ApiKey;
         public async Task FetchAndStoreUserData()
@@ -61,16 +63,24 @@ namespace PoolScraper.Service
                     await _powerPoolScrapingPersistency.InsertAsync(powerPoolData);
                     foreach (var minerData in powerPoolData.Miners.Values)
                     {
-                        var workers = minerData.Workers.GetAllWorkerStatus().Select(w => Worker.Create(PoolIDs.PowerPool, w.Algorithm, w.Id, w.Name)).OrderBy(w => w.WorkerId);
-                        _log.LogInformation("Workers from current scraping count: {count}", workers.Count());
-                        bool areEqual = workers.ToList().SequenceEqual(_allWorkers);
-                        if (!areEqual)
+                        var workersStatus = minerData.Workers.GetAllWorkerStatus();
+                        var workers = workersStatus.GetWorkerIdsStatus(_workerIdMap, powerPool);
+                        _log.LogInformation("Workers from current scraping matching count: {matchCount}, added count:{unmatchCount}, removed count:{removeCount}", workers.Matching.Count(), workers.Added.Count(), workers.Removed.Count());                        
+                        if (!workers.Added.IsEmpty())
                         {
-                            _log.LogInformation("Workers are not equal, inserting new workers");
-                            var newWorkers = workers.Except(_allWorkers).ToList();
-                            _log.LogInformation("Identified #newWorkers: {newWorkersCount} ", newWorkers.Count);
+                            _log.LogInformation("Adding new Workers");
+                            var newWorkerStatus = workersStatus.Where(w => workers.Added.Contains(w.GetExternalId(powerPool)));
+                            var newWorkers = newWorkerStatus.Select(w => w.AsNewWorker(powerPool));
                             await _workerPersistency.InsertManyAsync(newWorkers);
+                            foreach (var newWorker in newWorkers)
+                            {
+                                _workerIdMap.AddWorkerId(newWorker.ExternalId, newWorker.WorkerId);
+                            }
                             _allWorkers = await _workerPersistency.GetAllWorkerAsync();
+                        }
+                        if (!workers.Removed.IsEmpty())
+                        {
+                            _log.LogInformation("Removed Workers!! {removedId} ", string.Join(',',workers.Removed));                            
                         }
                         else
                         {

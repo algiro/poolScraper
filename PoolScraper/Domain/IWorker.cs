@@ -16,6 +16,8 @@ namespace PoolScraper.Domain
 
     public static class Worker
     {
+        public static IWorker CreateNew(string poolId, string algorithm, string name) => Create(poolId, algorithm, -1, name);
+
         public static IWorker Create(string poolId, string algorithm, long id, string name)
         {
             WorkerModelExtensions.TryGetModel(name, out var workerModel);

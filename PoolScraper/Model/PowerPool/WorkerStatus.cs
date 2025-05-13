@@ -3,6 +3,7 @@ using CommonUtils.Utils.Logs;
 using Newtonsoft.Json;
 using PoolScraper.Domain;
 using PoolScraper.Domain.Consolidation;
+using PoolScraper.Service.Store;
 
 namespace PoolScraper.Model.PowerPool
 {
@@ -47,10 +48,15 @@ namespace PoolScraper.Model.PowerPool
     public static class WorkerStatusExtension
     {
         private static readonly ILogger logger = LoggerUtils.CreateLogger(nameof(WorkerStatusExtension));
-        public static ISnapshotWorkerStatus? AsWorkerMinuteStatus(this WorkerStatus workerStatus, IPool pool, IDateRange dateRange)
+        public static INewWorker AsNewWorker(this WorkerStatus workerStatus, IPool pool) 
+        {
+            var worker = Worker.CreateNew(pool.PoolId, workerStatus.Algorithm, workerStatus.Name);
+            return NewWorker.CreateNew(worker, workerStatus.GetExternalId(pool));
+        }
+        public static ISnapshotWorkerStatus? AsWorkerMinuteStatus(this WorkerStatus workerStatus, IWorkerIdMap workedIdMap, IPool pool, IDateRange dateRange)
         {
             var externalId = workerStatus.GetExternalId(pool);
-            if (WorkerIdMap.Instance.TryGetWorkerId(externalId, out var workerId)) { 
+            if (workedIdMap.TryGetWorkerId(externalId, out var workerId)) { 
                 return SnapshotWorkerStatus.Create(workerId, Granularity.Minutes, dateRange, WorkerBasicInfo.Create(workerStatus.Hashrate, workerStatus.InvalidShares));
             }
             else
@@ -59,9 +65,38 @@ namespace PoolScraper.Model.PowerPool
                 return null;
             }
         }
-        public static IEnumerable<ISnapshotWorkerStatus> AsWorkersMinuteStatus(this IEnumerable<WorkerStatus> workersStatus, IPool pool, IDateRange dateRange)
+        public static (IEnumerable<IWorkerId> Matching,IEnumerable<IExternalId> Added, IEnumerable<IWorkerId> Removed) GetWorkerIdsStatus(this IEnumerable<WorkerStatus> workersStatus, IWorkerIdMap workerIdMap, IPool pool)
         {
-            var result = workersStatus.SelectNotNull(w => w.AsWorkerMinuteStatus(pool, dateRange));
+            logger.LogInformation("GetWorkerIdsStatus called with {count}# workersStatus, matching with workerIdMap#: {workerIdMap}", workersStatus.Count(), workerIdMap.GetWorkerIds().Count());
+            List<IWorkerId> matching = new List<IWorkerId>();
+            List<IExternalId> added  = new List<IExternalId>();
+            List<IWorkerId> removed  = new List<IWorkerId>();
+            foreach (var workerStatus in workersStatus)
+            {
+                var externalId = workerStatus.GetExternalId(pool);
+                if (workerIdMap.TryGetWorkerId(externalId, out var workerId))
+                {
+                    matching.Add(workerId);
+                }
+                else
+                {
+                    added.Add(externalId);
+                }
+            }
+            var existingExternalIds = workerIdMap.GetExternalIds();
+            var currentExternalIds = workersStatus.Select(w => w.GetExternalId(pool));
+            var removedExternalIds = existingExternalIds.Except(currentExternalIds);
+            var removedWorkerIds  = removedExternalIds.SelectNotNull(r => {
+                if (workerIdMap.TryGetWorkerId(r, out var workerId)) return workerId;
+                else return null;
+                }).ToList();
+
+            return (matching, added, removedWorkerIds);
+        }
+
+        public static IEnumerable<ISnapshotWorkerStatus> AsWorkersMinuteStatus(this IEnumerable<WorkerStatus> workersStatus, IWorkerIdMap workedIdMap, IPool pool, IDateRange dateRange)
+        {
+            var result = workersStatus.SelectNotNull(w => w.AsWorkerMinuteStatus(workedIdMap, pool, dateRange));
             
             // verify if we have same WorkerId in the same dateRange
             var duplicates = result.GroupBy(w => w.WorkerId).Where(g => g.Count() > 1);

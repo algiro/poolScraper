@@ -18,7 +18,7 @@ namespace PoolScraper.Domain
         }
         public static ISnapshotDetailedView? AsSnapshotDetailedView(this ISnapshotWorkerStatus snapshotWorkerStatus, IWorkerStore workerStore)
         {
-            var result = workerStore.GetById(snapshotWorkerStatus.WorkerId.Id);
+            var result = workerStore.GetById(snapshotWorkerStatus.WorkerId);
             return result.worker != null && !result.isDisabled ? snapshotWorkerStatus.AsSnapshotDetailedView(result.worker) : null;
         }
         private class SnapshotDetailedViewImpl : ISnapshotDetailedView

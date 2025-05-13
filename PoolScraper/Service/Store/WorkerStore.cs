@@ -29,20 +29,20 @@ namespace PoolScraper.Service.Store
             return _allWorkers;
         }
 
-        public (IWorker? worker,bool isDisabled) GetById(long id)
+        public (IWorker? worker,bool isDisabled) GetById(IWorkerId workerId)
         {
             try
             {
-                var worker = _allWorkers.FirstOrDefault(w => w.WorkerId.Id == id);
+                var worker = _allWorkers.FirstOrDefault(w => w.WorkerId.Equals(workerId));
                 if (worker == null)
                 {
-                    logger.LogWarning("Worker not found fetching from allWorkers#: {workerStore} worker by id: {id}", _allWorkers.Count(), id);
+                    logger.LogWarning("Worker not found fetching from allWorkers#: {workerStore} worker by id: {id}", _allWorkers.Count(), workerId);
                 }
-                return (worker,_disabledWorkers.Any(d=> d.WorkerId.Id == id));
+                return (worker,_disabledWorkers.Any(d=> d.WorkerId.Equals(workerId)));
             }
             catch (Exception ex)
             {
-                logger.LogError("Error fetching from allWorkers#: {workerStore} worker by id: {id}, error: {error}", _allWorkers.Count(), id, ex.Message);
+                logger.LogError("Error fetching from allWorkers#: {workerStore} worker by id: {id}, error: {error}", _allWorkers.Count(), workerId, ex.Message);
                 foreach (var worker in _allWorkers)
                 {
                     logger.LogError("Worker: {worker}", worker.ToString());
@@ -59,5 +59,6 @@ namespace PoolScraper.Service.Store
                 ? "WorkersCount: #:" + _allWorkers.Count()
                 : "No workers available";
         }
+
     }
 }

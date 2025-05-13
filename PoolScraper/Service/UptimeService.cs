@@ -9,7 +9,7 @@ using PoolScraper.Domain;
 
 namespace PoolScraper.Service
 {
-    public class UptimeService(ILogger<UptimeService> logger, IPowerPoolScrapingService powerPoolScrapingService,IWorkerPersistency workerPersistency) : IUptimeService
+    public class UptimeService(ILogger<UptimeService> logger, IPowerPoolScrapingService powerPoolScrapingService,IWorkerPersistency workerPersistency,IWorkerIdMap workerIdMap) : IUptimeService
     {
         private readonly IPool powerPool = Pool.CreatePowerPool();
 
@@ -40,7 +40,7 @@ namespace PoolScraper.Service
             if (totalSnapshots == 0)
                 return Enumerable.Empty<IWorkerUptime>();
             UptimeCalculator uptimeCalculator = new UptimeCalculator();
-            var snapshotWorkerStatus = documents.AsSnapshotWorkerStatus();
+            var snapshotWorkerStatus = documents.AsSnapshotWorkerStatus(workerIdMap);
             var allWorkers = await workerPersistency.GetAllWorkerAsync();
             var workerUptimeResult = uptimeCalculator.CalculateTotUptime(snapshotWorkerStatus);
             return workerUptimeResult.Select(w => WorkerUptime.Create(allWorkers.First(wk => wk.WorkerId == w.WorkerId), w.UptimePercentage));

@@ -17,7 +17,9 @@ namespace PoolScraper.Domain
         {
             return new ExternalIdImpl(poolId, id);
         }
-        public static ExternalIdReadModel AsWorkerIdReadModel(this IExternalId externalId)
+
+
+        public static ExternalIdReadModel AsReadModel(this IExternalId externalId)
         {
             return new ExternalIdReadModel(externalId.PoolId, externalId.Id);
         }
@@ -52,6 +54,7 @@ namespace PoolScraper.Domain
                 }
                 return 0;
             }
+            public override string ToString() => $"{PoolId}.{Id}";
         }
     }
 }

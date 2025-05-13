@@ -5,7 +5,7 @@ namespace PoolScraper.View
     public class WorkerDTO 
     {
         public string Algorithm { get; set; } = string.Empty;
-        public WorkerIdDTO WorkerId { get; set; } = Domain.WorkerId.UNINITIALIZED.AsWorkerIdDTO();
+        public WorkerIdDTO WorkerId { get; set; } = Domain.WorkerId.UNINITIALIZED.AsDTO();
         public string Name { get; set; } = string.Empty;
         public long NominalHashRate { get; set; }
         public bool IsDisabled { get; set; }
@@ -22,7 +22,7 @@ namespace PoolScraper.View
             return new WorkerDTO
             {
                 Algorithm = worker.Algorithm,
-                WorkerId = worker.WorkerId.AsWorkerIdDTO(),
+                WorkerId = worker.WorkerId.AsDTO(),
                 Name = worker.Name,
                 NominalHashRate = worker.NominalHashRate,
                 Model = worker.Model.AsModelDTO(),

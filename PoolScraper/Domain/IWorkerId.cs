@@ -17,11 +17,11 @@ namespace PoolScraper.Domain
         {
             return new WorkerIdImpl(poolId, workerId);
         }
-        public static WorkerIdReadModel AsWorkerIdReadModel(this IWorkerId workerId)
+        public static WorkerIdReadModel AsReadModel(this IWorkerId workerId)
         {
             return new WorkerIdReadModel(workerId.PoolId, workerId.Id);
         }
-        public static WorkerIdDTO AsWorkerIdDTO(this IWorkerId workerId)
+        public static WorkerIdDTO AsDTO(this IWorkerId workerId)
         {
             return new WorkerIdDTO(workerId.PoolId, workerId.Id);
         }
@@ -56,6 +56,8 @@ namespace PoolScraper.Domain
                 }
                 return 0;
             }
+            public override string ToString() => $"{PoolId}.{Id}";
+
         }
     }
 }

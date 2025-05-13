@@ -1,8 +1,10 @@
-﻿using log4net;
+﻿using CommonUtils.Utils;
+using log4net;
 using MongoDB.Driver;
 using PoolScraper.Components.Pages;
 using PoolScraper.Domain;
 using PoolScraper.Model;
+using PoolScraper.Persistency.Utils;
 
 namespace PoolScraper.Persistency
 {
@@ -10,9 +12,11 @@ namespace PoolScraper.Persistency
     {
         private readonly IMongoCollection<WorkerReadModel> _workerCollection;
         private readonly IMongoCollection<DisabledWorkerReadModel> _disabledWorkerCollection;
+        private readonly IMongoCollection<WorkerIdMatchReadModel> _workerIdMatchWorkerCollection;
 
         private readonly ILogger _log;
         private readonly IMongoDatabase _database;
+        private readonly ISequenceGenerator _sequenceGenerator;
         public WorkerPersistency(ILogger log, string connectionString, string databaseName)
         {
             _log = log;
@@ -21,7 +25,8 @@ namespace PoolScraper.Persistency
             _database = client.GetDatabase(databaseName);
             _workerCollection = _database.GetCollection<WorkerReadModel>("workers");
             _disabledWorkerCollection = _database.GetCollection<DisabledWorkerReadModel>("disabled_workers");
-
+            _workerIdMatchWorkerCollection = _database.GetCollection<WorkerIdMatchReadModel>("workerIdMatches");
+            _sequenceGenerator = new SequenceGenerator(log, connectionString, databaseName);
         }
 
         public async Task<IEnumerable<IWorker>> GetAllWorkerAsync()
@@ -30,22 +35,49 @@ namespace PoolScraper.Persistency
             return workersReadModel.Select(w => w.AsWorker());
         }
 
+        public IEnumerable<IWorkerIdMatch> GetAllWorkerIdMatch()
+        {
+            var workersIdMatchesReadModel = _workerIdMatchWorkerCollection.Find(_ => true).ToList();
+            return workersIdMatchesReadModel.Select(w => w.AsWorkerIdMatch());
+        }
+
         public async Task<IEnumerable<IDisabledWorker>> GetDisabledWorkersAsync()
         {
             var disabledWorkersReadModel = await _disabledWorkerCollection.Find<DisabledWorkerReadModel>(_ => true).ToListAsync();
             return disabledWorkersReadModel.Select(w => w.AsDisabledWorker());
         }
 
-        public async Task<bool> InsertManyAsync(IEnumerable<IWorker> workers)
+        public async Task<bool> InsertManyAsync(IEnumerable<INewWorker> workers)
         {
             try
             {
-                await _workerCollection.InsertManyAsync(workers.AsWorkersReadModel());
+                var workerWithUpdatedID = workers.Select(w =>
+                {
+                    var updatedWorkerId = _sequenceGenerator.GetNextSequence("workerIdSeq");
+                    return w.UpdateId(updatedWorkerId);
+                }).ToArray();
+
+                await _workerCollection.InsertManyAsync(workerWithUpdatedID.AsWorkersReadModel());
+                await InsertWorkerIdMatchAsync(workerWithUpdatedID.AsWorkerIdMatches());
                 return true;
             }
             catch (Exception ex)
             {
                 _log.LogError("Error inserting data into MongoDB: {message}", ex.Message);
+                return false;
+            }
+        }
+
+        private async Task<bool> InsertWorkerIdMatchAsync(IEnumerable<IWorkerIdMatch> workerIdMatches)
+        {
+            try
+            {
+                await _workerIdMatchWorkerCollection.InsertManyAsync(workerIdMatches.AsReadModels());
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _log.LogError("Error inserting data into MongoDB: {message} {stackTrace}", ex.Message, ex.StackTrace);
                 return false;
             }
         }

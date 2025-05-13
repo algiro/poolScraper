@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using PoolScraper.Components;
+using PoolScraper.Domain;
 using PoolScraper.Domain.Consolidation;
 using PoolScraper.Persistency;
 using PoolScraper.Persistency.Consolidation;
@@ -19,7 +20,9 @@ builder.Configuration.AddJsonFile("/config/appsettings.Development.json", true, 
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddBlazorBootstrap();
 builder.Services.AddSingleton<IPowerPoolScrapingService, PowePoolScrapingService>();
-builder.Services.AddSingleton<IPowerPoolScrapingPersistency>((sp) => new PowerPoolScrapingPersistency(LoggerUtils.CreateLogger<PowerPoolScrapingPersistency>(), connectionString, databaseName));
+
+builder.Services.AddSingleton<IWorkerIdMap>((sp) => WorkerIdMap.Create(sp.GetService<IWorkerPersistency>()));
+builder.Services.AddSingleton<IPowerPoolScrapingPersistency>((sp) => new PowerPoolScrapingPersistency(LoggerUtils.CreateLogger<PowerPoolScrapingPersistency>(), connectionString, databaseName, sp.GetService<IWorkerIdMap>()));
 builder.Services.AddSingleton<IWorkersService,WorkersService>();
 builder.Services.AddSingleton<IUptimeHourConsolidationPersistency>( (sp) => new UptimeHourConsolidationPersistency(LoggerUtils.CreateLogger<UptimeHourConsolidationPersistency>(), connectionString, databaseName));
 builder.Services.AddSingleton<ISequenceGenerator>( (sp) => new SequenceGenerator(LoggerUtils.CreateLogger<SequenceGenerator>(), connectionString, databaseName));

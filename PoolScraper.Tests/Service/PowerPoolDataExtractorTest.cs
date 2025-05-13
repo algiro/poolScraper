@@ -25,6 +25,7 @@ namespace PoolScraper.Tests.Service
         private WorkerStore workerStore;
         private IPool pool = Pool.CreatePowerPool();
         private const long WORKER_ID1 = 4602360;
+        private IWorkerIdMap workerIdMap;
         [SetUp]
         public void SetUp()
         {
@@ -41,11 +42,11 @@ namespace PoolScraper.Tests.Service
             allWorkers = workers!.Select(w => Worker.Create(w.WorkerId.PoolId, w.Algorithm, w.WorkerId.Id, w.Name));
             workerStore = new WorkerStore(logger,allWorkers);
             
-            Dictionary<IExternalId, IWorkerId> workerIdMap = new Dictionary<IExternalId, IWorkerId>()
+            Dictionary<IExternalId, IWorkerId> workerIdDic = new Dictionary<IExternalId, IWorkerId>()
             {
                 [ExternalId.Create(pool.PoolId,"4602360")] = WorkerId.Create(pool.PoolId, WORKER_ID1),
             };
-            WorkerIdMap.Initialize(workerIdMap);
+            workerIdMap = WorkerIdMap.Create(workerIdDic);
         }
 
         [Test]
@@ -56,7 +57,7 @@ namespace PoolScraper.Tests.Service
             string jsonContent = reader.ReadToEnd();
             var scrapings = JsonConvert.DeserializeObject<IEnumerable<PowerPoolUser>>(jsonContent);
             scrapings.Should().HaveCount(1377);
-            var snapshots = scrapings.AsSnapshotWorkerStatus();
+            var snapshots = scrapings.AsSnapshotWorkerStatus(workerIdMap);
             snapshots.Should().HaveCount(1377); // just related to WORKWER_ID1, where mapping (externalID, workerId) is defined
             var snapshotDetails = snapshots.Select( s => s.AsSnapshotDetailedView(workerStore)).ToArray();
 

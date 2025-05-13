@@ -20,7 +20,7 @@ namespace PoolScraper.Domain
             return new SnapshotWorkerStatusImpl(workerId, granularity, dateRange, basicInfo);
         }
 
-        public static IEnumerable<ISnapshotWorkerStatus> AsSnapshotWorkerStatus(this IEnumerable<PowerPoolUser> powerPoolScrapings)
+        public static IEnumerable<ISnapshotWorkerStatus> AsSnapshotWorkerStatus(this IEnumerable<PowerPoolUser> powerPoolScrapings, IWorkerIdMap workerIdMap)
         {
             IPool powerPool = Pool.CreatePowerPool();
             List<ISnapshotWorkerStatus> snapshotWorkerStatus = new List<ISnapshotWorkerStatus>();
@@ -30,7 +30,7 @@ namespace PoolScraper.Domain
                 var snapshotTime = document.FetchedAt;
                 var workersStatus = document.GetAllAlgoWorkers().SelectMany(algo => algo.GetAllWorkerStatus());
 
-                var currentSnapshotWorkerStatus = workersStatus.AsWorkersMinuteStatus(powerPool, DateRange.Create(previousSnapshotTime ?? snapshotTime, snapshotTime));
+                var currentSnapshotWorkerStatus = workersStatus.AsWorkersMinuteStatus(workerIdMap, powerPool, DateRange.Create(previousSnapshotTime ?? snapshotTime, snapshotTime));
                 snapshotWorkerStatus.AddRange(currentSnapshotWorkerStatus);
                 previousSnapshotTime = snapshotTime;
             }

@@ -9,7 +9,7 @@ namespace PoolScraper.Model
     {
         [BsonId]
         public string Id => $"{workerId.PoolId}.{workerId.Id}.{granularity.GetId(dateRange.From)}";
-        public WorkerIdReadModel WorkerId { get; set; } = workerId.AsWorkerIdReadModel();
+        public WorkerIdReadModel WorkerId { get; set; } = workerId.AsReadModel();
         public DateRangeReadModel DateRange { get; set; } = dateRange.AsDateRangeView();
         public double UptimePercentage { get; set; } = uptimePercentage;
     }

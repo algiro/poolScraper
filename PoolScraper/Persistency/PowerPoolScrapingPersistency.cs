@@ -14,14 +14,15 @@ namespace PoolScraper.Persistency
         private readonly IMongoCollection<PowerPoolUser> _scrapingCollection;
         private readonly ILogger _log;
         private readonly IPool powerPool = Pool.CreatePowerPool();
-
-        public PowerPoolScrapingPersistency(ILogger log, string connectionString, string databaseName)
+        private readonly IWorkerIdMap _workerIdMap;
+        public PowerPoolScrapingPersistency(ILogger log, string connectionString, string databaseName, IWorkerIdMap workerIdMap)
         {
             _log = log;
             _log.LogInformation("PowerPoolService C.tor with connection string: {connectionString} and database name: {databaseName}", connectionString, databaseName);
             var client = new MongoClient(connectionString);
             var database = client.GetDatabase(databaseName);
             _scrapingCollection = database.GetCollection<PowerPoolUser>("powerPoolUsers");
+            _workerIdMap = workerIdMap;
         }
 
         public async Task<bool> InsertAsync(PowerPoolUser powerPoolUser)
@@ -69,7 +70,7 @@ namespace PoolScraper.Persistency
                 .ToListAsync();
             _log.LogInformation("GetSnapshotWorkerStatusAsync not filtered by {workerId} #", result.Count());
 
-            var workerStatus = result.AsSnapshotWorkerStatus();
+            var workerStatus = result.AsSnapshotWorkerStatus(_workerIdMap);
             _log.LogInformation("GetSnapshotWorkerStatusAsync transformed as workerStatus {workerId} #", workerStatus.Count());
             return workerStatus.Where(w => w.WorkerId.Id == workerId.Id);
 
