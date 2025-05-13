@@ -41,17 +41,23 @@ namespace PoolScraper.Model.PowerPool
         [JsonProperty("hashrate_avg_units")]
         public string HashrateAvgUnits { get; set; } = string.Empty;
 
-        public IExternalId GetExternalId(IPool pool) => ExternalId.Create(pool.PoolId, Id);
+        public IExternalId GetExternalId(IPool pool) => ExternalId.Create(pool.PoolId, Id.ToString());
     }
 
     public static class WorkerStatusExtension
     {
         private static readonly ILogger logger = LoggerUtils.CreateLogger(nameof(WorkerStatusExtension));
-        public static ISnapshotWorkerStatus AsWorkerMinuteStatus(this WorkerStatus workerStatus, IPool pool, IDateRange dateRange)
+        public static ISnapshotWorkerStatus? AsWorkerMinuteStatus(this WorkerStatus workerStatus, IPool pool, IDateRange dateRange)
         {
             var externalId = workerStatus.GetExternalId(pool);
-            var workerId = WorkerIdMap.Instance.GetWorkerId(externalId);
-            return SnapshotWorkerStatus.Create(workerId, Granularity.Minutes, dateRange, WorkerBasicInfo.Create(workerStatus.Hashrate, workerStatus.InvalidShares));
+            if (WorkerIdMap.Instance.TryGetWorkerId(externalId, out var workerId)) { 
+                return SnapshotWorkerStatus.Create(workerId, Granularity.Minutes, dateRange, WorkerBasicInfo.Create(workerStatus.Hashrate, workerStatus.InvalidShares));
+            }
+            else
+            {
+                logger.LogWarning($"WorkerId not found for externalId: {externalId}");
+                return null;
+            }
         }
         public static IEnumerable<ISnapshotWorkerStatus> AsWorkersMinuteStatus(this IEnumerable<WorkerStatus> workersStatus, IPool pool, IDateRange dateRange)
         {

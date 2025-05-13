@@ -3,10 +3,10 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace PoolScraper.Model
 {
-    public class ExternalIdReadModel(string poolId, long id)
+    public class ExternalIdReadModel(string poolId, string id)
     {
         public string PoolId { get; set; } = poolId;
-        public long Id { get; set; } = id;
+        public string Id { get; set; } = id;
     }
 
     public static class ExternalIdReadModelExtension

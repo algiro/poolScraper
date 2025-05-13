@@ -15,10 +15,14 @@ namespace PoolScraper.Tests.Model.PowerPool
     public class WorkerStatusExtensionTest
     {
         private static readonly IPool pool = Pool.CreatePowerPool();
-        private const int ID1= 123456;
-        private const int ID2= 654321;
-        private readonly IWorker  worker1 = Worker.Create(pool.PoolId, "SHA256", ID1, "Worker1");
-        private readonly IWorker  worker2 = Worker.Create(pool.PoolId, "SHA256", ID2, "Worker2");
+        private const long WORKER_ID1= 1;
+        private const long WORKER_ID2= 2;
+
+        private const long PowPool_ID1 = 165342;
+        private const long PowPool_ID2 = 243241;
+
+        private readonly IWorker  worker1 = Worker.Create(pool.PoolId, "SHA256", WORKER_ID1, "Worker1");
+        private readonly IWorker  worker2 = Worker.Create(pool.PoolId, "SHA256", WORKER_ID2, "Worker2");
         private WorkerStatus workerStatus1;
         private WorkerStatus workerStatus2;
         [SetUp]
@@ -26,7 +30,7 @@ namespace PoolScraper.Tests.Model.PowerPool
         {
             workerStatus1 = new WorkerStatus()
             {
-                Id = worker1.WorkerId.Id,
+                Id = PowPool_ID1,
                 Algorithm = "SHA256",
                 Name = "Worker1",
                 ValidShares = 100,
@@ -40,7 +44,7 @@ namespace PoolScraper.Tests.Model.PowerPool
             };
             workerStatus2 = new WorkerStatus()
             {
-                Id = worker2.WorkerId.Id,
+                Id = PowPool_ID2,
                 Algorithm = "SHA256",
                 Name = "Worker2",
                 ValidShares = 200,
@@ -59,23 +63,8 @@ namespace PoolScraper.Tests.Model.PowerPool
         public void AsWorkerMinuteStatus_NoIdMatchDefined()
         {
             var dateRange = DateRange.Create(DateTime.UtcNow.AddMinutes(-1), DateTime.UtcNow);
-            var workerStatus = new WorkerStatus()
-            {
-                Id = ID1,
-                Algorithm = "SHA256",
-                Name = "Worker1",
-                ValidShares = 100,
-                InvalidShares = 5,
-                StaleShares = 2,
-                Blocks = 1,
-                Hashrate = 1000.0,
-                HashrateUnits = "MH/s",
-                HashrateAvg = 950.0,
-                HashrateAvgUnits = "MH/s"
-            };
-            var snap = workerStatus.AsWorkerMinuteStatus(pool, dateRange);
-            snap.WorkerId.Id.Should().Be(ID1);
-            snap.WorkerId.PoolId.Should().Be(pool.PoolId);
+            var snap = workerStatus1.AsWorkerMinuteStatus(pool, dateRange);
+            snap.Should().BeNull();
         }
         [Test]
         public void AsWorkerMinuteStatus_WithIdMatchDefined()
@@ -83,27 +72,13 @@ namespace PoolScraper.Tests.Model.PowerPool
             var pool = Pool.CreatePowerPool();
             Dictionary<IExternalId, IWorkerId> workerIdMap = new Dictionary<IExternalId, IWorkerId>()
             {
-                [ExternalId.Create(pool.PoolId, ID1)] = WorkerId.Create(pool.PoolId, ID2)
+                [workerStatus1.GetExternalId(pool)] = WorkerId.Create(pool.PoolId, WORKER_ID1)
             };
             WorkerIdMap.Initialize(workerIdMap);
 
             var dateRange = DateRange.Create(DateTime.UtcNow.AddMinutes(-1), DateTime.UtcNow);
-            var workerStatus = new WorkerStatus()
-            {
-                Id = ID1,
-                Algorithm = "SHA256",
-                Name = "Worker1",
-                ValidShares = 100,
-                InvalidShares = 5,
-                StaleShares = 2,
-                Blocks = 1,
-                Hashrate = 1000.0,
-                HashrateUnits = "MH/s",
-                HashrateAvg = 950.0,
-                HashrateAvgUnits = "MH/s"
-            };
-            var snap = workerStatus.AsWorkerMinuteStatus(pool, dateRange);
-            snap.WorkerId.Id.Should().Be(654321);
+            var snap = workerStatus1.AsWorkerMinuteStatus(pool, dateRange);
+            snap.WorkerId.Id.Should().Be(WORKER_ID1);
             snap.WorkerId.PoolId.Should().Be(pool.PoolId);
         }
 
@@ -114,7 +89,8 @@ namespace PoolScraper.Tests.Model.PowerPool
             // mapping worker2 to worker1 (like an alias)
             Dictionary<IExternalId, IWorkerId> workerIdMap = new Dictionary<IExternalId, IWorkerId>()
             {
-                [ExternalId.Create(pool.PoolId, worker2.WorkerId.Id)] = WorkerId.Create(pool.PoolId, worker1.WorkerId.Id)
+                [workerStatus1.GetExternalId(pool)] = WorkerId.Create(pool.PoolId, WORKER_ID1),
+                [workerStatus2.GetExternalId(pool)] = WorkerId.Create(pool.PoolId, WORKER_ID1)
             };
             WorkerIdMap.Initialize(workerIdMap);
 
@@ -145,7 +121,8 @@ namespace PoolScraper.Tests.Model.PowerPool
             // mapping worker2 to worker1 (like an alias)
             Dictionary<IExternalId, IWorkerId> workerIdMap = new Dictionary<IExternalId, IWorkerId>()
             {
-                [ExternalId.Create(pool.PoolId, worker2.WorkerId.Id)] = WorkerId.Create(pool.PoolId, worker1.WorkerId.Id)
+                [workerStatus1.GetExternalId(pool)] = WorkerId.Create(pool.PoolId, WORKER_ID1),
+                [workerStatus2.GetExternalId(pool)] = WorkerId.Create(pool.PoolId, WORKER_ID1)
             };
             WorkerIdMap.Initialize(workerIdMap);
 

@@ -7,24 +7,24 @@ namespace PoolScraper.Domain
     public interface IExternalId : IComparable
     {
         string PoolId { get; }
-        long Id { get; }
+        string Id { get; }
     }
 
     public static class ExternalId
     {
-        public static IExternalId UNINITIALIZED = new ExternalIdImpl(string.Empty, 0);
-        public static IExternalId Create(string poolId, long workerId)
+        public static IExternalId UNINITIALIZED = new ExternalIdImpl(string.Empty, string.Empty);
+        public static IExternalId Create(string poolId, string id)
         {
-            return new ExternalIdImpl(poolId, workerId);
+            return new ExternalIdImpl(poolId, id);
         }
         public static ExternalIdReadModel AsWorkerIdReadModel(this IExternalId externalId)
         {
             return new ExternalIdReadModel(externalId.PoolId, externalId.Id);
         }
-        private class ExternalIdImpl(string poolId, long workerId) : IExternalId
+        private class ExternalIdImpl(string poolId, string id) : IExternalId
         {
             public string PoolId { get; } = poolId;
-            public long Id { get; } = workerId;
+            public string Id { get; } = id;
 
             public override int GetHashCode()
             {

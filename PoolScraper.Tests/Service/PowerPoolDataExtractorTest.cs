@@ -23,7 +23,8 @@ namespace PoolScraper.Tests.Service
     {
         private IEnumerable<IWorker> allWorkers;
         private WorkerStore workerStore;
-
+        private IPool pool = Pool.CreatePowerPool();
+        private const long WORKER_ID1 = 4602360;
         [SetUp]
         public void SetUp()
         {
@@ -39,6 +40,12 @@ namespace PoolScraper.Tests.Service
             var workers = JsonConvert.DeserializeObject<IEnumerable<WorkerDTO>>(File.ReadAllText("./Resources/workers.json"));
             allWorkers = workers!.Select(w => Worker.Create(w.WorkerId.PoolId, w.Algorithm, w.WorkerId.Id, w.Name));
             workerStore = new WorkerStore(logger,allWorkers);
+            
+            Dictionary<IExternalId, IWorkerId> workerIdMap = new Dictionary<IExternalId, IWorkerId>()
+            {
+                [ExternalId.Create(pool.PoolId,"4602360")] = WorkerId.Create(pool.PoolId, WORKER_ID1),
+            };
+            WorkerIdMap.Initialize(workerIdMap);
         }
 
         [Test]
@@ -50,11 +57,11 @@ namespace PoolScraper.Tests.Service
             var scrapings = JsonConvert.DeserializeObject<IEnumerable<PowerPoolUser>>(jsonContent);
             scrapings.Should().HaveCount(1377);
             var snapshots = scrapings.AsSnapshotWorkerStatus();
-            snapshots.Should().HaveCount(154224);
+            snapshots.Should().HaveCount(1377); // just related to WORKWER_ID1, where mapping (externalID, workerId) is defined
             var snapshotDetails = snapshots.Select( s => s.AsSnapshotDetailedView(workerStore)).ToArray();
 
             var worker4Test = Worker.Create("pool1", "alg1", 1, "worker1");
-            var workerId4602360 = snapshotDetails.Where(s => s!.WorkerId.Id == 4602360);
+            var workerId4602360 = snapshotDetails.Where(s => s!.WorkerId.Id == WORKER_ID1);
             var hashRate4602360 = workerId4602360.Average(w => w!.BasicInfo.Hashrate);
             WorkersReport workersReport = new WorkersReport();
             var averagePerWorker = workersReport.CalculateAveragePerWorker(workerId4602360!);

@@ -4,7 +4,7 @@ namespace PoolScraper.Domain
 {
     public interface IWorkerIdMap
     {
-        IWorkerId GetWorkerId(IExternalId externalId);
+        bool TryGetWorkerId(IExternalId externalId, [NotNullWhen(true)] out IWorkerId? workerId);
     }
 
     public static class WorkerIdMap
@@ -16,15 +16,8 @@ namespace PoolScraper.Domain
         }
         private class DefaultWorkerIdMap(IDictionary<IExternalId, IWorkerId> workerIdMap) : IWorkerIdMap
         {
-            public IWorkerId GetWorkerId(IExternalId externalId)
-            { 
-                if (!workerIdMap.TryGetValue(externalId, out var workerId))
-                {
-                    // If the workerId is not found, create a new one (the map works as an exception)
-                    workerId = WorkerId.Create(externalId.PoolId, externalId.Id);
-                }
-                return workerId;
-            }
+            public bool TryGetWorkerId(IExternalId externalId, [NotNullWhen(true)] out IWorkerId? workerId)
+                => workerIdMap.TryGetValue(externalId, out workerId);
         }
     }
 
