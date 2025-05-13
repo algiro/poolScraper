@@ -3,6 +3,7 @@ using PoolScraper.Components;
 using PoolScraper.Domain.Consolidation;
 using PoolScraper.Persistency;
 using PoolScraper.Persistency.Consolidation;
+using PoolScraper.Persistency.Utils;
 using PoolScraper.Service;
 using PoolScraper.Service.Consolidation;
 using PoolScraper.Service.Store;
@@ -21,6 +22,7 @@ builder.Services.AddSingleton<IPowerPoolScrapingService, PowePoolScrapingService
 builder.Services.AddSingleton<IPowerPoolScrapingPersistency>((sp) => new PowerPoolScrapingPersistency(LoggerUtils.CreateLogger<PowerPoolScrapingPersistency>(), connectionString, databaseName));
 builder.Services.AddSingleton<IWorkersService,WorkersService>();
 builder.Services.AddSingleton<IUptimeHourConsolidationPersistency>( (sp) => new UptimeHourConsolidationPersistency(LoggerUtils.CreateLogger<UptimeHourConsolidationPersistency>(), connectionString, databaseName));
+builder.Services.AddSingleton<ISequenceGenerator>( (sp) => new SequenceGenerator(LoggerUtils.CreateLogger<SequenceGenerator>(), connectionString, databaseName));
 
 builder.Services.AddKeyedSingleton<ISnapshotConsolidationPersistency>("hourSnapConsolidation", (sp,name) => new SnapshotConsolidationPersistency(LoggerUtils.CreateLogger<SnapshotConsolidationPersistency>(), connectionString, databaseName,Granularity.Hours));
 builder.Services.AddKeyedSingleton<ISnapshotConsolidationPersistency>("daySnapConsolidation", (sp, name) => new SnapshotConsolidationPersistency(LoggerUtils.CreateLogger<SnapshotConsolidationPersistency>(), connectionString, databaseName, Granularity.Days));
