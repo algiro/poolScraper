@@ -1,6 +1,7 @@
 ﻿@page "/hashReport"
 @using CommonUtils.Utils
 @using PoolScraper.Components.Shared
+@using PoolScraper.Components.Utils
 @using PoolScraper.Domain
 @using PoolScraper.Model
 @using PoolScraper.Model.Scheduler
@@ -88,7 +89,32 @@ else
                     </tbody>
                 </table>
             </Content>
-	    </Tab>
+        </Tab>
+        <Tab Title="Location">
+            <Content>
+
+                <span> Location Count: </span> <span> @snapshotWorkersPerLocation.Count()  </span> <span> <Button Color="ButtonColor.Primary" @onclick="() => ShowLocationGraph()"> Graph </Button> </span>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Location</th>
+                            <th>Algo</th>
+                            <th>Hashrate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var snapshotWorker in snapshotWorkersPerLocation)
+                        {
+                            <tr>
+                                <td>@snapshotWorker.Worker.Farm.Location</td>
+                                <td>@snapshotWorker.Worker.Algorithm</td>
+                                <td>@snapshotWorker.BasicInfo.Hashrate</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </Content>
+        </Tab>
 
     </Tabs>
 }
@@ -98,8 +124,9 @@ else
     private IEnumerable<ISnapshotDetailedView> snapshotWorkers = Enumerable.Empty<ISnapshotDetailedView>();
     private IEnumerable<ISnapshotDetailedView> snapshotWorkersPerWorker = Enumerable.Empty<ISnapshotDetailedView>();
     private IEnumerable<ISnapshotDetailedView> snapshotWorkersPerModel = Enumerable.Empty<ISnapshotDetailedView>();
+    private IEnumerable<ISnapshotDetailedView> snapshotWorkersPerLocation = Enumerable.Empty<ISnapshotDetailedView>();
     private IDateRange dateRange = new DateOnly().AsDateRange();
-	private WorkersReport workersReport = new WorkersReport();
+    private WorkersReport workersReport = new WorkersReport();
     protected override async Task OnInitializedAsync()
     {
         dateRange = DateOnly.FromDateTime(DateTime.Now.AddDays(-1)).AsDateRange();
@@ -109,11 +136,12 @@ else
     private async Task GetDetails(IDateRange dateRange)
     {
         snapshotWorkers = (await WorkerReportService.GetSnapshotDetailedViewsAsync(dateRange)).OrderBy(w => w.Worker.Model.Name);
-        snapshotWorkersPerWorker = workersReport.CalculateAveragePerWorker(snapshotWorkers);
-        snapshotWorkersPerModel = workersReport.CalculateAveragePerModel(snapshotWorkers);
+        snapshotWorkersPerWorker   = workersReport.CalculateAveragePerWorker(snapshotWorkers);
+        snapshotWorkersPerModel    = workersReport.CalculateAveragePerModel(snapshotWorkers);
+        snapshotWorkersPerLocation = workersReport.CalculateAveragePerLocationAndAlgo(snapshotWorkers).OrderBy(w => w.Worker.Farm.Location + w.Worker.Algorithm);
 
-		StateHasChanged();
-	}
+        StateHasChanged();
+    }
     private async Task ShowGraph(ISnapshotDetailedView snapshotDetailedView)
     {
         var parameters = new Dictionary<string, object>();
@@ -126,6 +154,28 @@ else
         var modelAndDate = workersReport.CalculateAveragePerModelAndDate(snapshotWorkers);
         var parameters = new Dictionary<string, object>();       
         parameters.Add("workersModelData", modelAndDate);
-        await modal.ShowAsync<WorkersModelGraph>(title: "Worker Graph", parameters: parameters);
+        //await modal.ShowAsync<WorkersModelGraph>(title: "Worker Graph", parameters: parameters);
+
+        var dse = new DateSeriesExtractor<IWorkerModel>(
+            modelAndDate,
+            (snap, model) => snap.Worker.Model.Id == model.Id,
+            (_) => WorkerModel.GetAllModels());
+        parameters.Add("dataSeriesExtractor", dse);
+        await modal.ShowAsync<WorkersGroupedGraph<IWorkerModel>>(title: "Worker Graph", parameters: parameters);
+    }
+    private async Task ShowLocationGraph()
+    {
+        var locationAndDate = workersReport.CalculateAveragePerLocationAndDate(snapshotWorkers);
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("workersModelData", locationAndDate);
+		var groups = locationAndDate.GroupBy(w => $"{w.Worker.Farm.Location}.{w.Worker.Algorithm}");
+		var keys = groups.Select(g => g.Key).ToArray();
+
+        var dse = new DateSeriesExtractor<string>(
+            locationAndDate,
+            (snap, locationAlgo) => $"{snap.Worker.Farm.Location}.{snap.Worker.Algorithm}".Equals(locationAlgo),
+            (_) => keys);
+        parameters.Add("dataSeriesExtractor", dse);
+        await modal.ShowAsync<WorkersGroupedGraph<string>>(title: "Worker Graph", parameters: parameters);
     }
 }
