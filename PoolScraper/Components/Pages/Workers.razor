@@ -17,6 +17,8 @@
 
 <p>Latest scraping info:</p>
 
+<Modal @ref="modal" Size="ModalSize.Large" />
+
 @if (workers == null)
 {
     <p><em>Loading...</em></p>
@@ -48,7 +50,9 @@ else
                     <td>@worker.Farm.Id</td>
                     <td>@worker.WorkerId.Id</td>
                     <td>@worker.IsDisabled</td>
-                    <td> <Button Color="ButtonColor.Primary" @onclick="() => ToggleStatusAsync(worker.WorkerId.AsWorkerId())">Toggle</Button> </td>
+                    <td> <Button Color="ButtonColor.Primary" @onclick="() => ToggleStatusAsync(worker.WorkerId.AsWorkerId())">Toggle</Button>
+                         <Button Color="ButtonColor.Primary" @onclick="() => EditWorker(worker.WorkerId.AsWorkerId())">Edit</Button>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -57,6 +61,9 @@ else
 }
 
 @code {
+    private ConfirmDialog? dialog;
+    private Modal modal = default!;
+
     private ObservableCollection<WorkerDTO> workers = default!;
 
     protected override async Task OnInitializedAsync()
@@ -75,6 +82,19 @@ else
             Console.Out.WriteLine($"Worker {worker.Name} status changed to {worker.IsDisabled}");
         }
         return status;
+    }
+    protected async Task EditWorker(IWorkerId workerId)
+    {
+        var parameters = new Dictionary<string, object>();
+        var worker = workers.Single(w => w.WorkerId.AsWorkerId().Equals(workerId));
+
+        parameters.Add("worker", worker);
+        parameters.Add("OnclickCallback", EventCallback.Factory.Create<WorkerDTO>(this, UpdateWorker));
+        await modal.ShowAsync<WorkersEdit>(title: "Worker Details", parameters: parameters);
+    }
+    private async Task UpdateWorker(WorkerDTO worker)
+    {
+		Console.WriteLine($"UpdateWorker {worker.Name} {worker.Model.Name}");
     }
 
     private async Task<bool> RemoveAllWorkersAsync()

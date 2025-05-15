@@ -1,0 +1,96 @@
+﻿@using System.Collections.ObjectModel
+@using PoolScraper.Config
+@using PoolScraper.Domain
+@using PoolScraper.Model
+@using PoolScraper.Model.PowerPool
+@using PoolScraper.Model.Scheduler
+@using PoolScraper.Service
+@using PoolScraper.View
+@attribute [StreamRendering]
+@rendermode InteractiveServer
+
+@inject IWorkersService WorkerService
+
+<Modal @ref="modal" />
+<ConfirmDialog @ref="dialog" />
+
+<p> Edit Worker </p>
+<div class="row">
+    <label class="col-1 col-form-label"> Name </label>
+    <div class="col-3">
+        <TextInput TValue="string" @bind-Value="@worker.Name" />
+    </div>
+    <label class="col-1 col-form-label"> Algo </label>
+    <div class="col-2">
+        <TextInput TValue="string" @bind-Value="@worker.Algorithm" />
+    </div>
+    <label class="col-1 col-form-label"> Model </label>
+    <div class="col-2">
+        <InputSelect  @bind-Value="worker.Model.Id" TValue="int" id="Models" name="Models">
+		    @foreach (var model in models)
+            {
+                <option value="@model.Id"> @model.Name </option>
+            }
+        </InputSelect>
+    </div>
+</div>
+<div class="row">
+    <label class="col-1 col-form-label"> Farm </label>
+    <div class="col-3">
+        <InputSelect @bind-Value="worker.Farm.Id" TValue="string" id="FarmList" name="FarmList"> 
+            @foreach (var farm in farms)                
+                    {           
+                <option value="@farm.Id"> @farm.Id (@farm.Location) </option> 
+            }   
+        </InputSelect> 
+    </div>
+    <label class="col-2 col-form-label"> HashRate </label>
+    <div class="col-2">
+        <TextInput @bind-Value="nominalHashRate" />
+    </div>
+</div>
+<div class="row">
+    <div class="col-1"> <Button Color="ButtonColor.Primary" @onclick="() => EditWorker()">Save</Button> </div>
+</div>
+
+
+
+@code {
+    private Modal modal = default!;
+    private ConfirmDialog? dialog;
+
+    [Parameter] public WorkerDTO? worker { get; set; }
+    [Parameter] public EventCallback<WorkerDTO> OnClickCallback { get; set; }
+
+    private IEnumerable<IFarm> farms = [];
+    private IEnumerable<IWorkerModel> models = [];
+    private string nominalHashRate;
+    private string[] providers = [];
+    protected override Task OnInitializedAsync()
+    {
+        farms = PoolScraperConfig.Instance.Farms.ToArray();
+        models = WorkerModel.GetAllModels().ToArray();
+        providers = PoolScraperConfig.Instance.Providers.ToArray();
+		nominalHashRate = worker?.NominalHashRate.ToString() ?? string.Empty;
+        return Task.CompletedTask;
+    }
+
+    private async Task EditWorker()
+    {
+        var confirmation = await dialog!.ShowAsync(
+        title: "Are you sure you want to Edit the expense?",
+        message1: "Editing could change expense amount",
+        message2: "Do you want to proceed?");
+        if (confirmation)
+        {
+            if (WorkerModel.TryGet(worker.Model.Id, out var workerModel))
+            {
+                worker.Model = workerModel.AsModelDTO();
+				worker.NominalHashRate = long.Parse(nominalHashRate);
+            }
+
+            await OnClickCallback.InvokeAsync(worker);
+            await modal.HideAsync();
+        }
+    }
+}
