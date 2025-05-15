@@ -28,10 +28,12 @@ string databaseName = PoolScraperConfig.Instance.MongoDatabaseName;
 // Add services to the container.
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddBlazorBootstrap();
+builder.Services.AddSingleton<IInitApp, InitApp>();
 builder.Services.AddSingleton<IPowerPoolScrapingService, PowePoolScrapingService>();
+builder.Services.AddSingleton<IPoolScraperConfig>(PoolScraperConfig.Instance);
 
-builder.Services.AddSingleton<IWorkerIdMap>((sp) => WorkerIdMap.Create(sp.GetService<IWorkerPersistency>().CheckNotNull()));
-builder.Services.AddSingleton<IPowerPoolScrapingPersistency>((sp) => new PowerPoolScrapingPersistency(LoggerUtils.CreateLogger<PowerPoolScrapingPersistency>(), connectionString, databaseName, sp.GetService<IWorkerIdMap>().CheckNotNull()));
+//builder.Services.AddSingleton<IWorkerIdMap>((sp) => WorkerIdMap.Create(sp.GetService<IWorkerPersistency>().CheckNotNull()));
+builder.Services.AddSingleton<IPowerPoolScrapingPersistency,PowerPoolScrapingPersistency>();
 builder.Services.AddSingleton<IWorkersService,WorkersService>();
 builder.Services.AddSingleton<IUptimeHourConsolidationPersistency>( (sp) => new UptimeHourConsolidationPersistency(LoggerUtils.CreateLogger<UptimeHourConsolidationPersistency>(), connectionString, databaseName));
 builder.Services.AddSingleton<ISequenceGenerator>( (sp) => new SequenceGenerator(LoggerUtils.CreateLogger<SequenceGenerator>(), connectionString, databaseName));
@@ -39,16 +41,18 @@ builder.Services.AddSingleton<ISequenceGenerator>( (sp) => new SequenceGenerator
 builder.Services.AddKeyedSingleton<ISnapshotConsolidationPersistency>("hourSnapConsolidation", (sp,name) => new SnapshotConsolidationPersistency(LoggerUtils.CreateLogger<SnapshotConsolidationPersistency>(), connectionString, databaseName,Granularity.Hours));
 builder.Services.AddKeyedSingleton<ISnapshotConsolidationPersistency>("daySnapConsolidation", (sp, name) => new SnapshotConsolidationPersistency(LoggerUtils.CreateLogger<SnapshotConsolidationPersistency>(), connectionString, databaseName, Granularity.Days));
 builder.Services.AddSingleton<ISnapshotDataConsolidationPersistency>((sp) => new SnapshotDataConsolidationPersistency(LoggerUtils.CreateLogger<SnapshotDataConsolidationPersistency>(), connectionString, databaseName, Granularity.Hours));
+builder.Services.AddSingleton<IWorkerPersistency,WorkerPersistency>();
 
 builder.Services.AddSingleton<IUptimeConsolidateServiceClient, UptimeConsolidateServiceClient>();
-builder.Services.AddSingleton<IWorkerPersistency>( (sp) => new WorkerPersistency(LoggerUtils.CreateLogger<WorkerPersistency>(), connectionString, databaseName));
+
 
 builder.Services.AddSingleton<IUptimeService, UptimeService>();
 builder.Services.AddSingleton<IScrapingServiceClient, ScrapingServiceClient>();
 builder.Services.AddSingleton<IUptimeServiceClient, UptimeServiceClient>();
 builder.Services.AddSingleton<ISnapshotConsolidateServiceClient, SnapshotConsolidateServiceClient>();
 builder.Services.AddSingleton<IWorkersReportService, WorkersReportService>();
-builder.Services.AddSingleton<IWorkerStore>((sp) => new WorkerStore(LoggerUtils.CreateLogger<WorkerStore>(),sp.GetService<IWorkerPersistency>().CheckNotNull()));
+builder.Services.AddSingleton<IWorkerStore, WorkerStore>();
+
 
 builder.Services.AddHostedService<ScheduledService>();
 

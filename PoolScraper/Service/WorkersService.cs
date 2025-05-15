@@ -50,5 +50,20 @@ namespace PoolScraper.Service
                 return false;
             }
         }
+
+        public async Task<bool> UpdateWorkerAsync(WorkerDTO workerToUpdate)
+        {
+            try
+            {
+                await _workerPersistency.UpdateWorkerAsync(workerToUpdate);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _log.LogError("Error UpdateWorkerAsync: {workerToUpdate} {message}", workerToUpdate,  ex.Message);
+                return false;
+            }
+
+        }
     }
 }

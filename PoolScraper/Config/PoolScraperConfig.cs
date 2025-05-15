@@ -28,15 +28,24 @@ namespace PoolScraper.Config
             var farmTokens = farmConfigStr?.Split(';');
             foreach (var farmToken in farmTokens!)
             {
-                var farmParts = farmToken.Split('|');
-                if (farmParts.Length == 4)
+                IFarm farm = Farm.UNKNOWN;
+                try
                 {
-                    var farmId = int.Parse(farmParts[0]);
-                    var farmName = farmParts[1];
-                    var pattern = farmParts[2];
-                    var location = farmParts[3];
-                    yield return Farm.Create(farmId, farmName, pattern, location);
+                    var farmParts = farmToken.Split('|');
+                    if (farmParts.Length == 4)
+                    {
+                        var farmId = int.Parse(farmParts[0]);
+                        var farmName = farmParts[1];
+                        var pattern = farmParts[2];
+                        var location = farmParts[3];
+                        farm = Farm.Create(farmId, farmName, pattern, location);
+                    }
                 }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "GetFarms Error parsing farm configuration: " + ex.Message);
+                }
+                yield return farm;
             }
         }
         private class DefaultPoolScraperConfig : IPoolScraperConfig
@@ -58,7 +67,6 @@ namespace PoolScraper.Config
                         return [];
                     }
                     var farms = GetFarms(farmConfigStr);
-                    Farm.UpdateStore(farms);
                     return farms;
                 }
             }

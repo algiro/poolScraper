@@ -8,6 +8,7 @@ namespace PoolScraper.View
         public WorkerIdDTO WorkerId { get; set; } = Domain.WorkerId.UNINITIALIZED.AsDTO();
         public string Name { get; set; } = string.Empty;
         public long NominalHashRate { get; set; }
+        public string Provider { get; set;} = string.Empty;
         public bool IsDisabled { get; set; }
         public WorkerModelDTO Model { get; set; } = new WorkerModelDTO(0, string.Empty);
         public FarmDTO Farm { get; set; } = new FarmDTO(0, string.Empty, string.Empty);

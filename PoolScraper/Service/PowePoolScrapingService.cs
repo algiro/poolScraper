@@ -7,6 +7,7 @@ using PoolScraper.Domain;
 using PoolScraper.Model.PowerPool;
 using PoolScraper.Persistency;
 using PoolScraper.Persistency.Consolidation;
+using PoolScraper.Service.Store;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
@@ -20,34 +21,26 @@ namespace PoolScraper.Service
         private const string API_BASE_URL = "https://api.powerpool.io/api/user";
         private readonly ILogger _log;
         private readonly OnceFlag _areWorkersLoaded = new OnceFlag();
-        private IEnumerable<IWorker> _allWorkers = Enumerable.Empty<IWorker>();
+
         private readonly IPool powerPool = Pool.CreatePowerPool();
         private readonly IPowerPoolScrapingPersistency _powerPoolScrapingPersistency;
         private readonly IWorkerPersistency _workerPersistency;
-        private readonly IWorkerIdMap _workerIdMap;
+        private readonly IWorkerStore _workerStore;
 
-        public PowePoolScrapingService(ILogger<PowePoolScrapingService> log, IPowerPoolScrapingPersistency powerPoolScrapingPersistency, IWorkerPersistency workerPersistency, IWorkerIdMap workerIdMap)
+        public PowePoolScrapingService(ILogger<PowePoolScrapingService> log, IPowerPoolScrapingPersistency powerPoolScrapingPersistency, IWorkerPersistency workerPersistency, IWorkerStore workerStore)
         {
             _log = log;
             _httpClient = new HttpClient();
             _powerPoolScrapingPersistency = powerPoolScrapingPersistency;
             _workerPersistency = workerPersistency;
-            _workerIdMap = workerIdMap;
+            _workerStore = workerStore;
         }
         private string apiKey => powerPool.ApiKey;
         public async Task FetchAndStoreUserData()
         {
             try
             {
-                if (_areWorkersLoaded.CheckIfCalledAndSet)
-                {
-                    _allWorkers = await _workerPersistency.GetAllWorkerAsync();
-                    _log.LogInformation("FetchAndStoreUserData, first loading of allWorkers# {count}", _allWorkers.Count());
-                }
-                else
-                {
-                    _log.LogInformation("AllWorkers already loaded");
-                }
+                var allWorkers = _workerStore.GetAllWorker();
 
                 // Fetch data from API
                 var response = await _httpClient.GetAsync($"{API_BASE_URL}?apiKey={apiKey}");
@@ -64,19 +57,14 @@ namespace PoolScraper.Service
                     foreach (var minerData in powerPoolData.Miners.Values)
                     {
                         var workersStatus = minerData.Workers.GetAllWorkerStatus();
-                        var workers = workersStatus.GetWorkerIdsStatus(_workerIdMap, powerPool);
+                        var workers = workersStatus.GetWorkerIdsStatus(_workerStore.GetWorkerIdMap(), powerPool);
                         _log.LogInformation("Workers from current scraping matching count: {matchCount}, added count:{unmatchCount}, removed count:{removeCount}", workers.Matching.Count(), workers.Added.Count(), workers.Removed.Count());                        
                         if (!workers.Added.IsEmpty())
                         {
                             _log.LogInformation("Adding new Workers");
                             var newWorkerStatus = workersStatus.Where(w => workers.Added.Contains(w.GetExternalId(powerPool)));
                             var newWorkers = newWorkerStatus.Select(w => w.AsNewWorker(powerPool));
-                            await _workerPersistency.InsertManyAsync(newWorkers);
-                            foreach (var newWorker in newWorkers)
-                            {
-                                _workerIdMap.AddWorkerId(newWorker.ExternalId, newWorker.WorkerId);
-                            }
-                            _allWorkers = await _workerPersistency.GetAllWorkerAsync();
+                            await _workerPersistency.InsertManyAsync(newWorkers);                            
                         }
                         if (!workers.Removed.IsEmpty())
                         {

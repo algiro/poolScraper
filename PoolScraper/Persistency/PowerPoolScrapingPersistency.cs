@@ -1,10 +1,12 @@
 ﻿using CommonUtils.Utils;
 using log4net;
 using MongoDB.Driver;
+using PoolScraper.Config;
 using PoolScraper.Domain;
 using PoolScraper.Model;
 using PoolScraper.Model.PowerPool;
 using PoolScraper.Persistency.Consolidation;
+using PoolScraper.Service.Store;
 using System.Net.Http;
 
 namespace PoolScraper.Persistency
@@ -14,15 +16,15 @@ namespace PoolScraper.Persistency
         private readonly IMongoCollection<PowerPoolUser> _scrapingCollection;
         private readonly ILogger _log;
         private readonly IPool powerPool = Pool.CreatePowerPool();
-        private readonly IWorkerIdMap _workerIdMap;
-        public PowerPoolScrapingPersistency(ILogger log, string connectionString, string databaseName, IWorkerIdMap workerIdMap)
+        private readonly IWorkerStore _workerStore;
+        public PowerPoolScrapingPersistency(ILogger<PowerPoolScrapingPersistency> log, IPoolScraperConfig poolScraperConfig, IWorkerStore workerStore)
         {
             _log = log;
-            _log.LogInformation("PowerPoolService C.tor with connection string: {connectionString} and database name: {databaseName}", connectionString, databaseName);
-            var client = new MongoClient(connectionString);
-            var database = client.GetDatabase(databaseName);
+            _log.LogInformation("PowerPoolService C.tor with connection string: {connectionString} and database name: {databaseName}", poolScraperConfig.MongoConnectionString, poolScraperConfig.MongoDatabaseName);
+            var client = new MongoClient(poolScraperConfig.MongoConnectionString);
+            var database = client.GetDatabase(poolScraperConfig.MongoDatabaseName);
             _scrapingCollection = database.GetCollection<PowerPoolUser>("powerPoolUsers");
-            _workerIdMap = workerIdMap;
+            _workerStore = workerStore;
         }
 
         public async Task<bool> InsertAsync(PowerPoolUser powerPoolUser)
@@ -70,7 +72,7 @@ namespace PoolScraper.Persistency
                 .ToListAsync();
             _log.LogInformation("GetSnapshotWorkerStatusAsync not filtered by {workerId} #", result.Count());
 
-            var workerStatus = result.AsSnapshotWorkerStatus(_workerIdMap);
+            var workerStatus = result.AsSnapshotWorkerStatus(_workerStore.GetWorkerIdMap());
             _log.LogInformation("GetSnapshotWorkerStatusAsync transformed as workerStatus {workerId} #", workerStatus.Count());
             return workerStatus.Where(w => w.WorkerId.Id == workerId.Id);
 
