@@ -15,13 +15,13 @@ namespace PoolScraper.Tests.Model
         [TestCase("tmsminer007.2eths21200", "Ethiopia")]
         [TestCase("tmsminer007.eths21200",  "Ethiopia")]
 
-        public void TryGetModel_ValidString_ReturnsTrueAndParsedModel(string modelName,string expectedFarmId)
+        public void TryGetModel_ValidString_ReturnsTrueAndParsedModel(string modelName,string expectedFarmName)
         {
             // Act
             bool parsed = Farm.TryGetFarm(modelName, out var parsedFarm);
             // Assert
             parsed.Should().BeTrue();
-            parsedFarm.Id.Should().Be(expectedFarmId);
+            parsedFarm.Name.Should().Be(expectedFarmName);
         }
 
         [TestCase("tmsminer007.4l79300", "UNKNOWN")]

@@ -5,8 +5,8 @@ namespace PoolScraper.Domain
     public interface IFarmStore
     {
         void AddFarm(IFarm farm);
-        void RemoveFarm(string farmId);
-        bool TryGetFarm(string farmId, [NotNullWhen(true)] out IFarm? farm);
+        void RemoveFarm(int farmId);
+        bool TryGetFarm(int farmId, [NotNullWhen(true)] out IFarm? farm);
         IEnumerable<IFarm> GetAllFarms();
     }
 
@@ -19,7 +19,7 @@ namespace PoolScraper.Domain
 
         private class DefaultFarmStore : IFarmStore
         {
-            private readonly IDictionary<string, IFarm> _farms;
+            private readonly IDictionary<int, IFarm> _farms;
             public DefaultFarmStore(IEnumerable<IFarm> farms)
             {
                 _farms = farms.ToDictionary(f => f.Id, f => f);
@@ -29,9 +29,9 @@ namespace PoolScraper.Domain
 
             public IEnumerable<IFarm> GetAllFarms() => _farms.Values;
 
-            public void RemoveFarm(string farmId) => _farms.Remove(farmId);
+            public void RemoveFarm(int farmId) => _farms.Remove(farmId);
 
-            public bool TryGetFarm(string farmId, [NotNullWhen(true)] out IFarm? farm)
+            public bool TryGetFarm(int farmId, [NotNullWhen(true)] out IFarm? farm)
             {
                 var found = _farms.TryGetValue(farmId, out farm);
                 if (!found) farm = Farm.UNKNOWN;

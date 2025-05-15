@@ -6,17 +6,18 @@ namespace PoolScraper.Domain
 {
     public interface IFarm
     {
-        string Id { get; }
+        int Id { get; }
+        string Name { get; }
         string Location { get; }
         bool IsCompatible(string workerName);
     }
     
     public static class Farm
     {
-        public static IFarm Dubai => Create("Dubai", "^\\d*d", "Dubai");
-        public static IFarm Ethiopia => Create("Ethiopia", "^\\d*eth", "Ethiopia");
-        public static IFarm Myrig => Create("Myrig", "^\\d*mr", "Russia");
-        public static IFarm UNKNOWN => Create("UNKNOWN", "^UNKNOWN", "Unknown");
+        public static IFarm Dubai => Create(10, "Dubai", "^\\d*d", "UAE");
+        public static IFarm Ethiopia => Create(20,"Ethiopia", "^\\d*eth", "Ethiopia");
+        public static IFarm Myrig => Create(30, "Myrig", "^\\d*mr", "Russia");
+        public static IFarm UNKNOWN => Create(-1, "UNKNOWN", "^UNKNOWN", "Unknown");
 
         public static IFarm[] DEFAULT_FARMS = { Dubai,Ethiopia, Myrig,UNKNOWN };
 
@@ -25,21 +26,23 @@ namespace PoolScraper.Domain
         {
             _farmStore = FarmStore.Create(farms);
         }
-        public static FarmDTO AsFarmDTO(this IFarm farm) => new FarmDTO(farm.Id, farm.Location);
-        public static IFarm Create(string id, string regEx, string location)
+        public static FarmDTO AsFarmDTO(this IFarm farm) => new FarmDTO(farm.Id, farm.Name, farm.Location);
+        public static IFarm Create(int id, string name, string regEx, string location)
         {
-            return new DefaultFarm(id, regEx, location);
+            return new DefaultFarm(id, name, regEx, location);
         }
         private class DefaultFarm : IFarm
         {
-            public DefaultFarm(string id, string regEx, string location)
+            public DefaultFarm(int id, string name, string regEx, string location)
             {
                 Id = id;
+                Name = name;
                 Location = location;
                 RegExPattern = regEx;
             }
-            public string Id { get; }
+            public int Id { get; }
             public string Location { get; }
+            public string Name { get; }
             private string RegExPattern { get; }
 
             public bool IsCompatible(string workerName)
@@ -52,7 +55,7 @@ namespace PoolScraper.Domain
             }
         }
 
-        public static bool TryGet(string farmId, [NotNullWhen(true)] out IFarm? farm) => _farmStore.TryGetFarm(farmId, out farm);
+        public static bool TryGet(int farmId, [NotNullWhen(true)] out IFarm? farm) => _farmStore.TryGetFarm(farmId, out farm);
 
         public static bool TryGetFarm(string workerName, out IFarm farm)
         {

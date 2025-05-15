@@ -33,7 +33,7 @@ namespace PoolScraper.Model
         public int ModelId{ get; set; }
         
         [JsonProperty("farmId")]
-        public string FarmId { get; set; }
+        public int FarmId { get; set; }
 
         [JsonProperty("nominalHashRate")]
         public long NominalHashRate{ get; set; }

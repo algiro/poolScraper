@@ -3,9 +3,10 @@ using PoolScraper.Model.PowerPool;
 
 namespace PoolScraper.View
 {
-    public class FarmDTO(string farmId, string location)
+    public class FarmDTO(int id, string name, string location)
     {
-        public string Id { get; set; } = farmId;
+        public int Id { get; set; } = id;
+        public string Name { get; set; } = name;
         public string Location { get; set; } = location;
     }
 
@@ -13,7 +14,7 @@ namespace PoolScraper.View
     {
         public static IFarm AsFarm(this FarmDTO farmDTO)
         {
-            if (Farm.TryGetFarm(farmDTO.Id, out var farm)) { 
+            if (Farm.TryGet(farmDTO.Id, out var farm)) { 
                 return farm;
             }
             return null;

@@ -37,7 +37,7 @@
 <div class="row">
     <label class="col-1 col-form-label"> Farm </label>
     <div class="col-3">
-        <InputSelect @bind-Value="worker.Farm.Id" TValue="string" id="FarmList" name="FarmList"> 
+        <InputSelect @bind-Value="worker.Farm.Id" TValue="int" id="FarmList" name="FarmList"> 
             @foreach (var farm in farms)                
                     {           
                 <option value="@farm.Id"> @farm.Id (@farm.Location) </option> 

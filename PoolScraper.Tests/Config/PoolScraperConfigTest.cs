@@ -13,12 +13,12 @@ namespace PoolScraper.Tests.Config
         [Test]
         public void CreateFarmFromConfig_VeriftIsCompatible_Success()
         {
-            var stringConfig = "Russia1|^\\d*mr|Russia;Dubai1|^\\d*d|Dubai;Ethiopia1|^\\d*eth|Ethiopia";
+            var stringConfig = "1|Russia1|^\\d*mr|Russia;2|Dubai1|^\\d*d|Dubai;3|Ethiopia1|^\\d*eth|Ethiopia";
             var farms = PoolScraperConfig.GetFarms(stringConfig);
             farms.Should().HaveCount(3);
-            var farm1 = farms.FirstOrDefault(f => f.Id == "Russia1");
-            var farm2 = farms.FirstOrDefault(f => f.Id == "Dubai1");
-            var farm3 = farms.FirstOrDefault(f => f.Id == "Ethiopia1");
+            var farm1 = farms.FirstOrDefault(f => f.Id == 1);
+            var farm2 = farms.FirstOrDefault(f => f.Id == 2);
+            var farm3 = farms.FirstOrDefault(f => f.Id == 3);
                         
             farm1.IsCompatible("tmsminer007.8mrs21216").Should().BeTrue();
             farm2.IsCompatible("tmsminer007.1ds21xp270").Should().BeTrue();

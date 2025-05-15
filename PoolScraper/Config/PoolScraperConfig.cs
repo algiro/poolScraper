@@ -29,12 +29,13 @@ namespace PoolScraper.Config
             foreach (var farmToken in farmTokens)
             {
                 var farmParts = farmToken.Split('|');
-                if (farmParts.Length == 3)
+                if (farmParts.Length == 4)
                 {
-                    var farmId = farmParts[0];
-                    var pattern = farmParts[1];
-                    var location = farmParts[2];
-                    yield return Farm.Create(farmId, pattern, location);
+                    var farmId = int.Parse(farmParts[0]);
+                    var farmName = farmParts[1];
+                    var pattern = farmParts[2];
+                    var location = farmParts[3];
+                    yield return Farm.Create(farmId, farmName, pattern, location);
                 }
             }
         }
