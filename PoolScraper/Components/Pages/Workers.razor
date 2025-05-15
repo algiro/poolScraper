@@ -47,7 +47,7 @@ else
                     <td>@worker.Algorithm</td>
                     <td>@worker.Model.Name</td>
                     <td>@worker.NominalHashRate</td>
-                    <td>@worker.Farm.Id</td>
+                    <td>@worker.Farm.Name</td>
                     <td>@worker.WorkerId.Id</td>
                     <td>@worker.IsDisabled</td>
                     <td> <Button Color="ButtonColor.Primary" @onclick="() => ToggleStatusAsync(worker.WorkerId.AsWorkerId())">Toggle</Button>
@@ -92,9 +92,10 @@ else
         parameters.Add("OnclickCallback", EventCallback.Factory.Create<WorkerDTO>(this, UpdateWorker));
         await modal.ShowAsync<WorkersEdit>(title: "Worker Details", parameters: parameters);
     }
-    private async Task UpdateWorker(WorkerDTO worker)
+    private async Task<bool> UpdateWorker(WorkerDTO worker)
     {
-		Console.WriteLine($"UpdateWorker {worker.Name} {worker.Model.Name}");
+        var status = await WorkerService.UpdateWorkerAsync(worker);
+        return status;
     }
 
     private async Task<bool> RemoveAllWorkersAsync()

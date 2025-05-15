@@ -1,4 +1,5 @@
 ﻿using PoolScraper.Domain;
+using PoolScraper.View;
 
 namespace PoolScraper.Persistency
 {
@@ -10,7 +11,7 @@ namespace PoolScraper.Persistency
         Task<bool> ToggleEnableWorkerAsync(IWorkerId workerId);
         Task<bool> RemoveAllAsync();
         IEnumerable<IWorkerIdMatch> GetAllWorkerIdMatch();
-        //Task<bool> InsertWorkerIdMatchAsync(IWorkerIdMatch workerIdMatch);
+        Task<bool> UpdateWorkerAsync(WorkerDTO workerToUpdate);
     }
 
 }

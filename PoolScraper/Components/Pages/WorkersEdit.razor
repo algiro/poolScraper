@@ -40,9 +40,18 @@
         <InputSelect @bind-Value="worker.Farm.Id" TValue="int" id="FarmList" name="FarmList"> 
             @foreach (var farm in farms)                
                     {           
-                <option value="@farm.Id"> @farm.Id (@farm.Location) </option> 
+                <option value="@farm.Id"> @farm.Name (@farm.Location) </option> 
             }   
         </InputSelect> 
+    </div>
+    <label class="col-1 col-form-label"> Provider </label>
+    <div class="col-2">
+        <InputSelect @bind-Value="worker.Provider" TValue="string" id="ProvList" name="ProvList">
+            @foreach (var provider in providers)
+            {
+                <option value="@provider"> @provider </option>
+            }
+        </InputSelect>
     </div>
     <label class="col-2 col-form-label"> HashRate </label>
     <div class="col-2">
