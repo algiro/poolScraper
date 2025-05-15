@@ -7,6 +7,7 @@ namespace PoolScraper.Domain
         void AddFarm(IFarm farm);
         void RemoveFarm(string farmId);
         bool TryGetFarm(string farmId, [NotNullWhen(true)] out IFarm? farm);
+        IEnumerable<IFarm> GetAllFarms();
     }
 
     public static class FarmStore
@@ -25,6 +26,8 @@ namespace PoolScraper.Domain
             }
 
             public void AddFarm(IFarm farm) => _farms.Add(farm.Id, farm);
+
+            public IEnumerable<IFarm> GetAllFarms() => _farms.Values;
 
             public void RemoveFarm(string farmId) => _farms.Remove(farmId);
 

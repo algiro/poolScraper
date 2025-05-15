@@ -7,15 +7,16 @@ namespace PoolScraper.Domain
     public interface IFarm
     {
         string Id { get; }
-        string Description { get; }
+        string Location { get; }
+        bool IsCompatible(string workerName);
     }
     
     public static class Farm
     {
-        public static IFarm Dubai => Create("Dubai", "Dubai");
-        public static IFarm Ethiopia => Create("Ethiopia", "Ethiopia");
-        public static IFarm Myrig => Create("Myrig", "Myrig");
-        public static IFarm UNKNOWN => Create("UNKNOWN", "Unknown");
+        public static IFarm Dubai => Create("Dubai", "^\\d*d", "Dubai");
+        public static IFarm Ethiopia => Create("Ethiopia", "^\\d*eth", "Ethiopia");
+        public static IFarm Myrig => Create("Myrig", "^\\d*mr", "Russia");
+        public static IFarm UNKNOWN => Create("UNKNOWN", "^UNKNOWN", "Unknown");
 
         public static IFarm[] DEFAULT_FARMS = { Dubai,Ethiopia, Myrig,UNKNOWN };
 
@@ -24,29 +25,33 @@ namespace PoolScraper.Domain
         {
             _farmStore = FarmStore.Create(farms);
         }
-        public static FarmDTO AsFarmDTO(this IFarm farm) => new FarmDTO(farm.Id, farm.Description);
-        public static IFarm Create(string id, string description)
+        public static FarmDTO AsFarmDTO(this IFarm farm) => new FarmDTO(farm.Id, farm.Location);
+        public static IFarm Create(string id, string regEx, string location)
         {
-            return new DefaultFarm(id, description);
+            return new DefaultFarm(id, regEx, location);
         }
         private class DefaultFarm : IFarm
         {
-            public DefaultFarm(string id, string description)
+            public DefaultFarm(string id, string regEx, string location)
             {
                 Id = id;
-                Description = description;
+                Location = location;
+                RegExPattern = regEx;
             }
             public string Id { get; }
-            public string Description { get; }
+            public string Location { get; }
+            private string RegExPattern { get; }
+
+            public bool IsCompatible(string workerName)
+            {
+                var suffix = Worker.GetWorkerSuffix(workerName);
+                if (suffix == null)
+                    return false;
+
+                return Regex.IsMatch(suffix.ToLower(), RegExPattern);
+            }
         }
 
-        private static (string pattern, IFarm farm)[]  farmPatterns = 
-        {
-                    // Key patterns, case-insensitive
-                    ("^\\d*d", Farm.Dubai),           // starts with 'd' only
-                    ("^\\d*eth", Farm.Ethiopia),      // starts with 'eth'
-                    ("^\\d*mr", Farm.Myrig),          // starts with 'mr'
-        };
         public static bool TryGet(string farmId, [NotNullWhen(true)] out IFarm? farm) => _farmStore.TryGetFarm(farmId, out farm);
 
         public static bool TryGetFarm(string workerName, out IFarm farm)
@@ -54,19 +59,13 @@ namespace PoolScraper.Domain
             farm = Farm.UNKNOWN;
             if (string.IsNullOrWhiteSpace(workerName))
                 return false;
-
-            var suffix = Worker.GetWorkerSuffix(workerName);
-            if (suffix == null)
-                return false;
-
-            // Preprocess farm patterns for easy extensibility
-
+            
             // Legacy/manual fallback (in case the above doesn't resolve, but you want backward compatibility)
-            foreach (var fp in farmPatterns)
+            foreach (var curFarm in _farmStore.GetAllFarms())
             {
-                if (Regex.IsMatch(suffix.ToLower(), fp.pattern))
+                if (curFarm.IsCompatible(workerName))
                 {
-                    farm = fp.farm;
+                    farm = curFarm;
                     return true;
                 }
             }

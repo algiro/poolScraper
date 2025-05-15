@@ -1,14 +1,18 @@
 services:
   poolscraper:
-        image: algiro/pool-scraper:latest
-        container_name: poolscraper
-        ports:
-        - "8080:8080"
-        environment:
-        - ASPNETCORE_URLS=http://+:8080
-        restart: unless-stopped
-        networks:
-        - poolscraper_network
+    image: algiro/pool-scraper:latest
+    container_name: poolscraper
+    ports:
+    - "8080:8080"
+    environment:
+    - ASPNETCORE_URLS=http://+:8080
+    restart: unless-stopped
+    networks:
+    - poolscraper_network
+    volumes:
+      - type: bind
+        source: ${POOL_SCRAPER_CONFIG}
+        target: /app/Config
   mongodb:
     image: mongo:latest
     container_name: poolscraper_mongodb

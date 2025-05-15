@@ -3,10 +3,10 @@ using PoolScraper.Model.PowerPool;
 
 namespace PoolScraper.View
 {
-    public class FarmDTO(string farmId, string description)
+    public class FarmDTO(string farmId, string location)
     {
         public string Id { get; set; } = farmId;
-        public string Description { get; set; } = description;
+        public string Location { get; set; } = location;
     }
 
     public static class FarmDTOExtensions
