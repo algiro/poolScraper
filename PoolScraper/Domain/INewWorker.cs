@@ -19,7 +19,7 @@ namespace PoolScraper.Domain
         }
         public static INewWorker UpdateId(this INewWorker sourceWorker, long id)
         {
-            var workerUpdatedId = Worker.Create(sourceWorker.WorkerId.PoolId, sourceWorker.Algorithm, id, sourceWorker.Name, sourceWorker.NominalHashRate, sourceWorker.Model, sourceWorker.Farm);
+            var workerUpdatedId = Worker.Create(sourceWorker.WorkerId.PoolId, sourceWorker.Algorithm, id, sourceWorker.Name, sourceWorker.NominalHashRate, sourceWorker.Provider, sourceWorker.Model, sourceWorker.Farm);
             return CreateNew(workerUpdatedId, sourceWorker.ExternalId);
         }
             
@@ -30,6 +30,7 @@ namespace PoolScraper.Domain
             public IWorkerId WorkerId { get; } = worker.WorkerId;
             public string Algorithm { get; } = worker.Algorithm;
             public string Name { get; } = worker.Name;
+            public string Provider { get; } = worker.Provider;
             public IWorkerModel Model { get; } = worker.Model;
             public IFarm Farm { get; } = worker.Farm;
             public long NominalHashRate { get; } = worker.NominalHashRate;

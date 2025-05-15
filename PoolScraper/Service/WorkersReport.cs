@@ -32,10 +32,11 @@ namespace PoolScraper.Service
                 .GroupBy(s => new { s.Worker.Model, s.DateRange })
                 .SelectNotNull(group =>
                 {
+                    IWorkerModel model = group.Key.Model.CheckNotNull();
                     double weightedHashRateTotal = group.Sum(x => x.Weight() * x.BasicInfo.Hashrate);
                     double totalWeight = group.Sum(x => x.Weight());
                     var representative = group.First();
-                    var workerGrouped = Worker.Create("","",0,group.Key.Model.ToString(),0, group.Key.Model,Farm.UNKNOWN);
+                    var workerGrouped = Worker.Create("","",0, model.Name,0, "",group.Key.Model,Farm.UNKNOWN);
                     var baseDateFrom = group.Min(g => g.DateRange.From);
                     var baseDateTo = group.Max(g => g.DateRange.To);
                     var groupDateRange = DateRange.Create(baseDateFrom, baseDateTo);

@@ -27,6 +27,7 @@
             public IFarm Farm { get; } = worker.Farm;
 
             public long NominalHashRate { get; } = worker.NominalHashRate;
+            public string Provider { get; } = worker.Provider;
 
             public int CompareTo(object? obj)
             {

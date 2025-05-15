@@ -12,18 +12,19 @@ namespace PoolScraper.Domain
         IWorkerModel Model { get; }
         IFarm Farm { get; }
         long NominalHashRate { get; }
+        string Provider { get; } 
     }
 
     public static class Worker
     {
         public static IWorker CreateNew(string poolId, string algorithm, string name) => Create(poolId, algorithm, -1, name);
 
-        public static IWorker Create(string poolId, string algorithm, long id, string name)
+        public static IWorker Create(string poolId, string algorithm, long id, string name, string? provider=null)
         {
             WorkerModelExtensions.TryGetModel(name, out var workerModel);
             Farm.TryGetFarm(name, out var farm);
             WorkerModelExtensions.TryGetNominalHashRate(name, out long nominalHashRate);
-            return Create(poolId, algorithm, id, name, nominalHashRate, workerModel, farm);
+            return Create(poolId, algorithm, id, name, nominalHashRate, provider ?? string.Empty, workerModel, farm);
         }
         public static string? GetWorkerSuffix(string workerName)
         {
@@ -37,9 +38,9 @@ namespace PoolScraper.Domain
             return workerName.Substring(idx + 1);
         }
 
-        public static IWorker Create(string poolId, string algorithm, long id, string name, long nominalHashRate, IWorkerModel model, IFarm farm)
+        public static IWorker Create(string poolId, string algorithm, long id, string name, long nominalHashRate, string provider, IWorkerModel model, IFarm farm)
         {            
-            return new DefaultWorker(poolId, algorithm, id, name,nominalHashRate, model, farm);
+            return new DefaultWorker(poolId, algorithm, id, name,nominalHashRate,provider, model, farm);
         }
         public static IEnumerable<WorkerReadModel> AsWorkersReadModel(this IEnumerable<IWorker> workers)
         {
@@ -48,12 +49,13 @@ namespace PoolScraper.Domain
 
         private class DefaultWorker : IWorker
         {
-            public DefaultWorker(string poolId, string algorithm, long id, string name, long nominalHashRate, IWorkerModel model, IFarm farm)
+            public DefaultWorker(string poolId, string algorithm, long id, string name, long nominalHashRate, string provider, IWorkerModel model, IFarm farm)
             {
                 WorkerId = PoolScraper.Domain.WorkerId.Create(poolId, id);
                 Algorithm = algorithm;
                 Id = id;
                 NominalHashRate = nominalHashRate;
+                Provider = provider;
                 Name = name;
                 Model = model;
                 Farm = farm;
@@ -65,6 +67,7 @@ namespace PoolScraper.Domain
             public IWorkerModel Model { get; }
             public IFarm Farm { get; }
             public long NominalHashRate { get; }
+            public string Provider { get; }
 
             public int CompareTo(object? obj)
             {
