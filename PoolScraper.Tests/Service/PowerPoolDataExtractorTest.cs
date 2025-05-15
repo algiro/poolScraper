@@ -40,8 +40,9 @@ namespace PoolScraper.Tests.Service
 
             var workers = JsonConvert.DeserializeObject<IEnumerable<WorkerDTO>>(File.ReadAllText("./Resources/workers.json"));
             allWorkers = workers!.Select(w => Worker.Create(w.WorkerId.PoolId, w.Algorithm, w.WorkerId.Id, w.Name));
-            workerStore = new WorkerStore(logger,allWorkers);
-            
+            workerStore = new WorkerStore(logger);
+            workerStore.UpdateStore(allWorkers);
+
             Dictionary<IExternalId, IWorkerId> workerIdDic = new Dictionary<IExternalId, IWorkerId>()
             {
                 [ExternalId.Create(pool.PoolId,"4602360")] = WorkerId.Create(pool.PoolId, WORKER_ID1),

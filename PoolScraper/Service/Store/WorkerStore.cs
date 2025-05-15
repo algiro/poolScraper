@@ -3,40 +3,37 @@ using PoolScraper.Persistency;
 
 namespace PoolScraper.Service.Store
 {
-    public class WorkerStore(ILogger logger, IWorkerPersistency workerPersistency) : IWorkerStore
+    public class WorkerStore(ILogger<WorkerStore> logger) : IWorkerStore
     {
         private IEnumerable<IWorker> _allWorkers = Enumerable.Empty<IWorker>();
         private IEnumerable<IDisabledWorker> _disabledWorkers = Enumerable.Empty<IDisabledWorker>();
+        private IEnumerable<IWorker> _enabledWorkers = Enumerable.Empty<IWorker>();
+        private IWorkerIdMap _workerIdMap = WorkerIdMap.Create(new Dictionary<IExternalId, IWorkerId>());
+
         public IEnumerable<IWorker> GetAllWorker() => _allWorkers;
 
-        public WorkerStore(ILogger logger, IEnumerable<IWorker> workers) : this (logger, (IWorkerPersistency) null)
+        public void UpdateStore(IEnumerable<IWorker>? workers = null, IEnumerable<IDisabledWorker>? disabledWorkers = null,IWorkerIdMap? workerIdMap = null)
         {
-            _allWorkers = workers;
+            if (workers != null) _allWorkers = workers.ToList();
+            if (disabledWorkers != null) _disabledWorkers = disabledWorkers.ToList();
+            if (workerIdMap != null) _workerIdMap = workerIdMap;
+
+            _enabledWorkers = _allWorkers.Where(w => !_disabledWorkers.Any(d => d.WorkerId.Equals(w.WorkerId))).ToList();
         }
 
-        public async Task<IEnumerable<IWorker>> LoadAllWorkerAsync(bool excludeDisabled=true)
-        {
-            logger.LogInformation("GetAllWorkerAsync called");
-            _allWorkers = (await workerPersistency.GetAllWorkerAsync()).ToList();
-            _disabledWorkers = (await workerPersistency.GetDisabledWorkersAsync()).ToList();
-            logger.LogInformation("GetAllWorkerAsync called, workers count: {count}, excluded: {disabledWorkersCount}", _allWorkers.Count(), _disabledWorkers.Count());
+        private IEnumerable<IWorker> GetReferenceWorkers(bool excludeDisabled = true)
+            => excludeDisabled ? _enabledWorkers : _allWorkers;
 
-            if (excludeDisabled)
-            {
-                _allWorkers = _allWorkers.Where(w => !_disabledWorkers.Any(dw => dw.WorkerId == w.WorkerId)).ToList();
-            }
-            logger.LogInformation("GetAllWorkerAsync called, final workers count: {count}", _allWorkers.Count());
-            return _allWorkers;
-        }
 
         public (IWorker? worker,bool isDisabled) GetById(IWorkerId workerId)
         {
             try
             {
-                var worker = _allWorkers.FirstOrDefault(w => w.WorkerId.Equals(workerId));
+                var refWorkers = GetReferenceWorkers();
+                var worker = refWorkers.FirstOrDefault(w => w.WorkerId.Equals(workerId));
                 if (worker == null)
                 {
-                    logger.LogWarning("Worker not found fetching from allWorkers#: {workerStore} worker by id: {id}", _allWorkers.Count(), workerId);
+                    logger.LogWarning("Worker not found fetching from allWorkers#: {workerStore} worker by id: {id}", refWorkers.Count(), workerId);
                 }
                 return (worker,_disabledWorkers.Any(d=> d.WorkerId.Equals(workerId)));
             }
@@ -50,15 +47,17 @@ namespace PoolScraper.Service.Store
                 return (null,true);
             }
         }
-        public IEnumerable<IWorker> GetWorkerByAlgo(string algo) => _allWorkers.Where(w => w.Algorithm == algo);
-        public IEnumerable<IWorker> GetWorkerByModel(WorkerModel workerModel) => _allWorkers.Where(w => w.Model == workerModel);
+        public IEnumerable<IWorker> GetWorkerByAlgo(string algo) => GetReferenceWorkers().Where(w => w.Algorithm == algo);
+        public IEnumerable<IWorker> GetWorkerByModel(WorkerModel workerModel) => GetReferenceWorkers().Where(w => w.Model == workerModel);
 
         public override string ToString()
         {
-            return _allWorkers != null
-                ? "WorkersCount: #:" + _allWorkers.Count()
+            return GetReferenceWorkers() != null
+                ? "WorkersCount: #:" + GetReferenceWorkers().Count()
                 : "No workers available";
         }
+        public IEnumerable<IDisabledWorker> GetDisabledWorker() => _disabledWorkers;
+        public IWorkerIdMap GetWorkerIdMap() => _workerIdMap;
 
     }
 }

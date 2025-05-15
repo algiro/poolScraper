@@ -119,7 +119,8 @@ namespace PoolScraper.Tests.Model.PowerPool
             var snap2 = workerStatus2.AsWorkerMinuteStatus(workerIdMap, pool, dateRange2);
             var snapsList = new ISnapshotWorkerStatus[] { snap1!, snap2! };
 
-            var workerStore = new WorkerStore(LoggerUtils.CreateLogger(""), new List<IWorker> { worker1, worker2 });
+            var workerStore = new WorkerStore(LoggerUtils.CreateLogger<WorkerStore>());
+            workerStore.UpdateStore(new List<IWorker> { worker1, worker2 });
             var snapsListDetails = snapsList.Select(s => s.AsSnapshotDetailedView(workerStore));
             var report = new WorkersReport();
             var averagePerModel = report.CalculateAveragePerModel(snapsListDetails!);
