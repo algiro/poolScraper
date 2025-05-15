@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using PoolScraper.Components;
+using PoolScraper.Config;
 using PoolScraper.Domain;
 using PoolScraper.Domain.Consolidation;
 using PoolScraper.Persistency;
@@ -10,10 +11,17 @@ using PoolScraper.Service.Consolidation;
 using PoolScraper.Service.Store;
 using PoolScraper.Utils;
 
-string connectionString = "mongodb://mongodb:27017";
-string databaseName = "PowerPoolDB";
 var builder = WebApplication.CreateBuilder(args);
-builder.Configuration.AddJsonFile("/config/appsettings.Development.json", true, true);
+var logger = LoggerUtils.CreateLogger("PoolScraper");
+builder.Configuration.AddJsonFile("/app/Config/psSettings.json", false, true);
+//builder.Configuration.AddJsonFile("/config/appsettings.Development.json", true, true);
+
+logger.LogInformation("App build completed");
+PoolScraperConfig.SetConfigurationManager(builder.Configuration);
+logger.LogInformation("PoolScraperConfig.SetConfigurationManager");
+
+string connectionString = PoolScraperConfig.Instance.MongoConnectionString;
+string databaseName = PoolScraperConfig.Instance.MongoDatabaseName;
 
 
 // Add services to the container.
