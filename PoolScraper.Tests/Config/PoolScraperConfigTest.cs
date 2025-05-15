@@ -20,9 +20,9 @@ namespace PoolScraper.Tests.Config
             var farm2 = farms.FirstOrDefault(f => f.Id == 2);
             var farm3 = farms.FirstOrDefault(f => f.Id == 3);
                         
-            farm1.IsCompatible("tmsminer007.8mrs21216").Should().BeTrue();
-            farm2.IsCompatible("tmsminer007.1ds21xp270").Should().BeTrue();
-            farm3.IsCompatible("tmsminer007.2eths21200").Should().BeTrue();
+            farm1!.IsCompatible("tmsminer007.8mrs21216").Should().BeTrue();
+            farm2!.IsCompatible("tmsminer007.1ds21xp270").Should().BeTrue();
+            farm3!.IsCompatible("tmsminer007.2eths21200").Should().BeTrue();
         }
 
     }

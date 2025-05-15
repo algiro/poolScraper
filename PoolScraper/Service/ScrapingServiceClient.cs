@@ -7,7 +7,7 @@ using PoolScraper.View;
 
 namespace PoolScraper.Service
 {
-    public class ScrapingServiceClient(ILogger<ScrapingServiceClient> logger,IPowerPoolScrapingService powerPoolScrapingService,IWorkersService workerService) : IScrapingServiceClient
+    public class ScrapingServiceClient(ILogger<ScrapingServiceClient> logger,IPowerPoolScrapingService powerPoolScrapingService) : IScrapingServiceClient
     {
 
         public async Task FetchAndStoreUserDataAsync()

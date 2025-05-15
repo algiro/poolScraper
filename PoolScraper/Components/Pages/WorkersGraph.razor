@@ -17,11 +17,11 @@
     private int labelsCount;
     private IWorker worker = default!;
     private Random random = new();
-    [Parameter] public IEnumerable<ISnapshotDetailedView> workersData { get; set; }
+	[Parameter] public IEnumerable<ISnapshotDetailedView> workersData { get; set; } = Enumerable.Empty<ISnapshotDetailedView>();
 
     protected override void OnInitialized()
     {
-        worker = workersData.FirstOrDefault().Worker;
+        worker = workersData.FirstOrDefault()!.Worker;
         chartData = new ChartData { Labels = GetDefaultDataLabels(), Datasets = GetDefaultDataSets(1) };
         lineChartOptions = new()
             {

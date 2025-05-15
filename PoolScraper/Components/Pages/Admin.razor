@@ -128,7 +128,7 @@ else
         snapshotHourlyStatus = await SnapshotConsolidateServiceClient.GetHourlySnapshotAsync(selectedDate.AsDateRange());
     }
     private IDateRange? dateRange;
-    private async Task ConfirmRange(IDateRange dateRange)
+    private void ConfirmRange(IDateRange dateRange)
     {
         this.dateRange = dateRange;
     }

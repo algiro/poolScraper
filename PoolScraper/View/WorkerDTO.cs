@@ -9,8 +9,8 @@ namespace PoolScraper.View
         public string Name { get; set; } = string.Empty;
         public long NominalHashRate { get; set; }
         public bool IsDisabled { get; set; }
-        public WorkerModelDTO Model { get; set; }
-        public FarmDTO Farm { get; set; }
+        public WorkerModelDTO Model { get; set; } = new WorkerModelDTO(0, string.Empty);
+        public FarmDTO Farm { get; set; } = new FarmDTO(0, string.Empty, string.Empty);
     }
 
     public static class WorkerDTOExtensions

@@ -98,7 +98,7 @@ else
     private IEnumerable<ISnapshotDetailedView> snapshotWorkers = Enumerable.Empty<ISnapshotDetailedView>();
     private IEnumerable<ISnapshotDetailedView> snapshotWorkersPerWorker = Enumerable.Empty<ISnapshotDetailedView>();
     private IEnumerable<ISnapshotDetailedView> snapshotWorkersPerModel = Enumerable.Empty<ISnapshotDetailedView>();
-    private IDateRange dateRange;
+    private IDateRange dateRange = new DateOnly().AsDateRange();
 	private WorkersReport workersReport = new WorkersReport();
     protected override async Task OnInitializedAsync()
     {

@@ -24,9 +24,9 @@ namespace PoolScraper.Config
         }
         public static IEnumerable<IFarm> GetFarms(string farmConfigStr)
         {
-            // "Russia1|^\\d*mr|Russia;Dubai1|^\\d*d|Dubai;Ethiopia1|^\\d*eth|Ethiopia",
+            // "farmId1|farmId1RegExp|farmLocation;farmId2|farmId2RegExp|farmLocation",
             var farmTokens = farmConfigStr?.Split(';');
-            foreach (var farmToken in farmTokens)
+            foreach (var farmToken in farmTokens!)
             {
                 var farmParts = farmToken.Split('|');
                 if (farmParts.Length == 4)

@@ -1,3 +1,4 @@
+using CommonUtils.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using PoolScraper.Components;
 using PoolScraper.Config;
@@ -29,8 +30,8 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddBlazorBootstrap();
 builder.Services.AddSingleton<IPowerPoolScrapingService, PowePoolScrapingService>();
 
-builder.Services.AddSingleton<IWorkerIdMap>((sp) => WorkerIdMap.Create(sp.GetService<IWorkerPersistency>()));
-builder.Services.AddSingleton<IPowerPoolScrapingPersistency>((sp) => new PowerPoolScrapingPersistency(LoggerUtils.CreateLogger<PowerPoolScrapingPersistency>(), connectionString, databaseName, sp.GetService<IWorkerIdMap>()));
+builder.Services.AddSingleton<IWorkerIdMap>((sp) => WorkerIdMap.Create(sp.GetService<IWorkerPersistency>().CheckNotNull()));
+builder.Services.AddSingleton<IPowerPoolScrapingPersistency>((sp) => new PowerPoolScrapingPersistency(LoggerUtils.CreateLogger<PowerPoolScrapingPersistency>(), connectionString, databaseName, sp.GetService<IWorkerIdMap>().CheckNotNull()));
 builder.Services.AddSingleton<IWorkersService,WorkersService>();
 builder.Services.AddSingleton<IUptimeHourConsolidationPersistency>( (sp) => new UptimeHourConsolidationPersistency(LoggerUtils.CreateLogger<UptimeHourConsolidationPersistency>(), connectionString, databaseName));
 builder.Services.AddSingleton<ISequenceGenerator>( (sp) => new SequenceGenerator(LoggerUtils.CreateLogger<SequenceGenerator>(), connectionString, databaseName));
@@ -47,7 +48,7 @@ builder.Services.AddSingleton<IScrapingServiceClient, ScrapingServiceClient>();
 builder.Services.AddSingleton<IUptimeServiceClient, UptimeServiceClient>();
 builder.Services.AddSingleton<ISnapshotConsolidateServiceClient, SnapshotConsolidateServiceClient>();
 builder.Services.AddSingleton<IWorkersReportService, WorkersReportService>();
-builder.Services.AddSingleton<IWorkerStore>((sp) => new WorkerStore(LoggerUtils.CreateLogger<WorkerStore>(),sp.GetService<IWorkerPersistency>()));
+builder.Services.AddSingleton<IWorkerStore>((sp) => new WorkerStore(LoggerUtils.CreateLogger<WorkerStore>(),sp.GetService<IWorkerPersistency>().CheckNotNull()));
 
 builder.Services.AddHostedService<ScheduledService>();
 

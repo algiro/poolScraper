@@ -44,7 +44,7 @@ namespace PoolScraper.Domain
         }
         public static IEnumerable<WorkerReadModel> AsWorkersReadModel(this IEnumerable<IWorker> workers)
         {
-            return workers.Select(w => new WorkerReadModel(w.WorkerId.PoolId,w.Algorithm,w.WorkerId.Id, w.Name,w.NominalHashRate, w.Model,w.Farm));
+            return workers.Select(w => w.AsWorkerReadModel());
         }
 
         private class DefaultWorker : IWorker

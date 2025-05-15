@@ -17,7 +17,7 @@
     private int labelsCount;
 
     private Random random = new();
-    [Parameter] public IEnumerable<ISnapshotDetailedView> workersModelData { get; set; }
+	[Parameter] public IEnumerable<ISnapshotDetailedView> workersModelData { get; set; } = Enumerable.Empty<ISnapshotDetailedView>();
 
     protected override void OnInitialized()
     {

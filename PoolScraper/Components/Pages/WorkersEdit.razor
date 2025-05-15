@@ -18,7 +18,7 @@
 <div class="row">
     <label class="col-1 col-form-label"> Name </label>
     <div class="col-3">
-        <TextInput TValue="string" @bind-Value="@worker.Name" />
+        <TextInput TValue="string" @bind-Value="@worker!.Name" />
     </div>
     <label class="col-1 col-form-label"> Algo </label>
     <div class="col-2">
@@ -64,7 +64,7 @@
 
     private IEnumerable<IFarm> farms = [];
     private IEnumerable<IWorkerModel> models = [];
-    private string nominalHashRate;
+    private string nominalHashRate = "0";
     private string[] providers = [];
     protected override Task OnInitializedAsync()
     {
@@ -83,7 +83,7 @@
         message2: "Do you want to proceed?");
         if (confirmation)
         {
-            if (WorkerModel.TryGet(worker.Model.Id, out var workerModel))
+            if (WorkerModel.TryGet(worker!.Model.Id, out var workerModel))
             {
                 worker.Model = workerModel.AsModelDTO();
 				worker.NominalHashRate = long.Parse(nominalHashRate);
