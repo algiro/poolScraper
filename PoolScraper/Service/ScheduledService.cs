@@ -1,15 +1,17 @@
 ﻿
 
 using CommonUtils.Utils;
+using PoolScraper.Config;
 
 namespace PoolScraper.Service
 {
-    public class ScheduledService(IScrapingServiceClient scrapintServiceClient) : BackgroundService
+    public class ScheduledService(IInitApp initApp, IScrapingServiceClient scrapintServiceClient) : BackgroundService
     {
         private CancellationToken cancellationToken;
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {   
             this.cancellationToken = stoppingToken;
+            initApp.Init();
             await ScheduleScrapingAsync();
         }
 
