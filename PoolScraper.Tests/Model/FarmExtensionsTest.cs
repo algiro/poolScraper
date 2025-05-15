@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using PoolScraper.Config;
 using PoolScraper.Domain;
 using System;
 using System.Collections.Generic;
@@ -10,10 +11,16 @@ namespace PoolScraper.Tests.Model
 {
     public class FarmExtensionsTest
     {
-        [TestCase("tmsminer007.8mrs21216",  "Myrig")]
-        [TestCase("tmsminer007.1ds21xp270", "Dubai")]
-        [TestCase("tmsminer007.2eths21200", "Ethiopia")]
-        [TestCase("tmsminer007.eths21200",  "Ethiopia")]
+        [SetUp]
+        public void SetUp()
+        {
+            var stringConfig = "1|Russia1|^\\d*mr|Russia;2|Dubai1|^\\d*d|Dubai;3|Ethiopia1|^\\d*eth|Ethiopia";
+            Farm.UpdateStore(PoolScraperConfig.GetFarms(stringConfig));
+        }
+        [TestCase("tmsminer007.8mrs21216",  "Russia1")]
+        [TestCase("tmsminer007.1ds21xp270", "Dubai1")]
+        [TestCase("tmsminer007.2eths21200", "Ethiopia1")]
+        [TestCase("tmsminer007.eths21200", "Ethiopia1")]
 
         public void TryGetModel_ValidString_ReturnsTrueAndParsedModel(string modelName,string expectedFarmName)
         {

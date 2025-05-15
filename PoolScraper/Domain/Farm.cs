@@ -1,4 +1,5 @@
-﻿using PoolScraper.View;
+﻿using PoolScraper.Config;
+using PoolScraper.View;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
@@ -14,14 +15,9 @@ namespace PoolScraper.Domain
     
     public static class Farm
     {
-        public static IFarm Dubai => Create(10, "Dubai", "^\\d*d", "UAE");
-        public static IFarm Ethiopia => Create(20,"Ethiopia", "^\\d*eth", "Ethiopia");
-        public static IFarm Myrig => Create(30, "Myrig", "^\\d*mr", "Russia");
         public static IFarm UNKNOWN => Create(-1, "UNKNOWN", "^UNKNOWN", "Unknown");
 
-        public static IFarm[] DEFAULT_FARMS = { Dubai,Ethiopia, Myrig,UNKNOWN };
-
-        private static IFarmStore _farmStore = FarmStore.Create(DEFAULT_FARMS);
+        private static IFarmStore _farmStore = FarmStore.Create([]);
         public static void UpdateStore(IEnumerable<IFarm> farms)
         {
             _farmStore = FarmStore.Create(farms);
