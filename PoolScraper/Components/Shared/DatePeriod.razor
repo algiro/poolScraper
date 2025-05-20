@@ -13,7 +13,7 @@
         <DateInput TValue="DateOnly" @bind-Value="@toDate" Placeholder="To Date" />
     </div>
     <div class="col-1 col-sm-1">
-        <Button Color="ButtonColor.Primary" @onclick="Search">Search</Button>
+        <Button Color="ButtonColor.Primary" @onclick="Search">@ActionText</Button>
     </div>
     <div class="row mt-2">
         <div class="col-1 col-sm-2">
@@ -43,6 +43,7 @@
     private DateOnly toDate;
 
     [Parameter] public EventCallback<IDateRange> OnSearch { get; set; } // Changed to a parameter with
+    [Parameter] public string ActionText { get; set; } = "Search";
 
     protected override Task OnInitializedAsync()
     {
