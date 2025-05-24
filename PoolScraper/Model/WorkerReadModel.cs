@@ -65,12 +65,13 @@ namespace PoolScraper.Model
         public static readonly ILogger  logger  = LoggerUtils.CreateLogger(nameof(WorkerReadModelExtensions));
         public static IWorker AsWorker(this WorkerReadModel workerReadModel)
         {
-            if (!WorkerModel.TryGet(workerReadModel.ModelId, out var model)) {
-                logger.LogWarning("Worker model not found for id: {modelId}", workerReadModel.ModelId);
+            if (!WorkerModel.TryGet(workerReadModel.ModelId, out var model)) 
+            {
+                logger.LogOnce(LogLevel.Warning, $"Worker model not found for id: {workerReadModel.ModelId}");
             }
             if (!Farm.TryGet(workerReadModel.FarmId,out var farm))
             {
-                logger.LogWarning("Farm id not found for id: {farmId}", workerReadModel.FarmId);
+                logger.LogOnce(LogLevel.Warning, $"Farm id not found for id: {workerReadModel.FarmId}");
             }
             return Worker.Create(workerReadModel.PoolId, workerReadModel.Algorithm, workerReadModel.Id, workerReadModel.Name, workerReadModel.NominalHashRate, workerReadModel.Provider, model!, farm! );
         }

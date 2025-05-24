@@ -61,7 +61,7 @@ namespace PoolScraper.Model.PowerPool
             }
             else
             {
-                logger.LogWarning($"WorkerId not found for externalId: {externalId}");
+                logger.LogOnce(LogLevel.Warning, $"WorkerId not found for externalId: {externalId}");
                 return null;
             }
         }

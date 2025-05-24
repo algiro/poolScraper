@@ -1,4 +1,5 @@
 using CommonUtils.Utils;
+using CommonUtils.Utils.Logs;
 using Microsoft.Extensions.DependencyInjection;
 using PoolScraper.Components;
 using PoolScraper.Config;
@@ -10,7 +11,6 @@ using PoolScraper.Persistency.Utils;
 using PoolScraper.Service;
 using PoolScraper.Service.Consolidation;
 using PoolScraper.Service.Store;
-using PoolScraper.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 var logger = LoggerUtils.CreateLogger("PoolScraper");
