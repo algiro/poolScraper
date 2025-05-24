@@ -11,7 +11,7 @@ namespace PoolScraper.Service
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {   
             this.cancellationToken = stoppingToken;
-            initApp.Init();
+            await initApp.InitAsync();
             await ScheduleScrapingAsync();
         }
 

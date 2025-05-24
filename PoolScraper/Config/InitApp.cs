@@ -1,19 +1,27 @@
 ﻿using PoolScraper.Domain;
+using PoolScraper.Persistency;
 
 namespace PoolScraper.Config
 {
     public interface IInitApp
     {
-        void Init();
+        Task InitAsync();
     }
-    public class InitApp(ILogger<InitApp> logger) : IInitApp
+    public class InitApp(ILogger<InitApp> logger, IWorkerPersistency workerPersistency) : IInitApp
     {
-        public void Init()
+        public async Task InitAsync()
         {
             try
             {
+                logger.LogInformation("Initializing application...");
                 var allFarms = PoolScraperConfig.Instance.Farms;
                 Farm.UpdateStore(allFarms);
+                // Load all workers and their status to initialize the worker store.
+                await workerPersistency.GetAllWorkerIdMatchAsync();
+                await workerPersistency.GetDisabledWorkersAsync();
+                await workerPersistency.GetAllWorkerAsync();
+                logger.LogInformation("Initializing application...DONE");
+
             }
             catch (Exception ex)
             {

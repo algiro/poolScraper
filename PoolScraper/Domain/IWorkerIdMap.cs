@@ -17,21 +17,6 @@ namespace PoolScraper.Domain
     public static class WorkerIdMap
     {
         private static readonly ILogger logger = LoggerUtils.CreateLogger(nameof(WorkerIdMap));
-        public static IWorkerIdMap Create(IWorkerPersistency workerPersistency)
-        {
-            try
-            {
-                var matches = workerPersistency.GetAllWorkerIdMatch();
-                var dictionaryFromMatches = matches.ToDictionary(m => m.ExternalId, m => m.WorkerId);
-                return new DefaultWorkerIdMap(dictionaryFromMatches);
-            }
-            catch (Exception ex)
-            {
-                return WorkerIdMap.Create();
-                throw new Exception("Error creating WorkerIdMap", ex);
-            }
-        }
-
         public static IWorkerIdMap Create() => Create(new Dictionary<IExternalId, IWorkerId>());
         public static IWorkerIdMap Create(IDictionary<IExternalId, IWorkerId> workerIdMap) => new DefaultWorkerIdMap(workerIdMap);
         private class DefaultWorkerIdMap(IDictionary<IExternalId, IWorkerId> workerIdMap) : IWorkerIdMap
@@ -59,7 +44,7 @@ namespace PoolScraper.Domain
                 var isFound = workerIdMap.TryGetValue(externalId, out workerId);
                 if (!isFound)
                 {
-                    logger.LogWarning($"WorkerId not found for externalId: {externalId}");
+                    logger.LogOnce(LogLevel.Warning,$"WorkerId not found for externalId: {externalId}");
                 }
                 return isFound;
             }
