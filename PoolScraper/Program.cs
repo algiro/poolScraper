@@ -40,6 +40,7 @@ builder.Services.AddSingleton<ISequenceGenerator>( (sp) => new SequenceGenerator
 
 builder.Services.AddKeyedSingleton<ISnapshotConsolidationPersistency,SnapshotHourConsolidationPersistency>("hourSnapConsolidation");
 builder.Services.AddKeyedSingleton<ISnapshotConsolidationPersistency,SnapshotDayConsolidationPersistency>("daySnapConsolidation");
+builder.Services.AddSingleton<ISnapshotDataConsolidationPersistency, SnapshotDataConsolidationPersistency>();
 
 builder.Services.AddSingleton<IWorkerPersistency,WorkerPersistency>();
 

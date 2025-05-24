@@ -1,4 +1,4 @@
-﻿using MongoDB.Driver;
+using MongoDB.Driver;
 using PoolScraper.Model.PowerPool;
 using PoolScraper.Model;
 using log4net;
@@ -61,7 +61,7 @@ namespace PoolScraper.Persistency.Consolidation
             {
                 var deleteResult = await _consolidatedSnapshotCollection.DeleteManyAsync(c => c.DateRange.From.Equals(dateRange.From) && c.DateRange.To.Equals(dateRange.To) 
                                                                                           && c.Granularity == Granularity.Days);
-                _log.LogInformation("RemoveDayConsolidationAsync: {dateRange} deleted count: {deleteCount}", dateRange, deleteResult.DeletedCount);
+                _log.LogInformation("RemoveDayConsolidationAsync: {dateRange} deleted count: {deleteCount} ack:{ack}", dateRange, deleteResult.DeletedCount, deleteResult.IsAcknowledged);
                 if (deleteResult.IsAcknowledged)
                 {
                     if (await _snapshotDataConsolidationPersistency.RemoveDataConsolidationInfoAsync(dateRange, Granularity))

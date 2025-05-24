@@ -1,4 +1,4 @@
-﻿using MongoDB.Driver;
+using MongoDB.Driver;
 using PoolScraper.Model.PowerPool;
 using PoolScraper.Model;
 using log4net;
@@ -13,7 +13,7 @@ namespace PoolScraper.Persistency.Consolidation
 {
     public class SnapshotDayConsolidationPersistency : SnapshotConsolidationPersistency
     {
-        public SnapshotDayConsolidationPersistency(ILogger log, IPoolScraperConfig poolScraperConfig, ISnapshotDataConsolidationPersistency snapshotDataConsolidationPersistency) : base(log, poolScraperConfig, snapshotDataConsolidationPersistency)
+        public SnapshotDayConsolidationPersistency(ILogger<SnapshotDayConsolidationPersistency> log, IPoolScraperConfig poolScraperConfig, ISnapshotDataConsolidationPersistency snapshotDataConsolidationPersistency) : base(log, poolScraperConfig, snapshotDataConsolidationPersistency)
         {
         }
 
