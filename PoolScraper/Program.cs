@@ -38,9 +38,9 @@ builder.Services.AddSingleton<IWorkersService,WorkersService>();
 builder.Services.AddSingleton<IUptimeHourConsolidationPersistency>( (sp) => new UptimeHourConsolidationPersistency(LoggerUtils.CreateLogger<UptimeHourConsolidationPersistency>(), connectionString, databaseName));
 builder.Services.AddSingleton<ISequenceGenerator>( (sp) => new SequenceGenerator(LoggerUtils.CreateLogger<SequenceGenerator>(), connectionString, databaseName));
 
-builder.Services.AddKeyedSingleton<ISnapshotConsolidationPersistency>("hourSnapConsolidation", (sp,name) => new SnapshotConsolidationPersistency(LoggerUtils.CreateLogger<SnapshotConsolidationPersistency>(), connectionString, databaseName,Granularity.Hours));
-builder.Services.AddKeyedSingleton<ISnapshotConsolidationPersistency>("daySnapConsolidation", (sp, name) => new SnapshotConsolidationPersistency(LoggerUtils.CreateLogger<SnapshotConsolidationPersistency>(), connectionString, databaseName, Granularity.Days));
-builder.Services.AddSingleton<ISnapshotDataConsolidationPersistency>((sp) => new SnapshotDataConsolidationPersistency(LoggerUtils.CreateLogger<SnapshotDataConsolidationPersistency>(), connectionString, databaseName, Granularity.Hours));
+builder.Services.AddKeyedSingleton<ISnapshotConsolidationPersistency,SnapshotHourConsolidationPersistency>("hourSnapConsolidation");
+builder.Services.AddKeyedSingleton<ISnapshotConsolidationPersistency,SnapshotDayConsolidationPersistency>("daySnapConsolidation");
+
 builder.Services.AddSingleton<IWorkerPersistency,WorkerPersistency>();
 
 builder.Services.AddSingleton<IUptimeConsolidateServiceClient, UptimeConsolidateServiceClient>();

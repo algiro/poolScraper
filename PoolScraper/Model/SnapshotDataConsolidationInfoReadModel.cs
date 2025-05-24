@@ -10,13 +10,14 @@ namespace PoolScraper.Model
         public string Id => $"{Granularity}.{snapshotDataConsolidation.Granularity.GetId(snapshotDataConsolidation.DateRange)}";
         public string Granularity { get; set; } = snapshotDataConsolidation.Granularity.ToString();
         public DateRangeReadModel DateRange { get; set; } = snapshotDataConsolidation.DateRange.AsDateRangeView();
+        public int SnapshotCount { get; set; } = snapshotDataConsolidation.SnapshotCount;
     }
 
     public static class SnapshotDataConsolidationInfoViewExtension
     {
-        public static ISnapshotDataConsolidationInfo AsSnapshotDataConsolidationInfo(this SnapshotDataConsolidationInfoReadModel snapshotDataConsolidationInfoView)
+        public static ISnapshotDataConsolidationInfo AsSnapshotDataConsolidationInfo(this SnapshotDataConsolidationInfoReadModel snapshotDataConsolidationRM)
         {
-            return SnapshotDataConsolidationInfo.Create(Enum.Parse<Granularity>(snapshotDataConsolidationInfoView.Granularity), snapshotDataConsolidationInfoView.DateRange.AsDateRange());
+            return SnapshotDataConsolidationInfo.Create(Enum.Parse<Granularity>(snapshotDataConsolidationRM.Granularity), snapshotDataConsolidationRM.DateRange.AsDateRange(), snapshotDataConsolidationRM.SnapshotCount);
         }
         
         public static SnapshotDataConsolidationInfoReadModel AsSnapshotDataConsolidationInfoReadModel(this ISnapshotDataConsolidationInfo snapshotDataConsolidationInfo) 

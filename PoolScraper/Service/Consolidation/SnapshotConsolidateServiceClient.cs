@@ -16,8 +16,7 @@ namespace PoolScraper.Service.Consolidation
                     ILogger<SnapshotConsolidateServiceClient> logger,
                     IPowerPoolScrapingService powerPoolScrapingService, 
                     [FromKeyedServices("hourSnapConsolidation")] ISnapshotConsolidationPersistency snapshotHourConsolidationPersistency,
-                    [FromKeyedServices("daySnapConsolidation")] ISnapshotConsolidationPersistency snapshotDayConsolidationPersistency,
-                    ISnapshotDataConsolidationPersistency snapshotDataConsolidationPersistency,
+                    [FromKeyedServices("daySnapConsolidation")] ISnapshotConsolidationPersistency snapshotDayConsolidationPersistency,                    
                     IWorkerStore workerStore) : ISnapshotConsolidateServiceClient
     {
         public async Task ConsolidateHours(DateOnly date)
@@ -36,8 +35,6 @@ namespace PoolScraper.Service.Consolidation
                     if (snapshotsCount > 0)
                     {
                         await snapshotHourConsolidationPersistency.InsertManyAsync(hourlySnapshot.snapshots);
-                        var currentDateRange = DateRange.Create(currentDateTime.AddHours(hourlySnapshot.hour), currentDateTime.AddHours(hourlySnapshot.hour + 1));
-                        await snapshotDataConsolidationPersistency.InsertAsync(SnapshotDataConsolidationInfo.Create(Granularity.Hours, currentDateRange));
                     }
                 }
             }
@@ -47,14 +44,15 @@ namespace PoolScraper.Service.Consolidation
                 throw;
             }
         }
-        public async Task ConsolidateDays(IDateRange dateRange)
+        public async Task<(bool success, string? message)> ConsolidateDays(IDateRange dateRange)
         {
-            try
+            var currentDate = DateOnly.FromDateTime(dateRange.From);
+            var finalDate = DateOnly.FromDateTime(dateRange.To);
+            bool success = true;
+            List<DateOnly> unprocessedDates = new List<DateOnly>();
+            while (currentDate <= finalDate)
             {
-                var currentDate = DateOnly.FromDateTime(dateRange.From);
-                var finalDate = DateOnly.FromDateTime(dateRange.To);
-
-                while (currentDate <= finalDate)
+                try
                 {
                     logger.LogInformation("ConsolidateDays  processing: {currentDate}", currentDate);
                     var powerPoolScrapings = await powerPoolScrapingService.GetDataRangeAsync(currentDate.GetBeginOfDay(), currentDate.GetEndOfDay());
@@ -75,21 +73,42 @@ namespace PoolScraper.Service.Consolidation
                         logger.LogInformation("ConsolidateDays daySnapshot  day: {snapDay} snapCount#: {snapCount}", daySnapshot.date, snapshotsCount);
                         if (snapshotsCount > 0)
                         {
-                            await snapshotDayConsolidationPersistency.InsertManyAsync(daySnapshot.snapshots);
-                            await snapshotDataConsolidationPersistency.InsertAsync(SnapshotDataConsolidationInfo.Create(Granularity.Days, currentDate.AsDateRange()));
+                            var snapInserted = await snapshotDayConsolidationPersistency.InsertManyAsync(daySnapshot.snapshots);
+                            if (!snapInserted)
+                            {
+                                success = false;
+                                unprocessedDates.Add(currentDate);
+                                logger.LogError("ConsolidateDays {currentDate} error: failed to insert snapshots or data", currentDate);
+                            }
+                            else
+                            {
+                                logger.LogInformation("ConsolidateDays {currentDate} inserted: {snapCount}", currentDate, snapshotsCount);
+                            }
                         }
                     }
-                    currentDate = currentDate.AddDays(1);
                 }
+                catch (Exception ex)
+                {
+                    success = false;
+                    unprocessedDates.Add(currentDate);
+                    logger.LogError("ConsolidateDays {currentDate} error: {message} {stackTrace}", currentDate, ex.Message, ex.StackTrace);
+                    throw;
+                }
+
+                currentDate = currentDate.AddDays(1);
             }
-            catch (Exception ex)
-            {
-                logger.LogError("ConsolidateDays error: {message} {stackTrace}", ex.Message, ex.StackTrace);
-                throw;
-            }
+            return (success, unprocessedDates.Count > 0 ? "Unprocessed dates: " + string.Join(", ", unprocessedDates) : null);
         }
 
         public async Task<IEnumerable<ISnapshotWorkerStatus>> GetHourlySnapshotAsync(IDateRange dateRange)
             => await snapshotHourConsolidationPersistency.GetSnapshotAsync(dateRange);
+
+        public async Task<IEnumerable<ISnapshotWorkerStatus>> GetDailySnapshotAsync(IDateRange dateRange)
+            => await snapshotDayConsolidationPersistency.GetSnapshotAsync(dateRange);
+
+        public async Task<(bool isSuccesfull, long deleteCount)> RemoveDayConsolidationAsync(IDateRange dateRange)
+            => await snapshotDayConsolidationPersistency.RemoveDayConsolidationAsync(dateRange);
+        
+
     }
 }

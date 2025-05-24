@@ -2,9 +2,11 @@
 @using CommonUtils.Utils
 @using PoolScraper.Components.Shared;
 @using PoolScraper.Domain
+@using PoolScraper.Domain.Consolidation
 @using PoolScraper.Model
 @using PoolScraper.Model.PowerPool
 @using PoolScraper.Model.Scheduler
+@using PoolScraper.Persistency.Consolidation
 @using PoolScraper.Service
 @using PoolScraper.Service.Consolidation
 @using PoolScraper.View
@@ -15,18 +17,121 @@
 @inject IUptimeConsolidateServiceClient ServiceClient
 @inject IPowerPoolScrapingService PowerPoolScrapingService
 @inject ISnapshotConsolidateServiceClient SnapshotConsolidateServiceClient
+@inject ISnapshotDataConsolidationPersistency DataConsolidationPersistency;
 
 <PageTitle>Admin Page</PageTitle>
+<Tabs>
+    <Tab Title="Consolidation">
+        <Content>
+        <Tabs>
+                <Tab Title="Days" Active="true">
+                    <Content>
+                        <div class="col-12 col-sm-12">
+                            <DatePeriod OnSearch="@GetDaySnaps" ActionText="Get Days" />
+                        </div>
+                        <div>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Snap Count</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @foreach (var dailyCons in snapshotDailyConsolidation.OrderBy(u => u.DateRange.From))
+                                {
+                                    <tr>
+                                        <td>@dailyCons.DateRange.From.ToString("d")</td>
+                                        <td>@dailyCons.SnapshotCount</td>
+                                            <td><Button Color="ButtonColor.Primary" @onclick="() => RemoveDayConsolidation(dailyCons.DateRange)">Graph</Button></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-12 col-sm-12">
+                        <DatePeriod OnSearch="@ConsolidateDays" ActionText="Consolidate Days"/>                    
+                    </div>
+                    <div class=" ">
+                        @if (isConsolidationExecuted) {
+                            <label>Consolidation Result</label>
+                            <label>Succesfull:</label> @consolidationDayResult.success
+                            <label>Unprocessed dates</label> @consolidationDayResult.message
+                        }
+                    </div>
+                </Content>
+            </Tab>
+            <Tab Title="Hours" Active="true">
+                <Content>
+                    <div>
+                        <Button Color="ButtonColor.Primary" @onclick="Consolidate">Consolidate</Button>
+                    </div>
+                </Content>
+            </Tab>
+        </Tabs>
+        </Content>
+    </Tab>
+    <Tab Title="Snapshots">
+        <Content>
+            <Tabs>
+                <Tab title="Days">
+                    <Content>
+                        <DateSelection OnSearch="@GetHourSnaps" />
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>WorkerId</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Hashrate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var workerAlgoCount in snapshotHourlyStatus.OrderBy(u => u.DateRange.From))
+                                {
+                                    <tr>
+                                        <td>@workerAlgoCount.WorkerId.Id</td>
+                                        <td>@workerAlgoCount.DateRange.From</td>
+                                        <td>@workerAlgoCount.DateRange.To</td>
+                                        <td>@workerAlgoCount.BasicInfo.Hashrate</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </Content>
+                </Tab>
+                <Tab title="Hours">
+                <Content>
+                    <DateSelection OnSearch="@GetHourSnaps" />
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>WorkerId</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Hashrate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var workerAlgoCount in snapshotHourlyStatus.OrderBy(u => u.DateRange.From))
+                            {
+                                <tr>
+                                    <td>@workerAlgoCount.WorkerId.Id</td>
+                                    <td>@workerAlgoCount.DateRange.From</td>
+                                    <td>@workerAlgoCount.DateRange.To</td>
+                                    <td>@workerAlgoCount.BasicInfo.Hashrate</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </Content>
+            </Tab>
+            </Tabs>
+        </Content>
+    </Tab>
+</Tabs>
 
-<div class="col-12 col-sm-12">
-    <DatePeriod OnSearch="@ConfirmRange" />
-    <Button Color="ButtonColor.Primary" @onclick="ConsolidateDays">ConsolidateDays</Button>
-</div>
-
-<div>
-    <DateSelection OnSearch="@GetDetails" />
-    <Button Color="ButtonColor.Primary" @onclick="Consolidate">Consolidate</Button>
-</div>
 
 @if (uptimePercentages == null)
 {
@@ -34,27 +139,6 @@
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>WorkerId</th>
-                <th>From</th>
-                <th>To</th>
-                <th>Hashrate</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var workerAlgoCount in snapshotHourlyStatus.OrderBy(u => u.DateRange.From))
-            {
-                <tr>
-                    <td>@workerAlgoCount.WorkerId.Id</td>
-                    <td>@workerAlgoCount.DateRange.From</td>
-                    <td>@workerAlgoCount.DateRange.To</td>
-                    <td>@workerAlgoCount.BasicInfo.Hashrate</td>
-                </tr>
-            }
-        </tbody>
-    </table>
 
     <table class="table">
         <thead>
@@ -111,9 +195,12 @@ else
     private IEnumerable<IUptimePercentage> uptimePercentages = Enumerable.Empty<IUptimePercentage>();
     private IEnumerable<ISnapshotWorkerStatus> snapshotWorkerStatus = Enumerable.Empty<ISnapshotWorkerStatus>();
     private IEnumerable<ISnapshotWorkerStatus> snapshotHourlyStatus = Enumerable.Empty<ISnapshotWorkerStatus>();
+    private IEnumerable<ISnapshotDataConsolidationInfo> snapshotDailyConsolidation = Enumerable.Empty<ISnapshotDataConsolidationInfo>();
+    private bool isConsolidationExecuted = false;
 
     private DateOnly selectedDate;
     private string? workerId;
+    private (bool success, string? message) consolidationDayResult = (false, null);
     protected override async Task OnInitializedAsync()
     {
         selectedDate = DateOnly.FromDateTime(DateTime.Now);
@@ -121,12 +208,18 @@ else
         snapshotHourlyStatus = await SnapshotConsolidateServiceClient.GetHourlySnapshotAsync(selectedDate.AsDateRange());
     }
 
-    protected async Task GetDetails(DateOnly date)
+    private async Task GetHourSnaps(DateOnly date)
     {
         selectedDate = date;
         uptimePercentages = await ServiceClient.GetHourlyUptimeAsync(selectedDate);
         snapshotHourlyStatus = await SnapshotConsolidateServiceClient.GetHourlySnapshotAsync(selectedDate.AsDateRange());
     }
+    private async Task GetDaySnaps(IDateRange dateRange)
+    {
+        var dataConsolidationInfo = await DataConsolidationPersistency.GetSnapshotDataConsolidationInfoAsync(dateRange);
+        snapshotDailyConsolidation = dataConsolidationInfo.Where(d => d.Granularity == Granularity.Days).ToList();
+    }
+
     private IDateRange? dateRange;
     private void ConfirmRange(IDateRange dateRange)
     {
@@ -147,11 +240,22 @@ else
         await SnapshotConsolidateServiceClient.ConsolidateHours(selectedDate);
     }
 
-    private async Task ConsolidateDays()
+    private async Task ConsolidateDays(IDateRange dateRange)
     {
         if (dateRange != null)
         {
-            await SnapshotConsolidateServiceClient.ConsolidateDays(dateRange);
+            consolidationDayResult = await SnapshotConsolidateServiceClient.ConsolidateDays(dateRange);
+            isConsolidationExecuted = true;
         }
     }
+
+	private async Task<bool> RemoveDayConsolidation(IDateRange dateRange)
+	{
+		if (dateRange != null)
+		{
+            var result = await SnapshotConsolidateServiceClient.RemoveDayConsolidationAsync(dateRange);
+			return result.isSuccesfull;
+		}
+		return false;
+	}
 }

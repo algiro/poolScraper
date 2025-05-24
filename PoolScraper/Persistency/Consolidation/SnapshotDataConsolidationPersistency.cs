@@ -7,6 +7,7 @@ using CommonUtils.Utils;
 using PoolScraper.Components.Pages;
 using PoolScraper.Domain;
 using PoolScraper.Domain.Consolidation;
+using PoolScraper.Config;
 
 namespace PoolScraper.Persistency.Consolidation
 {
@@ -14,15 +15,13 @@ namespace PoolScraper.Persistency.Consolidation
     {
         private readonly IMongoCollection<SnapshotDataConsolidationInfoReadModel> _consolidationInfoCollection;
         private readonly ILogger _log;
-        private readonly Granularity _granularity;
 
-        public SnapshotDataConsolidationPersistency(ILogger log, string connectionString, string databaseName, Granularity granularity)
+        public SnapshotDataConsolidationPersistency(ILogger<SnapshotDataConsolidationPersistency> log, IPoolScraperConfig poolScraperConfig)
         {
             _log = log;
-            _log.LogInformation("SnapshotConsolidationPersistency C.tor with connection string: {connectionString} and database name: {databaseName}", connectionString, databaseName);
-            var client = new MongoClient(connectionString);
-            var database = client.GetDatabase(databaseName);
-            _granularity = granularity;
+            _log.LogInformation("SnapshotConsolidationPersistency C.tor with connection string: {connectionString} and database name: {databaseName}", poolScraperConfig.MongoConnectionString, poolScraperConfig.MongoDatabaseName);
+            var client = new MongoClient(poolScraperConfig.MongoConnectionString);
+            var database = client.GetDatabase(poolScraperConfig.MongoDatabaseName);
             _consolidationInfoCollection = database.GetCollection<SnapshotDataConsolidationInfoReadModel>("snapshotConsolidationInfo");
         }
 
@@ -51,5 +50,21 @@ namespace PoolScraper.Persistency.Consolidation
             }
         }
 
+        public async Task<bool> RemoveDataConsolidationInfoAsync(IDateRange dateRange, Granularity granularity)
+        {
+            try
+            {
+                var deleteResult = await _consolidationInfoCollection.DeleteManyAsync(c => c.DateRange.From.Equals(dateRange.From) && c.DateRange.To.Equals(dateRange.To)
+                                                                                          && c.Granularity == granularity.ToString());
+                _log.LogInformation("RemoveDataConsolidationInfoAsync: {dateRange} deleted count: {deleteCount}", dateRange, deleteResult.DeletedCount);
+                return (true);
+            }
+            catch (Exception ex)
+            {
+                _log.LogError("Error RemoveDataConsolidationInfoAsync from MongoDB: {message}", ex.Message);
+                return false;
+            }
+
+        }
     }
 }
