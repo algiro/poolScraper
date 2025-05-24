@@ -46,9 +46,9 @@ namespace PoolScraper.Persistency
             return workers;
         }
 
-        public IEnumerable<IWorkerIdMatch> GetAllWorkerIdMatch()
+        public async Task<IEnumerable<IWorkerIdMatch>> GetAllWorkerIdMatchAsync()
         {
-            var workersIdMatchesReadModel = _workerIdMatchWorkerCollection.Find(_ => true).ToList();
+            var workersIdMatchesReadModel = await _workerIdMatchWorkerCollection.Find(_ => true).ToListAsync();
             var workerIdMatches =  workersIdMatchesReadModel.Select(w => w.AsWorkerIdMatch());
             _workerStore.UpdateStore(workerIdMap: WorkerIdMap.Create(workerIdMatches.ToDictionary(w => w.ExternalId, w => w.WorkerId)));
             return workerIdMatches;
@@ -78,7 +78,6 @@ namespace PoolScraper.Persistency
 
                 // reload everything to update the store
                 var updatedWorkers = await GetAllWorkerAsync();
-                _workerStore.UpdateStore(workers: updatedWorkers);
                 return true;
             }
             catch (Exception ex)
@@ -116,7 +115,7 @@ namespace PoolScraper.Persistency
                 await _database.DropCollectionAsync(WORKER_ID_MATCHES_COLL);
                 // reload everything to update the store   
                 await GetAllWorkerAsync();
-                GetAllWorkerIdMatch();
+                GetAllWorkerIdMatchAsync();
 
                 return true;
             }

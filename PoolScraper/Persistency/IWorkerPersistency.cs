@@ -10,7 +10,7 @@ namespace PoolScraper.Persistency
         Task<bool> InsertManyAsync(IEnumerable<INewWorker> workers);
         Task<bool> ToggleEnableWorkerAsync(IWorkerId workerId);
         Task<bool> RemoveAllAsync();
-        IEnumerable<IWorkerIdMatch> GetAllWorkerIdMatch();
+        Task<IEnumerable<IWorkerIdMatch>> GetAllWorkerIdMatchAsync();
         Task<bool> UpdateWorkerAsync(WorkerDTO workerToUpdate);
     }
 
