@@ -8,6 +8,7 @@ namespace PoolScraper.Service.Consolidation
     public interface IUptimeConsolidateServiceClient
     {
         Task Consolidate(DateOnly date);
-        Task<IEnumerable<IUptimePercentage>> GetHourlyUptimeAsync(DateOnly dateOnly);
+        Task<IEnumerable<IUptimePercentageDetailedView>> GetHourlyUptimeAsync(DateOnly dateOnly);
+        Task<IEnumerable<IUptimePercentageDetailedView>> GetDailyWorkerUptimeAsync(DateOnly dateOnly);
     }
 }

@@ -4,11 +4,13 @@
 @using PoolScraper.Model
 @using PoolScraper.Model.Scheduler
 @using PoolScraper.Service
+@using PoolScraper.Service.Consolidation
 @attribute [StreamRendering]
 @rendermode InteractiveServer
 
 @inject IUptimeServiceClient UptimeServiceClient
 @inject IScrapingServiceClient ScrapingServiceClient
+@inject IUptimeConsolidateServiceClient UptimeConsolidateServiceClient;
 
 <PageTitle>Uptime Info</PageTitle>
 
@@ -33,6 +35,7 @@ else
             <tr>
                 <th>Name</th>
                 <th>Algo</th>
+                <th>Model</th>
                 <th>Uptime%</th>
                 <th>Id</th>
             </tr>
@@ -41,8 +44,9 @@ else
             @foreach (var workerUptime in workersUptime)
             {
                 <tr>
-                    <td>@workerUptime.Name</td>
-                    <td>@workerUptime.Algorithm</td>
+                    <td>@workerUptime.Worker.Name</td>
+                    <td>@workerUptime.Worker.Algorithm</td>
+                    <td>@workerUptime.Worker.Model</td>
                     <td>@workerUptime.UptimePercentage</td>
                     <td><Button Color="ButtonColor.Primary" @onclick="() => GetWorkerDetails(workerUptime.WorkerId.Id)">@workerUptime.WorkerId</Button> </td>
                 </tr>
@@ -53,7 +57,7 @@ else
 
 @code {
     private Modal modal = default!;
-    private IEnumerable<IWorkerUptime> workersUptime = Enumerable.Empty<IWorkerUptime>();
+    private IEnumerable<IUptimePercentageDetailedView> workersUptime = Enumerable.Empty<IUptimePercentageDetailedView>();
     private IEnumerable<IWorkerUptimeHistory> workerUptimeHistory = Enumerable.Empty<IWorkerUptimeHistory>();
     private double todayCoverage;
     private DateOnly selectedDate;
@@ -67,7 +71,15 @@ else
     private async Task GetDetails(DateOnly date)
     {
         selectedDate = date;
-        workersUptime = (await UptimeServiceClient.GetDailyUptimeAsync(date)).OrderBy(w => w.UptimePercentage);
+        
+        var dailyUpTime = (await UptimeConsolidateServiceClient.GetDailyWorkerUptimeAsync(date)).ToList();
+        if (dailyUpTime.Count == 0)
+        {
+            workersUptime = Enumerable.Empty<IUptimePercentageDetailedView>();
+            return;
+        }
+
+        workersUptime = dailyUpTime.OrderBy(w => w.UptimePercentage);
 		StateHasChanged();
 	}
 

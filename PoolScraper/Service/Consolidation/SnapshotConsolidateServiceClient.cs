@@ -14,7 +14,8 @@ namespace PoolScraper.Service.Consolidation
 {
     public class SnapshotConsolidateServiceClient(
                     ILogger<SnapshotConsolidateServiceClient> logger,
-                    IPowerPoolScrapingService powerPoolScrapingService, 
+                    IPowerPoolScrapingService powerPoolScrapingService,
+                    ISnapshotDataConsolidationPersistency snapshotDataConsolidationPersistency,
                     [FromKeyedServices("hourSnapConsolidation")] ISnapshotConsolidationPersistency snapshotHourConsolidationPersistency,
                     [FromKeyedServices("daySnapConsolidation")] ISnapshotConsolidationPersistency snapshotDayConsolidationPersistency,                    
                     IWorkerStore workerStore) : ISnapshotConsolidateServiceClient
@@ -108,7 +109,8 @@ namespace PoolScraper.Service.Consolidation
 
         public async Task<(bool isSuccesfull, long deleteCount)> RemoveDayConsolidationAsync(IDateRange dateRange)
             => await snapshotDayConsolidationPersistency.RemoveDayConsolidationAsync(dateRange);
-        
 
+        public async Task<IEnumerable<ISnapshotDataConsolidationInfo>> GetSnapshotDataConsolidationInfoAsync(IDateRange dateRange)
+            => await snapshotDataConsolidationPersistency.GetSnapshotDataConsolidationInfoAsync(dateRange);
     }
 }
