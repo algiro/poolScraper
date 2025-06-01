@@ -6,10 +6,16 @@ using PoolScraper.Model;
 using PoolScraper.Service.Uptime;
 using PoolScraper.Persistency;
 using PoolScraper.Domain;
+using PoolScraper.Service.Store;
+using CommonUtils.Utils;
 
 namespace PoolScraper.Service
 {
-    public class UptimeService(ILogger<UptimeService> logger, IPowerPoolScrapingService powerPoolScrapingService,IWorkerPersistency workerPersistency,IWorkerIdMap workerIdMap) : IUptimeService
+    public class UptimeService(
+        ILogger<UptimeService> logger, 
+        IPowerPoolScrapingService powerPoolScrapingService,
+        IWorkerPersistency workerPersistency,
+        IWorkerStore workerStore) : IUptimeService
     {
         private readonly IPool powerPool = Pool.CreatePowerPool();
 
@@ -40,18 +46,32 @@ namespace PoolScraper.Service
             if (totalSnapshots == 0)
                 return Enumerable.Empty<IWorkerUptime>();
             UptimeCalculator uptimeCalculator = new UptimeCalculator();
-            var snapshotWorkerStatus = documents.AsSnapshotWorkerStatus(workerIdMap);
+            var snapshotWorkerStatus = documents.AsSnapshotWorkerStatus(workerStore.GetWorkerIdMap());
             var allWorkers = await workerPersistency.GetAllWorkerAsync();
             var workerUptimeResult = uptimeCalculator.CalculateTotUptime(snapshotWorkerStatus);
-            return workerUptimeResult.Select(w => WorkerUptime.Create(allWorkers.First(wk => wk.WorkerId == w.WorkerId), w.UptimePercentage));
+            return workerUptimeResult.SelectNotNull(w =>
+                {
+                    var worker = allWorkers.FirstOrDefault(wk => wk.WorkerId.Equals(w.WorkerId));
+                    if (worker == null)
+                    {
+                        return null;
+                    }
+                    else
+                    {
+                        return WorkerUptime.Create(worker, w.UptimePercentage);
+                    }
+                });
         }
 
         public async Task<IEnumerable<IUptimePeriod>> GetWorkerUptimeHistoryAsync(string poolId, long workerId, DateTime from, DateTime to)
         {
             var documents = await powerPoolScrapingService.GetDataRangeAsync(from, to);
-            IEnumerable<(DateTime fetchedAt,IEnumerable<AlgorithmWorkers> algo)> miners = documents.Select(d => (d.FetchedAt, d.GetAllAlgoWorkers()));
-            IEnumerable<(DateTime fetchedAt,WorkerStatus workerStatus)> workers = miners.Select(m => (m.fetchedAt, m.algo.SelectMany(w => w.GetAllWorkerStatus()).Single(w => w.Id == workerId)));
-            var history =  workers.Select(w => WorkerUptimeHistory.Create(w.fetchedAt, w.workerStatus.Hashrate > 0));
+            /*   IEnumerable<(DateTime fetchedAt,IEnumerable<AlgorithmWorkers> algo)> miners = documents.Select(d => (d.FetchedAt, d.GetAllAlgoWorkers()));
+               IEnumerable<(DateTime fetchedAt,WorkerStatus workerStatus)> workers = miners.Select(m => (m.fetchedAt, m.algo.SelectMany(w => w.GetAllWorkerStatus()).Single(w => w.Id == workerId)));
+               var history =  workers.Select(w => WorkerUptimeHistory.Create(w.fetchedAt, w.workerStatus.Hashrate > 0));*/
+            var snapshotWorkerStatus = documents.AsSnapshotWorkerStatus(workerStore.GetWorkerIdMap()).Where(s => s.WorkerId.Equals(WorkerId.Create(poolId,workerId)));
+            logger.LogInformation("GetWorkerUptimeHistoryAsync for workerId: {workerId} with {count}# snapshots", workerId, snapshotWorkerStatus.Count());
+            var history = snapshotWorkerStatus.Select(s => WorkerUptimeHistory.Create(s.DateRange.From, s.BasicInfo.Hashrate > 0));
             return UptimePeriods.CreatePeriods(history);
         }
     }

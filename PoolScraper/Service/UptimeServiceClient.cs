@@ -6,6 +6,7 @@ namespace PoolScraper.Service
 {
     public class UptimeServiceClient(ILogger<UptimeServiceClient> logger, IUptimeService uptimeService) : IUptimeServiceClient
     {
+        private readonly IPool pool = Pool.CreatePowerPool();
         public async Task<IEnumerable<IWorkerUptime>> GetDailyUptimeAsync(DateOnly date)
         {
             logger.LogInformation("GetDailyUptimeAsync for date: {date}", date);
@@ -17,7 +18,7 @@ namespace PoolScraper.Service
 
         public async Task<IEnumerable<IUptimePeriod>> GetWorkerUptimeHistoryAsync(long workerId, DateTime from, DateTime to)
         {
-            return await uptimeService.GetWorkerUptimeHistoryAsync("powerpool", workerId, from, to);
+            return await uptimeService.GetWorkerUptimeHistoryAsync(pool.PoolId, workerId, from, to);
         }
     }
 }
