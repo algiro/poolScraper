@@ -15,13 +15,12 @@ namespace PoolScraper.Persistency.Consolidation
     {
         private readonly IMongoCollection<SnapshotWorkerStatusReadModel> _consolidatedSnapshotCollection;
         private readonly ILogger _log;
-        private readonly Granularity _granularity;
         private readonly ISnapshotDataConsolidationPersistency _snapshotDataConsolidationPersistency;
         public abstract Granularity Granularity { get; }
         public SnapshotConsolidationPersistency(ILogger log, IPoolScraperConfig poolScraperConfig, ISnapshotDataConsolidationPersistency snapshotDataConsolidationPersistency)
         {
             _log = log;
-            _log.LogInformation("SnapshotConsolidationPersistency C.tor with connection string: {connectionString} and database name: {databaseName}", poolScraperConfig.MongoConnectionString  , poolScraperConfig.MongoDatabaseName);
+            _log.LogInformation("SnapshotConsolidationPersistency C.tor Granualarity: {granularity} with connection string: {connectionString} and database name: {databaseName}", Granularity, poolScraperConfig.MongoConnectionString  , poolScraperConfig.MongoDatabaseName);
             var client = new MongoClient(poolScraperConfig.MongoConnectionString);
             var database = client.GetDatabase(poolScraperConfig.MongoDatabaseName);
             _snapshotDataConsolidationPersistency = snapshotDataConsolidationPersistency;
@@ -30,9 +29,13 @@ namespace PoolScraper.Persistency.Consolidation
 
         public async Task<IEnumerable<ISnapshotWorkerStatus>> GetSnapshotAsync(IDateRange dateRange)
         {
+            _log.LogInformation($"GetSnapshotAsync {Granularity} for dataRange: {dateRange}");
+
             var snapshotViews = await _consolidatedSnapshotCollection
-                .Find( h => h.Granularity == _granularity &&  h.DateRange.From >= dateRange.From && h.DateRange.To <= dateRange.To)
+                .Find( h => h.Granularity == Granularity &&  h.DateRange.From >= dateRange.From && h.DateRange.To <= dateRange.To)
                 .ToListAsync<SnapshotWorkerStatusReadModel>();
+            _log.LogInformation($"GetSnapshotAsync granularity: {Granularity} for dataRange: {dateRange} snapshotViews#:{snapshotViews.Count()}");
+
             return snapshotViews.Select(u => u.AsSnapshotWorkerStatus());
         }
 

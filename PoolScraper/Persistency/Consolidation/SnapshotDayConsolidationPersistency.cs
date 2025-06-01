@@ -15,6 +15,7 @@ namespace PoolScraper.Persistency.Consolidation
     {
         public SnapshotDayConsolidationPersistency(ILogger<SnapshotDayConsolidationPersistency> log, IPoolScraperConfig poolScraperConfig, ISnapshotDataConsolidationPersistency snapshotDataConsolidationPersistency) : base(log, poolScraperConfig, snapshotDataConsolidationPersistency)
         {
+            log.LogInformation("SnapshotDayConsolidationPersistency C.tor Granularity {granularity} with connection string: {connectionString} and database name: {databaseName}", Granularity, poolScraperConfig.MongoConnectionString, poolScraperConfig.MongoDatabaseName);
         }
 
         public override Granularity Granularity { get; } = Granularity.Days;
