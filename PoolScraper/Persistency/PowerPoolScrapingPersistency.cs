@@ -58,7 +58,7 @@ namespace PoolScraper.Persistency
                 .SortBy(x => x.FetchedAt)
                 .ToListAsync();
 
-            return result.AsEnumerable();
+            return result;
         }
         public async Task<IEnumerable<ISnapshotWorkerStatus>> GetSnapshotWorkerStatusAsync(IWorkerId workerId, DateTime from, DateTime to)
         {

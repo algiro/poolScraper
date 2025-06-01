@@ -17,6 +17,7 @@
 @inject IUptimeConsolidateServiceClient ServiceClient
 @inject IPowerPoolScrapingService PowerPoolScrapingService
 @inject ISnapshotConsolidateServiceClient SnapshotConsolidateServiceClient
+@inject IUptimeConsolidateServiceClient UptimeConsolidateServiceClient;
 @inject ISnapshotDataConsolidationPersistency DataConsolidationPersistency;
 
 <PageTitle>Admin Page</PageTitle>
@@ -65,14 +66,21 @@
             <Tab Title="Hours" Active="true">
                 <Content>
                     <div>
-                        <Button Color="ButtonColor.Primary" @onclick="Consolidate">Consolidate</Button>
+                            <DateSelection OnSearch="@ConsolidateSnapHours" ActionText="Consolidate" />                        
+                    </div>
+                </Content>
+            </Tab>
+            <Tab Title="Uptime Hours" Active="true">
+                <Content>
+                    <div>
+                        <DateSelection OnSearch="@ConsolidateUpTimeHours" ActionText="Consolidate" />                        
                     </div>
                 </Content>
             </Tab>
         </Tabs>
         </Content>
     </Tab>
-    <Tab Title="Snapshots">
+    <Tab Title="Snaps Data">
         <Content>
             <Tabs>
                 <Tab title="Days">
@@ -235,9 +243,14 @@ else
             snapshotWorkerStatus = await PowerPoolScrapingService.GetSnapshotWorkerStatusAsync(long.Parse(workerId), dateFrom, dateTo);
         }
     }
-    private async Task Consolidate()
+    private async Task ConsolidateSnapHours(DateOnly date)
     {
-        await SnapshotConsolidateServiceClient.ConsolidateHours(selectedDate);
+        await SnapshotConsolidateServiceClient.ConsolidateHours(date);
+    }
+
+    private async Task ConsolidateUpTimeHours(DateOnly date)
+    {
+        await UptimeConsolidateServiceClient.Consolidate(date);
     }
 
     private async Task ConsolidateDays(IDateRange dateRange)
