@@ -24,7 +24,8 @@ logger.LogInformation("PoolScraperConfig.SetConfigurationManager");
 string connectionString = PoolScraperConfig.Instance.MongoConnectionString;
 string databaseName = PoolScraperConfig.Instance.MongoDatabaseName;
 
-
+builder.Services.AddConsoleLogger();
+    
 // Add services to the container.
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddBlazorBootstrap();
