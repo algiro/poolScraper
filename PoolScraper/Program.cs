@@ -37,11 +37,14 @@ builder.Services.AddSingleton<IPoolScraperConfig>(PoolScraperConfig.Instance);
 builder.Services.AddSingleton<IPowerPoolScrapingPersistency,PowerPoolScrapingPersistency>();
 builder.Services.AddSingleton<IWorkersService,WorkersService>();
 builder.Services.AddSingleton<IUptimeHourConsolidationPersistency>( (sp) => new UptimeHourConsolidationPersistency(LoggerUtils.CreateLogger<UptimeHourConsolidationPersistency>(), connectionString, databaseName));
+builder.Services.AddSingleton<IUptimeDailyConsolidationPersistency, UptimeDailyConsolidationPersistency>();
 builder.Services.AddSingleton<ISequenceGenerator>( (sp) => new SequenceGenerator(LoggerUtils.CreateLogger<SequenceGenerator>(), connectionString, databaseName));
 
 builder.Services.AddKeyedSingleton<ISnapshotConsolidationPersistency,SnapshotHourConsolidationPersistency>("hourSnapConsolidation");
 builder.Services.AddKeyedSingleton<ISnapshotConsolidationPersistency,SnapshotDayConsolidationPersistency>("daySnapConsolidation");
 builder.Services.AddSingleton<ISnapshotDataConsolidationPersistency, SnapshotDataConsolidationPersistency>();
+builder.Services.AddSingleton<IUptimeDataConsolidationPersistency, UptimeDataConsolidationPersistency>();
+builder.Services.AddSingleton<IUptimeDailyConsolidationPersistency, UptimeDailyConsolidationPersistency>();
 
 builder.Services.AddSingleton<IWorkerPersistency,WorkerPersistency>();
 

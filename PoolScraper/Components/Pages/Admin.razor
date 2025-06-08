@@ -77,6 +77,13 @@
                     </div>
                 </Content>
             </Tab>
+            <Tab Title="Uptime Days" Active="true">
+                <Content>
+                    <div>
+                        <DatePeriod OnSearch="@ConsolidateUpTimeDays" ActionText="Consolidate" />
+                    </div>
+                </Content>
+            </Tab>
         </Tabs>
         </Content>
     </Tab>
@@ -250,7 +257,12 @@ else
 
     private async Task ConsolidateUpTimeHours(DateOnly date)
     {
-        await UptimeConsolidateServiceClient.Consolidate(date);
+        await UptimeConsolidateServiceClient.ConsolidateHours(date);
+    }
+
+    private async Task ConsolidateUpTimeDays(IDateRange dateRange)
+    {
+        await UptimeConsolidateServiceClient.ConsolidateDays(dateRange);
     }
 
     private async Task ConsolidateDays(IDateRange dateRange)

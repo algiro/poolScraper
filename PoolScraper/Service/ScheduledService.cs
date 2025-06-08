@@ -8,11 +8,12 @@ using PoolScraper.Service.Consolidation;
 
 namespace PoolScraper.Service
 {
-    public class ScheduledService(ILogger<ScheduledService> logger, IInitApp initApp, IScrapingServiceClient scrapingServiceClient, ISnapshotConsolidateServiceClient snapshotConsolidateServiceClient) : BackgroundService
+    public class ScheduledService(ILogger<ScheduledService> logger, IInitApp initApp, IScrapingServiceClient scrapingServiceClient, 
+        ISnapshotConsolidateServiceClient snapshotConsolidateServiceClient, IUptimeConsolidateServiceClient uptimeConsolidateServiceClient) : BackgroundService
     {
         private CancellationToken cancellationToken;
-        private readonly TimeOnly consolidationTime = new TimeOnly(00, 15, 0);
-
+        //private readonly TimeOnly consolidationTime = new TimeOnly(00, 15, 0);
+        private readonly TimeOnly consolidationTime = new TimeOnly(12, 10, 0);
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {   
             this.cancellationToken = stoppingToken;
@@ -35,9 +36,22 @@ namespace PoolScraper.Service
         }
         private async Task ConsolidateAction()
         {
-            var yesterday = DateUtils.Today.AddDays(-1).GetEndOfDay();
-            var oneWeekBefore = yesterday.AddDays(-7).GetBeginOfDay();
-            logger.LogInformation("Consolidating data from {startDate} to {endDate}", oneWeekBefore, yesterday);
+            try
+            {
+                var yesterday = DateUtils.Today.AddDays(-1).GetEndOfDay();
+                var oneWeekBefore = yesterday.AddDays(-7).GetBeginOfDay();
+                await ConsolidateSnapshots(yesterday, oneWeekBefore);
+                await ConsolidateUptimes(yesterday, oneWeekBefore);
+                logger.LogInformation("ConsolidateAction completed for data from {startDate} to {endDate}", oneWeekBefore, yesterday);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("ConsolidateAction error: {message} {stackTrace}", ex.Message, ex.StackTrace);
+            }
+        }
+        private async Task ConsolidateSnapshots(DateTime yesterday, DateTime oneWeekBefore)
+        {
+            logger.LogInformation("ConsolidateSnapshots data from {startDate} to {endDate}", oneWeekBefore, yesterday);
 
             var dataConsolidated = await snapshotConsolidateServiceClient.GetSnapshotDataConsolidationInfoAsync(DateRange.Create(oneWeekBefore, yesterday));
             var dayConsolidated = dataConsolidated.Where(d => d.Granularity == Granularity.Days).ToList();
@@ -46,14 +60,35 @@ namespace PoolScraper.Service
             {
                 var currentDateRange = currentDate.AsDateRange();
                 var hasBeenAlreadyConsolidated = dayConsolidated.Any(d => d.DateRange.Equals(currentDateRange));
-                logger.LogInformation("Consolidating date: {date}, already consolidated: {hasBeenAlreadyConsolidated}", currentDate, hasBeenAlreadyConsolidated);
+                logger.LogInformation("ConsolidateSnapshots date: {date}, already consolidated: {hasBeenAlreadyConsolidated}", currentDate, hasBeenAlreadyConsolidated);
                 if (!hasBeenAlreadyConsolidated)
                 {
                     await snapshotConsolidateServiceClient.ConsolidateDays(currentDateRange);
-                    logger.LogInformation("Consolidated dateRange: {currentDateRange}", currentDateRange);
+                    logger.LogInformation("ConsolidateSnapshots done dateRange: {currentDateRange}", currentDateRange);
                 }
                 currentDate = currentDate.AddDays(1);
             }
         }
+        private async Task ConsolidateUptimes(DateTime yesterday, DateTime oneWeekBefore)
+        {
+            logger.LogInformation("ConsolidateUptimes data from {startDate} to {endDate}", oneWeekBefore, yesterday);
+
+            var dataConsolidated = await uptimeConsolidateServiceClient.GetUptimeDataConsolidationInfoAsync(DateRange.Create(oneWeekBefore, yesterday));
+            var dayConsolidated = dataConsolidated.Where(d => d.Granularity == Granularity.Days).ToList();
+            var currentDate = DateOnly.FromDateTime(oneWeekBefore);
+            while (currentDate < DateOnly.FromDateTime(yesterday))
+            {
+                var currentDateRange = currentDate.AsDateRange();
+                var hasBeenAlreadyConsolidated = dayConsolidated.Any(d => d.DateRange.Equals(currentDateRange));
+                logger.LogInformation("ConsolidateUptimes date: {date}, already consolidated: {hasBeenAlreadyConsolidated}", currentDate, hasBeenAlreadyConsolidated);
+                if (!hasBeenAlreadyConsolidated)
+                {
+                    await uptimeConsolidateServiceClient.ConsolidateDays(currentDateRange);
+                    logger.LogInformation("ConsolidateUptimes done dateRange: {currentDateRange}", currentDateRange);
+                }
+                currentDate = currentDate.AddDays(1);
+            }
+        }
+
     }
 }
