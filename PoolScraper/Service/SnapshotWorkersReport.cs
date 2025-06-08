@@ -4,7 +4,7 @@ using PoolScraper.Domain.Consolidation;
 
 namespace PoolScraper.Service
 {
-    public class WorkersReport
+    public class SnapshotWorkersReport
     {
         public IEnumerable<ISnapshotDetailedView> CalculateAveragePerWorker(IEnumerable<ISnapshotDetailedView> snapshots) {
             var groupedByHourAndWorker = snapshots

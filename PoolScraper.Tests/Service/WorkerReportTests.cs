@@ -23,7 +23,7 @@ namespace PoolScraper.Tests.Service
               CreateSnapshot(worker, 20, DateTime.Now.AddHours(-1), DateTime.Now),  // Hashrate 20, 1 hour
               };
 
-            var workersReport = new WorkersReport();
+            var workersReport = new SnapshotWorkersReport();
 
             // Act
             var result = workersReport.CalculateAveragePerWorker(snapshots).ToList();
@@ -50,7 +50,7 @@ namespace PoolScraper.Tests.Service
                 CreateSnapshot(worker2, 30, DateTime.Now.AddHours(-1), DateTime.Now),
                 CreateSnapshot(worker2, 40, DateTime.Now.AddHours(-2), DateTime.Now.AddHours(-1))
             };
-            var workersReport = new WorkersReport();
+            var workersReport = new SnapshotWorkersReport();
             // Act
             var result = workersReport.CalculateAveragePerWorker(snapshots).ToList();
 
@@ -72,7 +72,7 @@ namespace PoolScraper.Tests.Service
         {
             // Arrange
             var snapshots = new List<ISnapshotDetailedView>();
-            var workersReport = new WorkersReport();
+            var workersReport = new SnapshotWorkersReport();
 
             // Act
             var result = workersReport.CalculateAveragePerWorker(snapshots).ToList();
@@ -91,7 +91,7 @@ namespace PoolScraper.Tests.Service
               CreateSnapshot(worker, 20, DateTime.Now, DateTime.Now),  // 0 hour
              };
 
-            var workersReport = new WorkersReport();
+            var workersReport = new SnapshotWorkersReport();
 
             // Act
             var result = workersReport.CalculateAveragePerWorker(snapshots).ToList();
@@ -122,7 +122,7 @@ namespace PoolScraper.Tests.Service
                 CreateSnapshot(worker3, 60, DateTime.Now.AddHours(-2), DateTime.Now.AddHours(-1))
 
             };
-            var workersReport = new WorkersReport();
+            var workersReport = new SnapshotWorkersReport();
             // Act
             var result = workersReport.CalculateAveragePerWorker(snapshots).ToList();
 

@@ -14,7 +14,7 @@ namespace PoolScraper.Service.Consolidation
         Task<IEnumerable<IUptimeDataConsolidationInfo>> GetUptimeDataConsolidationInfoAsync(IDateRange dateRange);
         Task ConsolidateDays(IDateRange dateRange);
         Task<IEnumerable<IUptimePercentageDetailedView>> GetHourlyUptimeAsync(DateOnly dateOnly);
-        Task<IEnumerable<IUptimePercentageDetailedView>> GetDailyWorkerUptimeAsync(DateOnly dateOnly);
+        Task<IEnumerable<IUptimePercentageDetailedView>> GetDailyWorkerUptimeAsync(IDateRange dateRange);
         Task<(bool isSuccesfull, long deleteCount)> RemoveDayConsolidationAsync(IDateRange dateRange);
 
     }

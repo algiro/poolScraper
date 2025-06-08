@@ -50,9 +50,9 @@ namespace PoolScraper.Service.Consolidation
             var uptimesPercentage = await uptimeHourConsolidationPersistency.GetHourlyUptimeAsync(dateOnly);
             return uptimesPercentage.SelectNotNull(u => u.AsUptimePercentageDetailedView(workerStore));
         }
-        public async Task<IEnumerable<IUptimePercentageDetailedView>> GetDailyWorkerUptimeAsync(DateOnly dateOnly)
+        public async Task<IEnumerable<IUptimePercentageDetailedView>> GetDailyWorkerUptimeAsync(IDateRange dateRange)
         {
-            var hourlyUptimesPercentage = await uptimeDailyConsolidationPersistency.GetDailyUptimeAsync(dateOnly);
+            var hourlyUptimesPercentage = await uptimeDailyConsolidationPersistency.GetDailyUptimeAsync(dateRange);
             return hourlyUptimesPercentage.SelectNotNull(u => u.AsUptimePercentageDetailedView(workerStore));
         }
 

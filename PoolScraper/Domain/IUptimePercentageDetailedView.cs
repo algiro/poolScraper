@@ -20,6 +20,11 @@ namespace PoolScraper.Domain
             var result = workerStore.GetById(uptimePercentage.WorkerId);
             return result.worker != null && !result.isDisabled ? uptimePercentage.AsUptimePercentageDetailedView(result.worker) : null;
         }
+        public static IUptimePercentageDetailedView Create(IUptimePercentage uptimePercentage, IWorker worker)
+        {
+            return new UptimePercentageDetailedViewImpl(uptimePercentage, worker);
+        }
+
         private class UptimePercentageDetailedViewImpl(IUptimePercentage uptimePercentage, IWorker worker) : IUptimePercentageDetailedView
         {
             public IWorker Worker { get; } = worker;

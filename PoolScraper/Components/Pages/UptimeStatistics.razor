@@ -19,7 +19,7 @@
 
 <p>Daily Uptime Statistics:</p>
 <div>
-    <DateSelection OnSearch="@GetDetails" />
+    <DatePeriod OnSearch="@GetDetails" />
 </div>
 
 @if (workersUptime == null)
@@ -41,7 +41,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var workerUptime in workersUptime)
+            @foreach (var workerUptime in uptimePerWorker)
             {
                 <tr>
                     <td>@workerUptime.Worker.Name</td>
@@ -58,28 +58,32 @@ else
 @code {
     private Modal modal = default!;
     private IEnumerable<IUptimePercentageDetailedView> workersUptime = Enumerable.Empty<IUptimePercentageDetailedView>();
+    private IEnumerable<IUptimePercentageDetailedView> uptimePerWorker = Enumerable.Empty<IUptimePercentageDetailedView>();
+
+
     private IEnumerable<IWorkerUptimeHistory> workerUptimeHistory = Enumerable.Empty<IWorkerUptimeHistory>();
     private double todayCoverage;
     private DateOnly selectedDate;
+    private UptimeWorkersReport workersReport = new UptimeWorkersReport();
+
     protected override async Task OnInitializedAsync()
     {
         selectedDate = DateOnly.FromDateTime(DateTime.Now);
-        await GetDetails(selectedDate);
+        await GetDetails(selectedDate.AsDateRange());
         todayCoverage = await ScrapingServiceClient.GetTodayCoverageAsync();
     }
 
-    private async Task GetDetails(DateOnly date)
+    private async Task GetDetails(IDateRange dateRange)
     {
-        selectedDate = date;
         
-        var dailyUpTime = (await UptimeConsolidateServiceClient.GetDailyWorkerUptimeAsync(date)).ToList();
+        var dailyUpTime = (await UptimeConsolidateServiceClient.GetDailyWorkerUptimeAsync(dateRange)).ToList();
         if (dailyUpTime.Count == 0)
         {
             workersUptime = Enumerable.Empty<IUptimePercentageDetailedView>();
             return;
         }
-
-        workersUptime = dailyUpTime.OrderBy(w => w.UptimePercentage);
+        uptimePerWorker   = workersReport.CalculateAveragePerWorker(dailyUpTime).OrderBy(w => w.UptimePercentage);
+        
 		StateHasChanged();
 	}
 

@@ -65,7 +65,7 @@ namespace PoolScraper.Tests.Service
             var worker4Test = Worker.Create("pool1", "alg1", 1, "worker1");
             var workerId4602360 = snapshotDetails.Where(s => s!.WorkerId.Id == WORKER_ID1);
             var hashRate4602360 = workerId4602360.Average(w => w!.BasicInfo.Hashrate);
-            WorkersReport workersReport = new WorkersReport();
+            SnapshotWorkersReport workersReport = new SnapshotWorkersReport();
             var averagePerWorker = workersReport.CalculateAveragePerWorker(workerId4602360!);
             averagePerWorker.Should().HaveCount(1);
             averagePerWorker.ElementAt(0).BasicInfo.Hashrate.Should().BeApproximately(hashRate4602360, 0.001);

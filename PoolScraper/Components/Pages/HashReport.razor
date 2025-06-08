@@ -16,9 +16,7 @@
 
 <PageTitle>Hashrate Info</PageTitle>
 
-<h1>Uptime Report</h1>
-
-<p>HashReport:</p>
+<h1>Hashrate Report</h1>
 
 <div class="col-12 col-sm-12">
     <DatePeriod OnSearch="@GetDetails" />
@@ -126,7 +124,7 @@ else
     private IEnumerable<ISnapshotDetailedView> snapshotWorkersPerModel = Enumerable.Empty<ISnapshotDetailedView>();
     private IEnumerable<ISnapshotDetailedView> snapshotWorkersPerLocation = Enumerable.Empty<ISnapshotDetailedView>();
     private IDateRange dateRange = new DateOnly().AsDateRange();
-    private WorkersReport workersReport = new WorkersReport();
+    private SnapshotWorkersReport workersReport = new SnapshotWorkersReport();
     protected override async Task OnInitializedAsync()
     {
         dateRange = DateOnly.FromDateTime(DateTime.Now.AddDays(-1)).AsDateRange();

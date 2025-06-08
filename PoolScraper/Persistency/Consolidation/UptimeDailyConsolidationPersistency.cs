@@ -27,10 +27,10 @@ namespace PoolScraper.Persistency.Consolidation
             _dailyUptimeCollection = database.GetCollection<UptimePercentageReadModel>("dailyyUptimeCollection");
         }
 
-        public async Task<IEnumerable<IUptimePercentage>> GetDailyUptimeAsync(DateOnly dateOnly)
+        public async Task<IEnumerable<IUptimePercentage>> GetDailyUptimeAsync(IDateRange dateRange)
         {
-            var dayStart = dateOnly.GetBeginOfDay();
-            var dayEnd = dateOnly.GetEndOfDay();
+            var dayStart = dateRange.From;
+            var dayEnd = dateRange.To;
 
             var uptimePercViews = await _dailyUptimeCollection.Find( h => h.DateRange.From >= dayStart && h.DateRange.To <= dayEnd).ToListAsync<UptimePercentageReadModel>();
             return uptimePercViews.Select(u => u.AsUptimePercentage());
