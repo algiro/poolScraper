@@ -72,22 +72,8 @@ namespace PoolScraper.Service
         private async Task ConsolidateUptimes(DateTime yesterday, DateTime oneWeekBefore)
         {
             logger.LogInformation("ConsolidateUptimes data from {startDate} to {endDate}", oneWeekBefore, yesterday);
-
-            var dataConsolidated = await uptimeConsolidateServiceClient.GetUptimeDataConsolidationInfoAsync(DateRange.Create(oneWeekBefore, yesterday));
-            var dayConsolidated = dataConsolidated.Where(d => d.Granularity == Granularity.Days).ToList();
-            var currentDate = DateOnly.FromDateTime(oneWeekBefore);
-            while (currentDate < DateOnly.FromDateTime(yesterday))
-            {
-                var currentDateRange = currentDate.AsDateRange();
-                var hasBeenAlreadyConsolidated = dayConsolidated.Any(d => d.DateRange.Equals(currentDateRange));
-                logger.LogInformation("ConsolidateUptimes date: {date}, already consolidated: {hasBeenAlreadyConsolidated}", currentDate, hasBeenAlreadyConsolidated);
-                if (!hasBeenAlreadyConsolidated)
-                {
-                    await uptimeConsolidateServiceClient.ConsolidateDays(currentDateRange);
-                    logger.LogInformation("ConsolidateUptimes done dateRange: {currentDateRange}", currentDateRange);
-                }
-                currentDate = currentDate.AddDays(1);
-            }
+            var dateRange = DateRange.Create(oneWeekBefore, yesterday);
+            await uptimeConsolidateServiceClient.ConsolidateDays(dateRange);
         }
 
     }
