@@ -13,6 +13,8 @@ namespace PoolScraper.Domain
     public static class WorkerId
     {
         public static IWorkerId UNINITIALIZED = new WorkerIdImpl(string.Empty, 0);
+        public static bool IsUninitialized(IWorkerId? workerId) => workerId == null || workerId.Equals(UNINITIALIZED);
+
         public static IWorkerId Create(string poolId, long workerId)
         {
             return new WorkerIdImpl(poolId, workerId);

@@ -17,6 +17,7 @@ namespace PoolScraper.Domain
 
     public static class Worker
     {
+        public static IWorker UNKNOWN => CreateNew("UNKNOWN", "UNKNOWN", "UnknownWorker");
         public static IWorker CreateNew(string poolId, string algorithm, string name) => Create(poolId, algorithm, -1, name);
 
         public static IWorker Create(string poolId, string algorithm, long id, string name, string? provider=null)

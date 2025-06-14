@@ -53,7 +53,7 @@ namespace PoolScraper.Model.PowerPool
             var worker = Worker.CreateNew(pool.PoolId, workerStatus.Algorithm, workerStatus.Name);
             return NewWorker.CreateNew(worker, workerStatus.GetExternalId(pool));
         }
-        public static ISnapshotWorkerStatus? AsWorkerMinuteStatus(this WorkerStatus workerStatus, IWorkerIdMap workedIdMap, IPool pool, IDateRange dateRange)
+        public static ISnapshotWorkerStatus AsWorkerMinuteStatus(this WorkerStatus workerStatus, IWorkerIdMap workedIdMap, IPool pool, IDateRange dateRange)
         {
             var externalId = workerStatus.GetExternalId(pool);
             if (workedIdMap.TryGetWorkerId(externalId, out var workerId)) { 
@@ -62,7 +62,7 @@ namespace PoolScraper.Model.PowerPool
             else
             {
                 logger.LogOnce(LogLevel.Warning, $"WorkerId not found for externalId: {externalId}");
-                return null;
+                return SnapshotWorkerStatus.Create(WorkerId.UNINITIALIZED, Granularity.Minutes, dateRange, WorkerBasicInfo.Create(workerStatus.Hashrate, workerStatus.InvalidShares));
             }
         }
         public static (IEnumerable<IWorkerId> Matching,IEnumerable<IExternalId> Added, IEnumerable<IWorkerId> Removed) GetWorkerIdsStatus(this IEnumerable<WorkerStatus> workersStatus, IWorkerIdMap workerIdMap, IPool pool)
