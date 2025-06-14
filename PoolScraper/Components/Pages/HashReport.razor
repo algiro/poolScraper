@@ -66,7 +66,9 @@ else
         <Tab Title="Models">
             <Content>
 
-                <span> Model Count: </span> <span> @snapshotWorkersPerModel.Count()  </span> <span> <Button Color="ButtonColor.Primary" @onclick="() => ShowModelGraph()"> Graph </Button> </span>
+                <span> Model Count: </span> <span> @snapshotWorkersPerModel.Count()  </span> 
+                <span> <Button Color="ButtonColor.Primary" @onclick="() => ShowModelGraphForScrypt()"> Scrypt Graph </Button> </span>
+                <span> <Button Color="ButtonColor.Primary" @onclick="() => ShowModelGraphForSha256()"> Sha256 Graph </Button> </span>
                 <table class="table">
                     <thead>
                         <tr>
@@ -91,7 +93,9 @@ else
         <Tab Title="Location">
             <Content>
 
-                <span> Location Count: </span> <span> @snapshotWorkersPerLocation.Count()  </span> <span> <Button Color="ButtonColor.Primary" @onclick="() => ShowLocationGraph()"> Graph </Button> </span>
+                <span> Location Count: </span> <span> @snapshotWorkersPerLocation.Count()  </span>
+                <span> <Button Color="ButtonColor.Primary" @onclick="() => ShowLocationGraphForScrypt()"> Scrypt Graph </Button> </span>
+                <span> <Button Color="ButtonColor.Primary" @onclick="() => ShowLocationGraphForSha256()"> Sha256 Graph </Button> </span>
                 <table class="table">
                     <thead>
                         <tr>
@@ -147,10 +151,16 @@ else
         await modal.ShowAsync<WorkersSnapGraph>(title: "Worker Graph", parameters: parameters);
     }
 
-    private async Task ShowModelGraph()
+    private async Task ShowModelGraphForScrypt()
+        => await ShowModelGraph(snapshotWorkers.Where(s => s.Worker.Algorithm.Equals("scrypt")));
+    
+    private async Task ShowModelGraphForSha256()
+        => await ShowModelGraph(snapshotWorkers.Where(s => s.Worker.Algorithm.Equals("sha256")));
+    
+    private async Task ShowModelGraph(IEnumerable<ISnapshotDetailedView> snapData)
     {
-        var modelAndDate = workersReport.CalculateAveragePerModelAndDate(snapshotWorkers);
-        var parameters = new Dictionary<string, object>();       
+        var modelAndDate = workersReport.CalculateAveragePerModelAndDate(snapData);
+        var parameters = new Dictionary<string, object>();
         parameters.Add("workersModelData", modelAndDate);
         //await modal.ShowAsync<WorkersModelGraph>(title: "Worker Graph", parameters: parameters);
 
@@ -161,9 +171,15 @@ else
         parameters.Add("dataSeriesExtractor", dse);
         await modal.ShowAsync<WorkersSnapGroupedGraph<IWorkerModel>>(title: "Worker Graph", parameters: parameters);
     }
-    private async Task ShowLocationGraph()
+    private async Task ShowLocationGraphForScrypt()
+         => await ShowLocationGraph(snapshotWorkers.Where(s => s.Worker.Algorithm.Equals("scrypt")));
+
+    private async Task ShowLocationGraphForSha256()
+        => await ShowLocationGraph(snapshotWorkers.Where(s => s.Worker.Algorithm.Equals("sha256")));
+
+    private async Task ShowLocationGraph(IEnumerable<ISnapshotDetailedView> snapData)
     {
-        var locationAndDate = workersReport.CalculateAveragePerLocationAndDate(snapshotWorkers);
+        var locationAndDate = workersReport.CalculateAveragePerLocationAndDate(snapData);
         var parameters = new Dictionary<string, object>();
         parameters.Add("workersModelData", locationAndDate);
 		var groups = locationAndDate.GroupBy(w => $"{w.Worker.Farm.Location}.{w.Worker.Algorithm}");
