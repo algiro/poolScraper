@@ -22,6 +22,8 @@
 @inject ISnapshotDataConsolidationPersistency SnapDataConsolidationPersistency;
 @inject IUptimeDataConsolidationPersistency UptimeDataConsolidationPersistency;
 @inject IMongoUtils MongoUtils;
+@inject IAdminService AdminService;
+
 
 <PageTitle>Admin Page</PageTitle>
 <Tabs>
@@ -201,9 +203,9 @@
 			<TextAreaInput @bind-Value="@collectionInfo" Rows="10" ReadOnly="true" />
         </Content>
     </Tab>
-    <Tab Title="Workers">
+    <Tab Title="Restore">
         <Content>
-            <DatePeriod OnSearch="@RecreateWorkers" ActionText="Recreate Workers"/> 
+            <DatePeriod OnSearch="@RestoreFromScrapings" ActionText="Restore From Scrapings"/> 
         </Content>
     </Tab>
 
@@ -338,7 +340,7 @@ else
     {
         if (dateRange != null)
         {
-            consolidationDayResult = await SnapshotConsolidateServiceClient.ConsolidateDays(dateRange);
+            consolidationDayResult = await SnapshotConsolidateServiceClient.ConsolidateDateRange(dateRange);
             isConsolidationExecuted = true;
         }
     }
@@ -376,9 +378,9 @@ else
         collectionInfo = MongoUtils.GetCollectionStructure(collectionName);
     }
 
-    private async Task RecreateWorkers(IDateRange dateRange)
+    private async Task RestoreFromScrapings(IDateRange dateRange)
     {
-        await PowerPoolScrapingService.RecreateWorkersAsync(dateRange);
+        await AdminService.RestoreCollectionsFromScraping(dateRange);
 	}
 
 }

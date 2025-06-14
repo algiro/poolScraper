@@ -1,7 +1,7 @@
 @echo off
 echo "Usage with no parameter, it creates 'latest' version, with 'newRelease' parameter it creates a new release tag"
 :parse
-set version=latest
+set appVersion=latest
 IF not "%~1"=="newRelease" GOTO endparse
 
 for /f %%a in ('wmic os get localdatetime ^| find "."') do set datetime=%%a
@@ -10,8 +10,10 @@ set MM=%datetime:~4,2%
 set DD=%datetime:~6,2%
 set formatted_date=%YYYY%%MM%%DD%
 echo Date: %formatted_date%
-set version=R.%formatted_date%
+set appVersion=R.%formatted_date%
 :endparse
-echo Version: %version%
-[Environment]::SetEnvironmentVariable("ps_version", "version", "User")
-docker build . -t algiro/pool-scraper:%version%
+echo Version: %appVersion%
+[Environment]::SetEnvironmentVariable("ps_version", "appVersion", "User")
+set varCheck=[Environment]::GetEnvironmentVariable("ps_version", "User")
+echo %varCheck%
+docker build . -t algiro/pool-scraper:%appVersion%

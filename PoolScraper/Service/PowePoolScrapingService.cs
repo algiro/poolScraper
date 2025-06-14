@@ -71,29 +71,11 @@ namespace PoolScraper.Service
                 throw new Exception($"Error storing data in MongoDB: {ex.Message} {ex.StackTrace}");
             }
         }
-        public async Task RecreateWorkersAsync(IDateRange dateRange)
+        public async Task RecreateWorkersAsync(PowerPoolUser powerPoolScraping)
         {            
-            var datesInRange = dateRange.GetDatesWithinRange().ToList();
-            _log.LogInformation("RecreateWorkersAsync for dateRange: {date}", dateRange);
-
-            foreach (var date in datesInRange)
-            {
-                _log.LogInformation("RecreateWorkersAsync for date: {date}", date);
-                var powerPoolData = await _powerPoolScrapingPersistency.GetDataRangeAsync(date.GetBeginOfDay(), date.GetEndOfDay());
-                if (powerPoolData.IsEmpty())
-                {
-                    _log.LogWarning("RecreateWorkersAsync No data found for date: {date}", date);
-                    continue;
-                }
-                var firstScrapingOfTheDay = powerPoolData.OrderBy(p => p.FetchedAt).FirstOrDefault();
-                if (firstScrapingOfTheDay == null)
-                {
-                    _log.LogWarning("RecreateWorkersAsync No valid scraping data found for date: {date}", date);
-                    continue;
-                }
-                await UpdateWorkersFromScrapingInfo(firstScrapingOfTheDay);
-            }
-            _log.LogInformation("RecreateWorkersAsync for dateRange: {date} completed!", dateRange);
+            _log.LogInformation("RecreateWorkersAsync No valid scraping data found for scraping at: {date}", powerPoolScraping.FetchedAt);
+            await UpdateWorkersFromScrapingInfo(powerPoolScraping);
+            _log.LogInformation("RecreateWorkersAsync for dateRange: {date} completed!", powerPoolScraping.FetchedAt);
 
         }
         private async Task UpdateWorkersFromScrapingInfo(PowerPoolUser powerPoolData)

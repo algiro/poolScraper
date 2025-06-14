@@ -102,7 +102,8 @@ namespace PoolScraper.Model.PowerPool
             var duplicates = result.GroupBy(w => w.WorkerId).Where(g => g.Count() > 1);
             if (duplicates.Count() > 0)
             {
-                throw new ArgumentException("The snapshot contains multiple entries for the same workerId in the same date range.");
+                var duplicatesIds = duplicates.Select(g => g.Key).ToList();
+                throw new ArgumentException($"The snapshot contains multiple entries {duplicatesIds.Count} for the same workerId {string.Join(';',duplicatesIds.Select(w => w.Id))} in the same date range.");
             }
             return result;
         }

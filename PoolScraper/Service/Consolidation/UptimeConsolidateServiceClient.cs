@@ -30,19 +30,13 @@ namespace PoolScraper.Service.Consolidation
                 await uptimeHourConsolidationPersistency.InsertManyAsync(hourlyUptime.hour,hourlyUptime.percentage);
             }
         }
-        public async Task ConsolidateDays(IDateRange dateRange)
+        public async Task ConsolidateDay(DateOnly date)
         {
-            var powerPoolScrapings = await powerPoolScrapingService.GetDataRangeAsync(dateRange.From,dateRange.To);
-            logger.LogInformation($"ConsolidateDays: {dateRange} found scrapings: {powerPoolScrapings.Count()}");
-
-            var dailyUptimePowerPoolConsolidation = new DailyUptimePowerPoolConsolidation();
-            var dailyUptimeConsolidation = dailyUptimePowerPoolConsolidation.GetDailyUptime(powerPoolScrapings, workerStore.GetWorkerIdMap());
-
-            foreach (var dailyUptime in dailyUptimeConsolidation)
-            {
-                logger.LogInformation($"ConsolidateDays dailyUptime: {dailyUptime.date}");
-                await uptimeDailyConsolidationPersistency.InsertManyAsync(dailyUptime.date, dailyUptime.percentage);
-            }
+            var dateRange = date.AsDateRange(); 
+            var scrapingDateData = await powerPoolScrapingService.GetDataRangeAsync(dateRange.From,dateRange.To);
+            logger.LogInformation($"ConsolidateDays: {dateRange} found scrapings: {scrapingDateData.Count()}");
+            var snapshotWorkerStatus = scrapingDateData.AsSnapshotWorkerStatus(workerStore.GetWorkerIdMap());
+            await UptimeConsolidateServiceClientHelper.ConsolidateDay(date, snapshotWorkerStatus, workerStore, uptimeDailyConsolidationPersistency);
         }
 
         public async Task<IEnumerable<IUptimePercentageDetailedView>> GetHourlyUptimeAsync(DateOnly dateOnly)

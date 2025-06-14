@@ -21,5 +21,12 @@ namespace PoolScraper.Service.Consolidation
                 yield return (scrapingDate.ToDateOnly(), workerUptimeResult);
             }
         }
+
+        public IEnumerable<IUptimePercentage> GetDailyUptime(DateOnly date, IEnumerable<ISnapshotWorkerStatus> snapshotWorkerStatus, IWorkerIdMap workerIdMap)
+        {
+            UptimeCalculator uptimeCalculator = new UptimeCalculator();
+            var workerUptimeResult = uptimeCalculator.CalculateTotUptime(snapshotWorkerStatus);
+            return workerUptimeResult;
+        }
     }
 }

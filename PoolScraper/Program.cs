@@ -33,6 +33,7 @@ builder.Services.AddSingleton<IInitApp, InitApp>();
 builder.Services.AddSingleton<IPowerPoolScrapingService, PowePoolScrapingService>();
 builder.Services.AddSingleton<IPoolScraperConfig>(PoolScraperConfig.Instance);
 builder.Services.AddSingleton<IMongoUtils,MongoUtils>();
+builder.Services.AddSingleton<IAdminService,AdminService>();
 
 //builder.Services.AddSingleton<IWorkerIdMap>((sp) => WorkerIdMap.Create(sp.GetService<IWorkerPersistency>().CheckNotNull()));
 builder.Services.AddSingleton<IPowerPoolScrapingPersistency,PowerPoolScrapingPersistency>();

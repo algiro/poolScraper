@@ -32,7 +32,7 @@ namespace PoolScraper.Service
 
         private async Task ImportAction()
         {
-            await scrapingServiceClient.FetchAndStoreUserDataAsync();
+            //await scrapingServiceClient.FetchAndStoreUserDataAsync();
         }
         private async Task ConsolidateAction()
         {
@@ -63,7 +63,7 @@ namespace PoolScraper.Service
                 logger.LogInformation("ConsolidateSnapshots date: {date}, already consolidated: {hasBeenAlreadyConsolidated}", currentDate, hasBeenAlreadyConsolidated);
                 if (!hasBeenAlreadyConsolidated)
                 {
-                    await snapshotConsolidateServiceClient.ConsolidateDays(currentDateRange);
+                    await snapshotConsolidateServiceClient.ConsolidateDateRange(currentDateRange);
                     logger.LogInformation("ConsolidateSnapshots done dateRange: {currentDateRange}", currentDateRange);
                 }
                 currentDate = currentDate.AddDays(1);

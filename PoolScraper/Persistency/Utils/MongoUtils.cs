@@ -23,7 +23,6 @@ namespace PoolScraper.Persistency.Utils
         {
             try
             {
-                mongoDatabase.List
                 return mongoDatabase.ListCollectionNames().ToList();
             }
             catch (Exception ex)

@@ -10,6 +10,6 @@ namespace PoolScraper.Service
         Task<IEnumerable<ISnapshotWorkerStatus>> GetSnapshotWorkerStatusAsync(long workerId, DateTime from, DateTime to);
         Task<PowerPoolUser> GetLatestUserDataAsync();
         Task<double> GetTodayCoverageAsync();
-        Task RecreateWorkersAsync(IDateRange dateRange);
+        Task RecreateWorkersAsync(PowerPoolUser powerPoolScraping);
     }
 }
