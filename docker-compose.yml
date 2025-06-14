@@ -1,6 +1,6 @@
 services:
   poolscraper:
-    image: algiro/pool-scraper:latest
+    image: algiro/pool-scraper:$ps_version
     container_name: poolscraper
     ports:
     - "8080:8080"

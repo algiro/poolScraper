@@ -13,4 +13,5 @@ echo Date: %formatted_date%
 set version=R.%formatted_date%
 :endparse
 echo Version: %version%
+[Environment]::SetEnvironmentVariable("ps_version", "version", "User")
 docker build . -t algiro/pool-scraper:%version%
