@@ -48,19 +48,39 @@ namespace PoolScraper.Persistency.Utils
         {
             try
             {
-                var collection = mongoDatabase.GetCollection<BsonDocument>(collectionName);
+                var collection = mongoDatabase.GetCollection<BsonDocument>(collectionName);                
                 var recordCount = collection.CountDocuments(new BsonDocument());
                 var firstDocument = collection.Find(new BsonDocument()).FirstOrDefault();
+                var indexes = collection.Indexes.List().ToList();
+                var indexesData = indexes.Select(i => i.ToBsonDocument().ToJson()).ToList();
                 if (firstDocument == null)
                 {
                     return "Collection is empty.";
                 }
-                return $"Document count: {recordCount} \n Sample data: \n {firstDocument.ToJson()}";
+                return $"Document count: {recordCount} \n Sample data: \n {firstDocument.ToJson()} \n Indexes: {string.Join('\n', indexesData)}";
             }
             catch (Exception ex)
             {
                 _log.LogError("Error retrieving structure for collection {collectionName}: {message}", collectionName, ex.Message);
                 return "Error retrieving structure.";
+            }
+        }
+
+        public bool CreateIndex(string collectionName, string indexName, string fieldName)
+        {
+            try
+            {
+                var collection = mongoDatabase.GetCollection<BsonDocument>(collectionName);
+                var indexKeys = Builders<BsonDocument>.IndexKeys.Ascending(fieldName);
+                var indexModel = new CreateIndexModel<BsonDocument>(indexKeys, new CreateIndexOptions { Name = indexName });
+                collection.Indexes.CreateOne(indexModel);
+                _log.LogInformation("Index {indexName} created successfully on collection {collectionName}.", indexName, collectionName);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _log.LogError("Error creating index {indexName} on collection {collectionName}: {message}", indexName, collectionName, ex.Message);
+                return false;
             }
         }
     }

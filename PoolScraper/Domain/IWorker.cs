@@ -43,7 +43,8 @@ namespace PoolScraper.Domain
         {            
             return new DefaultWorker(poolId, algorithm, id, name,nominalHashRate,provider, model, farm);
         }
-        public static IEnumerable<WorkerReadModel> AsWorkersReadModel(this IEnumerable<IWorker> workers)
+
+        public static IEnumerable<WorkerReadModel> AsWorkersReadModel(this IEnumerable<INewWorker> workers)
         {
             return workers.Select(w => w.AsWorkerReadModel());
         }

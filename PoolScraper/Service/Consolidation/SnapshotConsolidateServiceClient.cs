@@ -28,14 +28,13 @@ namespace PoolScraper.Service.Consolidation
                 var snapshotWorkerStatus = powerPoolScrapings.AsSnapshotWorkerStatus(workerStore.GetWorkerIdMap());
                 var hourlySnapshotConsolidation = new HourlySnapshotsConsolidation();
                 var hourlySnapshotConsolidationResult = hourlySnapshotConsolidation.GetHourlySnapshots(snapshotWorkerStatus);
-                DateTime currentDateTime = date.GetBeginOfDay();
                 foreach (var hourlySnapshot in hourlySnapshotConsolidationResult)
                 {
                     var snapshotsCount = hourlySnapshot.snapshots.Count();
                     logger.LogInformation("hourlySnapshot  hours#: {hourCount} storing snapshots#: {snapCount}", hourlySnapshot.hour, snapshotsCount);
                     if (snapshotsCount > 0)
                     {
-                        await snapshotHourConsolidationPersistency.InsertManyAsync(hourlySnapshot.snapshots);
+                        await snapshotHourConsolidationPersistency.InsertManyAsync(hourlySnapshot.snapshots,sourceCount:-1);
                     }
                 }
             }
@@ -53,7 +52,7 @@ namespace PoolScraper.Service.Consolidation
                 logger.LogInformation("ConsolidateDays  processing: {currentDate}", date);
                 var powerPoolScrapings = await powerPoolScrapingService.GetDataRangeAsync(date.GetBeginOfDay(), date.GetEndOfDay());
                 var snapshotWorkerStatus = powerPoolScrapings.AsSnapshotWorkerStatus(workerStore.GetWorkerIdMap());
-                await SnapshotConsolidateServiceClientHelper.ConsolidateDay(date, snapshotWorkerStatus, snapshotDayConsolidationPersistency);
+                await SnapshotConsolidateServiceClientHelper.ConsolidateDay(date, minutesCount:powerPoolScrapings.Count(), snapshotWorkerStatus, snapshotDayConsolidationPersistency);
             }
             catch (Exception ex)
             {

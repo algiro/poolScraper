@@ -39,15 +39,14 @@ namespace PoolScraper.Persistency.Consolidation
             return snapshotViews.Select(u => u.AsSnapshotWorkerStatus());
         }
 
-        public async Task<bool> InsertManyAsync(IEnumerable<ISnapshotWorkerStatus> consolidatedSnapshots)
+        public async Task<bool> InsertManyAsync(IEnumerable<ISnapshotWorkerStatus> consolidatedSnapshots,int sourceCount)
         {
             try
             {
                 var snapshotStatusViews = consolidatedSnapshots.Select(u => u.AsSnapshotWorkerStatusView());
                 await _consolidatedSnapshotCollection.InsertManyAsync(snapshotStatusViews);
                 var refSnap = consolidatedSnapshots.First();
-                var snapshotsCount = consolidatedSnapshots.Count();
-                await _snapshotDataConsolidationPersistency.InsertAsync(SnapshotDataConsolidationInfo.Create(Granularity, refSnap.DateRange, snapshotsCount));
+                await _snapshotDataConsolidationPersistency.InsertAsync(SnapshotDataConsolidationInfo.Create(Granularity, refSnap.DateRange, sourceCount));
 
                 return true;
             }

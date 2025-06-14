@@ -201,6 +201,12 @@
                 </tbody>
             </table>
 			<TextAreaInput @bind-Value="@collectionInfo" Rows="10" ReadOnly="true" />
+            <div class="col-12 col-sm-12">
+                <TextInput TValue="string" @bind-Value="@collectionNameForIndex" Placeholder="Collection Name to Create Index" />
+                <TextInput TValue="string" Placeholder="Index Name" @bind-Value="@indexName" />
+                <TextInput TValue="string" Placeholder="Field Name" @bind-Value="@fieldName" />
+                <Button Color="ButtonColor.Primary" @onclick="() => CreateIndex(collectionNameForIndex, indexName, fieldName)">Create Index</Button>
+			</div>
         </Content>
     </Tab>
     <Tab Title="Restore">
@@ -282,7 +288,11 @@ else
     private string? workerId;
     private (bool success, string? message) consolidationDayResult = (false, null);
     private string collectionNameConfirmed = string.Empty;
+	private string collectionNameForIndex = string.Empty;
     private string collectionInfo = string.Empty;
+	private string indexName = string.Empty;
+	private string fieldName = string.Empty;
+
     protected override async Task OnInitializedAsync()
     {
         selectedDate = DateOnly.FromDateTime(DateTime.Now);
@@ -377,6 +387,10 @@ else
     {
         collectionInfo = MongoUtils.GetCollectionStructure(collectionName);
     }
+    private void CreateIndex(string collectionName,string indexName, string fieldName)
+    {
+        MongoUtils.CreateIndex(collectionName, indexName, fieldName);
+	}
 
     private async Task RestoreFromScrapings(IDateRange dateRange)
     {

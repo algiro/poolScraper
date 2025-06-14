@@ -157,7 +157,9 @@ namespace PoolScraper.Persistency
                 .Set(x => x.NominalHashRate, workerToUpdate.NominalHashRate)
                 .Set(x => x.Provider, workerToUpdate.Provider)
                 .Set(x => x.ModelId, workerToUpdate.Model.Id)
-                .Set(x => x.FarmId, workerToUpdate.Farm.Id);
+                .Set(x => x.FarmId, workerToUpdate.Farm.Id)
+                .Set(x => x.EditedAt, DateTime.UtcNow);
+
             return _workerCollection.UpdateOneAsync(filter, update).ContinueWith(t =>
             {
                 if (t.IsCompletedSuccessfully)

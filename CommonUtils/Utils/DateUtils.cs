@@ -301,6 +301,26 @@ public static class DateUtils
             return false;
         }
     }
+    public static IEnumerable<TimeGap> FindTimeGaps(IEnumerable<DateTime> fetchedTimes, DateTime fromDate, DateTime toDate, TimeSpan timeSpanThreshold)
+    {
+        if (fromDate > toDate)
+        {
+            throw new ArgumentException("fromDate must be earlier than toDate");
+        }
+        DateTime actualTime = fromDate;
+        List<TimeGap> gaps = new List<TimeGap>();
+        foreach (DateTime fetchedTime in fetchedTimes)
+        {
+            var diff = fetchedTime - actualTime;
+            if (diff >= timeSpanThreshold)
+            {
+                var gap = new TimeGap() { GapTime = actualTime, MissingSpan = diff };
+                gaps.Add(gap);
+            }
+            actualTime = fetchedTime;
+        }
+        return gaps;
+    }
 
     public static string FormatTime_YYYYMMDD(this DateOnly dt)
     {

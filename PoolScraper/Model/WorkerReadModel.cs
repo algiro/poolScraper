@@ -9,7 +9,7 @@ namespace PoolScraper.Model
 {
     public class WorkerReadModel
     {
-        public WorkerReadModel(string poolId, string algorithm, long id, string name, long nominalHashRate,string provider, IWorkerModel model, IFarm farm)
+        public WorkerReadModel(string poolId, string algorithm, long id, string name, long nominalHashRate,string provider, IWorkerModel model, IFarm farm,DateTime createdAt)
         {
             PoolId = poolId;
             Algorithm = algorithm;
@@ -20,6 +20,7 @@ namespace PoolScraper.Model
             NominalHashRate = nominalHashRate;
             Provider = provider;
             WorkerId = Domain.WorkerId.Create(poolId, id);
+            CreatedAt = createdAt;
         }
         
         [BsonId]
@@ -31,6 +32,8 @@ namespace PoolScraper.Model
         public int FarmId { get; set; }
         public long NominalHashRate{ get; set; }
         public string Provider { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime EditedAt { get; set; }
         private IWorkerId WorkerId { get; }
 
         public override int GetHashCode()
@@ -75,9 +78,10 @@ namespace PoolScraper.Model
             }
             return Worker.Create(workerReadModel.PoolId, workerReadModel.Algorithm, workerReadModel.Id, workerReadModel.Name, workerReadModel.NominalHashRate, workerReadModel.Provider, model!, farm! );
         }
-        public static WorkerReadModel AsWorkerReadModel(this IWorker worker)
+        public static WorkerReadModel AsWorkerReadModel(this INewWorker newWorker)
         {
-            return new WorkerReadModel(worker.WorkerId.PoolId, worker.Algorithm, worker.WorkerId.Id, worker.Name, worker.NominalHashRate, worker.Provider, worker.Model, worker.Farm);
+            return new WorkerReadModel(newWorker.WorkerId.PoolId, newWorker.Algorithm, newWorker.WorkerId.Id, newWorker.Name, newWorker.NominalHashRate, newWorker.Provider, newWorker.Model, newWorker.Farm, newWorker.CreatedAt);
         }
+
     }
 }

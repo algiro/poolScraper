@@ -40,7 +40,7 @@ namespace PoolScraper.Service.Consolidation
         }
         /* ConsolidateDay method that takes a date and a collection of PowerPoolUser objects.
         This is useful for consolidating data for a specific day based on the provided user data (that could be fetched once). */
-        public static async Task<(bool success, string? message)> ConsolidateDay(DateOnly date, IEnumerable<ISnapshotWorkerStatus> snapshotWorkerStatus, ISnapshotConsolidationPersistency snapshotDayConsolidationPersistency)
+        public static async Task<(bool success, string? message)> ConsolidateDay(DateOnly date, int minutesCount, IEnumerable<ISnapshotWorkerStatus> snapshotWorkerStatus, ISnapshotConsolidationPersistency snapshotDayConsolidationPersistency)
         {
             try
             {
@@ -60,7 +60,7 @@ namespace PoolScraper.Service.Consolidation
                     logger.LogInformation("ConsolidateDays daySnapshot  day: {snapDay} snapCount#: {snapCount}", daySnapshot.date, snapshotsCount);
                     if (snapshotsCount > 0)
                     {
-                        var snapInserted = await snapshotDayConsolidationPersistency.InsertManyAsync(daySnapshot.snapshots);
+                        var snapInserted = await snapshotDayConsolidationPersistency.InsertManyAsync(daySnapshot.snapshots, minutesCount);
                         if (!snapInserted)
                         {
                             logger.LogError("ConsolidateDays {currentDate} error: failed to insert snapshots or data", date);

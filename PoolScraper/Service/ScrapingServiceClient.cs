@@ -34,34 +34,12 @@ namespace PoolScraper.Service
         }
         public async Task<(IEnumerable<PowerPoolUser> data, IEnumerable<TimeGap> gap)> GetDayDetailsAsync(DateOnly date)
         {
-            DateTime beginOfToday = date.ToDateTime(new TimeOnly(0, 0, 0));
-            DateTime endOfToday = date.ToDateTime(new TimeOnly(23, 59, 59));
+            DateTime beginOfToday = date.GetBeginOfDay();
+            DateTime endOfToday = date.GetEndOfDay();
 
             var todayData =  await powerPoolScrapingService.GetDataRangeAsync(beginOfToday, endOfToday);
-            var gaps = FindTimeGaps(todayData.Select(u => u.FetchedAt), beginOfToday, endOfToday,TimeSpan.FromSeconds(90));
+            var gaps = DateUtils.FindTimeGaps(todayData.Select(u => u.FetchedAt), beginOfToday, endOfToday,TimeSpan.FromSeconds(90));
             return (todayData, gaps);
-        }
-
-
-        public IEnumerable<TimeGap> FindTimeGaps(IEnumerable<DateTime> fetchedTimes, DateTime fromDate, DateTime toDate,TimeSpan timeSpanThreshold)
-        {
-            if (fromDate > toDate)
-            {
-                throw new ArgumentException("fromDate must be earlier than toDate");
-            }
-            DateTime actualTime = fromDate;
-            List<TimeGap> gaps = new List<TimeGap>();
-            foreach (DateTime fetchedTime in fetchedTimes)
-            {
-                var diff = fetchedTime - actualTime;
-                if (diff >= timeSpanThreshold)
-                {
-                    var gap = new TimeGap() { GapTime = actualTime, MissingSpan = diff };
-                    gaps.Add(gap);
-                }
-                actualTime = fetchedTime;
-            }
-            return gaps;
         }
     }
 }

@@ -7,7 +7,7 @@ namespace PoolScraper.Persistency.Consolidation
     {
         Granularity Granularity { get; }
         Task<IEnumerable<ISnapshotWorkerStatus>> GetSnapshotAsync(IDateRange dateRange);
-        Task<bool> InsertManyAsync(IEnumerable<ISnapshotWorkerStatus> hourlyUptime);
+        Task<bool> InsertManyAsync(IEnumerable<ISnapshotWorkerStatus> hourlyUptime, int sourceCount);
         Task<(bool isSuccesfull, long deleteCount)> RemoveDayConsolidationAsync(IDateRange dateRange);
     }
 }

@@ -7,6 +7,7 @@ namespace PoolScraper.Domain
     public interface INewWorker : IWorker
     {
         IExternalId ExternalId { get; }
+        DateTime CreatedAt { get; } 
     }
 
     public static class NewWorker
@@ -34,6 +35,8 @@ namespace PoolScraper.Domain
             public IWorkerModel Model { get; } = worker.Model;
             public IFarm Farm { get; } = worker.Farm;
             public long NominalHashRate { get; } = worker.NominalHashRate;
+            public DateTime CreatedAt { get; } = DateTime.UtcNow;
+
             public override int GetHashCode() => worker.GetHashCode();
             public override bool Equals(object? obj) => worker.Equals(obj);
             public int CompareTo(object? obj) => worker.CompareTo(obj);

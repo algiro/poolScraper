@@ -27,14 +27,15 @@ namespace PoolScraper.Service
         private readonly IPowerPoolScrapingPersistency _powerPoolScrapingPersistency;
         private readonly IWorkerPersistency _workerPersistency;
         private readonly IWorkerStore _workerStore;
-
-        public PowePoolScrapingService(ILogger<PowePoolScrapingService> log, IPowerPoolScrapingPersistency powerPoolScrapingPersistency, IWorkerPersistency workerPersistency, IWorkerStore workerStore)
+        private readonly IAppEventsPersistency _appEventsPersistency;
+        public PowePoolScrapingService(ILogger<PowePoolScrapingService> log, IPowerPoolScrapingPersistency powerPoolScrapingPersistency, IWorkerPersistency workerPersistency, IWorkerStore workerStore, IAppEventsPersistency appEventsPersistency)
         {
             _log = log;
             _httpClient = new HttpClient();
             _powerPoolScrapingPersistency = powerPoolScrapingPersistency;
             _workerPersistency = workerPersistency;
             _workerStore = workerStore;
+            _appEventsPersistency = appEventsPersistency;
         }
         private string apiKey => powerPool.ApiKey;
         public async Task FetchAndStoreUserData()
@@ -73,7 +74,6 @@ namespace PoolScraper.Service
         }
         public async Task RecreateWorkersAsync(PowerPoolUser powerPoolScraping)
         {            
-            _log.LogInformation("RecreateWorkersAsync No valid scraping data found for scraping at: {date}", powerPoolScraping.FetchedAt);
             await UpdateWorkersFromScrapingInfo(powerPoolScraping);
             _log.LogInformation("RecreateWorkersAsync for dateRange: {date} completed!", powerPoolScraping.FetchedAt);
 
@@ -91,9 +91,11 @@ namespace PoolScraper.Service
                     var newWorkerStatus = workersStatus.Where(w => workers.Added.Contains(w.GetExternalId(powerPool)));
                     var newWorkers = newWorkerStatus.Select(w => w.AsNewWorker(powerPool));
                     await _workerPersistency.InsertManyAsync(newWorkers);
+                    await _appEventsPersistency.InsertAsync(AppEvent.Create(AppEventType.Info, $"Adding new Workers from scraping at: {powerPoolData.FetchedAt} count: {newWorkers.Count()}"));
                 }
                 if (!workers.Removed.IsEmpty())
                 {
+                    await _appEventsPersistency.InsertAsync(AppEvent.Create(AppEventType.Warning, $"Removing Workers from scraping at: {powerPoolData.FetchedAt} removed: {string.Join(',', workers.Removed)}"));
                     _log.LogInformation("UpdateWorkersFromScrapingInfo Removed Workers!! {removedId} ", string.Join(',', workers.Removed));
                 }
                 else
