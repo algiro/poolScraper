@@ -3,10 +3,10 @@ using PoolScraper.Domain;
 
 namespace PoolScraper.Components.Utils
 {
-    public delegate bool MatchFunc<T>(ISnapshotDetailedView snapshotDetailedView,T compareElement);
-    public delegate IEnumerable<T> GetGroups<T>(IEnumerable<ISnapshotDetailedView> snapData);
+    public delegate bool MatchSnapFunc<T>(ISnapshotDetailedView snapshotDetailedView,T compareElement);
+    public delegate IEnumerable<T> GetSnapGroups<T>(IEnumerable<ISnapshotDetailedView> snapData);
 
-    public class DateSeriesExtractor<T>(IEnumerable<ISnapshotDetailedView> snapData, MatchFunc<T> matchFunction, GetGroups<T> GetGroups)
+    public class DateSeriesSnapExtractor<T>(IEnumerable<ISnapshotDetailedView> snapData, MatchSnapFunc<T> matchFunction, GetSnapGroups<T> GetGroups)
     {
         private int datasetsCount = 0;
         private int labelsCount =0;

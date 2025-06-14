@@ -22,7 +22,7 @@
 
     private Random random = new();
     [Parameter] public IEnumerable<ISnapshotDetailedView> workersModelData { get; set; } = Enumerable.Empty<ISnapshotDetailedView>();
-    [Parameter] public DateSeriesExtractor<TItem> dataSeriesExtractor { get; set; } = default!;
+    [Parameter] public DateSeriesSnapExtractor<TItem> dataSeriesExtractor { get; set; } = default!;
 
     protected override void OnInitialized()
     {

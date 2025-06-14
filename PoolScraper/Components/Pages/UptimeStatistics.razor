@@ -1,5 +1,6 @@
 ﻿@page "/uptimeStats"
 @using PoolScraper.Components.Shared
+@using PoolScraper.Components.Utils
 @using PoolScraper.Domain
 @using PoolScraper.Model
 @using PoolScraper.Model.Scheduler
@@ -11,6 +12,7 @@
 @inject IUptimeServiceClient UptimeServiceClient
 @inject IScrapingServiceClient ScrapingServiceClient
 @inject IUptimeConsolidateServiceClient UptimeConsolidateServiceClient;
+@inject ILogger<UptimeStatistics> logger;
 
 <PageTitle>Uptime Info</PageTitle>
 
@@ -22,67 +24,133 @@
     <DatePeriod OnSearch="@GetDetails" />
 </div>
 
+<Modal @ref="modal" title="Line Chart Graph" Fullscreen="ModalFullscreen.Always">
+	<WorkersGraph/>
+</Modal>
+
 @if (workersUptime == null)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-    <span> Workers Count: </span> <span> @workersUptime.Count()  </span>
-    <span> Today Coverage: </span> <span> @todayCoverage </span>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Algo</th>
-                <th>Model</th>
-                <th>Uptime%</th>
-                <th>Id</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var workerUptime in uptimePerWorker)
-            {
-                <tr>
-                    <td>@workerUptime.Worker.Name</td>
-                    <td>@workerUptime.Worker.Algorithm</td>
-                    <td>@workerUptime.Worker.Model</td>
-                    <td>@workerUptime.UptimePercentage</td>
-                    <td><Button Color="ButtonColor.Primary" @onclick="() => GetWorkerDetails(workerUptime.WorkerId.Id)">@workerUptime.WorkerId</Button> </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <Tabs>
+        <Tab Title="Workers" Active="true">
+            <Content>
+                <span> Workers Count: </span> <span> @workersUptime.Count()  </span>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Algo</th>
+                            <th>Model</th>
+                            <th>Uptime%</th>
+                            <th>Id</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var workerUptime in uptimePerWorker)
+                        {
+                            <tr>
+                                <td>@workerUptime.Worker.Name</td>
+                                <td>@workerUptime.Worker.Algorithm</td>
+                                <td>@workerUptime.Worker.Model</td>
+                                <td>@workerUptime.UptimePercentage</td>
+                                <td> <Button Color="ButtonColor.Primary" @onclick="() => ShowGraph(workerUptime)">Graph</Button> </td>
+                                <td><Button Disabled=true Color="ButtonColor.Primary" @onclick="() => GetWorkerDetails(workerUptime.WorkerId.Id)">@workerUptime.WorkerId</Button> </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </Content>
+        </Tab>
+        <Tab Title="Models">
+            <Content>
+                <span> Model Count: </span> <span> @uptimePerModel.Count()  </span> <span> <Button Color="ButtonColor.Primary" @onclick="() => ShowModelGraph()"> Graph </Button> </span>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th>Algo</th>
+                            <th>Hashrate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var snapshotWorker in uptimePerModel)
+                        {
+                            <tr>
+                                <td>@snapshotWorker.Worker.Model.Name</td>
+                                <td>@snapshotWorker.Worker.Algorithm</td>
+                                <td>@snapshotWorker.UptimePercentage</td>
+                            </tr>
+                        }
+                </tbody>
+            </table>
+        </Content>
+        </Tab>
+        <Tab Title="Location">
+            <Content>
+                <span> Location Count: </span> <span> @uptimePerLocation.Count()  </span> <span> <Button Color="ButtonColor.Primary" @onclick="() => ShowLocationGraph()"> Graph </Button> </span>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th>Algo</th>
+                            <th>Hashrate</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var snapshotWorker in uptimePerLocation)
+                        {
+                            <tr>
+                                <td>@snapshotWorker.Worker.Model.Name</td>
+                                <td>@snapshotWorker.Worker.Algorithm</td>
+                                <td>@snapshotWorker.UptimePercentage</td>
+                            </tr>
+                        }
+                </tbody>
+            </table>
+        </Content>
+
+    </Tab>
+    </Tabs>
 }
 
 @code {
     private Modal modal = default!;
     private IEnumerable<IUptimePercentageDetailedView> workersUptime = Enumerable.Empty<IUptimePercentageDetailedView>();
     private IEnumerable<IUptimePercentageDetailedView> uptimePerWorker = Enumerable.Empty<IUptimePercentageDetailedView>();
+    private IEnumerable<IUptimePercentageDetailedView> uptimePerModel = Enumerable.Empty<IUptimePercentageDetailedView>();
+    private IEnumerable<IUptimePercentageDetailedView> uptimePerLocation = Enumerable.Empty<IUptimePercentageDetailedView>();
 
 
     private IEnumerable<IWorkerUptimeHistory> workerUptimeHistory = Enumerable.Empty<IWorkerUptimeHistory>();
-    private double todayCoverage;
+
     private DateOnly selectedDate;
     private UptimeWorkersReport workersReport = new UptimeWorkersReport();
 
     protected override async Task OnInitializedAsync()
     {
         selectedDate = DateOnly.FromDateTime(DateTime.Now);
-        await GetDetails(selectedDate.AsDateRange());
-        todayCoverage = await ScrapingServiceClient.GetTodayCoverageAsync();
+        await GetDetails(selectedDate.AsDateRange());    
     }
 
     private async Task GetDetails(IDateRange dateRange)
     {
-        
-        var dailyUpTime = (await UptimeConsolidateServiceClient.GetDailyWorkerUptimeAsync(dateRange)).ToList();
-        if (dailyUpTime.Count == 0)
+        logger.LogInformation($"GetDetails Getting Uptime Details for Date Range: {dateRange.From} to {dateRange.To}");
+        workersUptime = (await UptimeConsolidateServiceClient.GetDailyWorkerUptimeAsync(dateRange)).ToList();
+        logger.LogInformation($"GetDetails Workers Uptime Count: {workersUptime.Count()}");
+
+        if (workersUptime.Count() == 0)
         {
             workersUptime = Enumerable.Empty<IUptimePercentageDetailedView>();
             return;
         }
-        uptimePerWorker   = workersReport.CalculateAveragePerWorker(dailyUpTime).OrderBy(w => w.UptimePercentage);
+        uptimePerWorker   = workersReport.CalculateAveragePerWorker(workersUptime).OrderBy(w => w.UptimePercentage);
+        uptimePerModel = workersReport.CalculateAveragePerModel(workersUptime);
+        uptimePerLocation = workersReport.CalculateAveragePerLocationAndAlgo(workersUptime).OrderBy(w => w.Worker.Farm.Location + w.Worker.Algorithm);
+
+        logger.LogInformation($"GetDetails Uptime Per Worker Count: {uptimePerWorker.Count()}");
         
 		StateHasChanged();
 	}
@@ -99,5 +167,50 @@ else
 
         await modal.ShowAsync<WorkerUptimeDetail>(title: "Movement Details", parameters: parameters);
     }
+    private async Task ShowGraph(IUptimePercentageDetailedView snapshotDetailedView)
+    {
+        var parameters = new Dictionary<string, object>();
+        var filteredData = workersUptime.Where(s => s.WorkerId == snapshotDetailedView.WorkerId);
+        logger.LogInformation($"Filtered Data Count: {filteredData.Count()} for WorkerId: {snapshotDetailedView.WorkerId}");
+        parameters.Add("workersData", filteredData);
+        await modal.ShowAsync<WorkersUptimeGraph>(title: "Worker Graph", parameters: parameters);
+    }
+
+    private async Task ShowModelGraph()
+    {
+        var modelAndDate = workersReport.CalculateAveragePerModelAndDate(workersUptime);
+        foreach (var model in modelAndDate)
+        {
+            logger.LogInformation($"Model: {model.Worker.Model.Name}, Date: {model.DateRange}, Uptime: {model.UptimePercentage}");
+		}
+
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("workersModelData", modelAndDate);
+        //await modal.ShowAsync<WorkersModelGraph>(title: "Worker Graph", parameters: parameters);
+
+        var dse = new DateSeriesUptimeExtractor<IWorkerModel>(
+            modelAndDate,
+            (snap, model) => snap.Worker.Model.Id == model.Id,
+            (_) => WorkerModel.GetAllModels());
+        parameters.Add("dataSeriesExtractor", dse);
+        await modal.ShowAsync<WorkersUptimeGroupedGraph<IWorkerModel>>(title: "Worker Graph", parameters: parameters);
+    }
+
+    private async Task ShowLocationGraph()
+    {
+        var locationAndDate = workersReport.CalculateAveragePerLocationAndDate(workersUptime);
+        var parameters = new Dictionary<string, object>();
+        parameters.Add("workersModelData", locationAndDate);
+        var groups = locationAndDate.GroupBy(w => $"{w.Worker.Farm.Location}.{w.Worker.Algorithm}");
+        var keys = groups.Select(g => g.Key).ToArray();
+
+        var dse = new DateSeriesUptimeExtractor<string>(
+            locationAndDate,
+            (snap, locationAlgo) => $"{snap.Worker.Farm.Location}.{snap.Worker.Algorithm}".Equals(locationAlgo),
+            (_) => keys);
+        parameters.Add("dataSeriesExtractor", dse);
+        await modal.ShowAsync<WorkersUptimeGroupedGraph<string>>(title: "Worker Graph", parameters: parameters);
+    }
+
 
 }

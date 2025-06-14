@@ -144,7 +144,7 @@ else
     {
         var parameters = new Dictionary<string, object>();
         parameters.Add("workersData", snapshotWorkers.Where(s => s.WorkerId == snapshotDetailedView.WorkerId));
-        await modal.ShowAsync<WorkersGraph>(title: "Worker Graph", parameters: parameters);
+        await modal.ShowAsync<WorkersSnapGraph>(title: "Worker Graph", parameters: parameters);
     }
 
     private async Task ShowModelGraph()
@@ -154,12 +154,12 @@ else
         parameters.Add("workersModelData", modelAndDate);
         //await modal.ShowAsync<WorkersModelGraph>(title: "Worker Graph", parameters: parameters);
 
-        var dse = new DateSeriesExtractor<IWorkerModel>(
+        var dse = new DateSeriesSnapExtractor<IWorkerModel>(
             modelAndDate,
             (snap, model) => snap.Worker.Model.Id == model.Id,
             (_) => WorkerModel.GetAllModels());
         parameters.Add("dataSeriesExtractor", dse);
-        await modal.ShowAsync<WorkersGroupedGraph<IWorkerModel>>(title: "Worker Graph", parameters: parameters);
+        await modal.ShowAsync<WorkersSnapGroupedGraph<IWorkerModel>>(title: "Worker Graph", parameters: parameters);
     }
     private async Task ShowLocationGraph()
     {
@@ -169,11 +169,11 @@ else
 		var groups = locationAndDate.GroupBy(w => $"{w.Worker.Farm.Location}.{w.Worker.Algorithm}");
 		var keys = groups.Select(g => g.Key).ToArray();
 
-        var dse = new DateSeriesExtractor<string>(
+        var dse = new DateSeriesSnapExtractor<string>(
             locationAndDate,
             (snap, locationAlgo) => $"{snap.Worker.Farm.Location}.{snap.Worker.Algorithm}".Equals(locationAlgo),
             (_) => keys);
         parameters.Add("dataSeriesExtractor", dse);
-        await modal.ShowAsync<WorkersGroupedGraph<string>>(title: "Worker Graph", parameters: parameters);
+        await modal.ShowAsync<WorkersSnapGroupedGraph<string>>(title: "Worker Graph", parameters: parameters);
     }
 }

@@ -1,0 +1,52 @@
+﻿
+@using PoolScraper.Components.Utils
+@using PoolScraper.Domain
+@typeparam TItem
+
+<Modal @ref="modal" />
+
+<h3>WorkersModelGraph</h3>
+
+<div class="container-fluid overflow-x-auto">
+    <LineChart @ref="lineChart" WidthUnit=Unit.Percentage Width="90" />
+</div>
+
+@code {
+    private Modal modal = default!;
+    private LineChart lineChart = default!;
+    private LineChartOptions lineChartOptions = default!;
+    private ChartData chartData = default!;
+
+    private int datasetsCount;
+    private int labelsCount;
+
+    private Random random = new();
+    [Parameter] public IEnumerable<IUptimePercentageDetailedView> workersModelData { get; set; } = Enumerable.Empty<IUptimePercentageDetailedView>();
+    [Parameter] public DateSeriesUptimeExtractor<TItem> dataSeriesExtractor { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        chartData = new ChartData { Labels = dataSeriesExtractor.GetDefaultDataLabels(), Datasets = dataSeriesExtractor.GetDefaultDataSets() };
+        lineChartOptions = new()
+            {
+                IndexAxis = "x",
+                Interaction = new Interaction { Mode = InteractionMode.Index, Intersect = false },
+                Responsive = true,
+            };
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await lineChart.InitializeAsync(chartData, lineChartOptions);
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    #region Data Preparation
+
+
+    #endregion Data Preparation
+
+}
