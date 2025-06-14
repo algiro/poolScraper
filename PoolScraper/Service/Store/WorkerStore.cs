@@ -1,4 +1,5 @@
-﻿using PoolScraper.Domain;
+﻿using CommonUtils.Utils.Logs;
+using PoolScraper.Domain;
 using PoolScraper.Persistency;
 
 namespace PoolScraper.Service.Store
@@ -33,7 +34,8 @@ namespace PoolScraper.Service.Store
                 var worker = refWorkers.FirstOrDefault(w => w.WorkerId.Equals(workerId));
                 if (worker == null)
                 {
-                    logger.LogWarning("Worker not found fetching from allWorkers#: {workerStore} worker by id: {id}", refWorkers.Count(), workerId);
+                    logger.LogOnce(LogLevel.Warning, $"Worker not found fetching from allWorkers#: {refWorkers.Count()} worker by id: {workerId}");
+                    worker = Worker.UNKNOWN;
                 }
                 return (worker,_disabledWorkers.Any(d=> d.WorkerId.Equals(workerId)));
             }

@@ -14,6 +14,17 @@ namespace PoolScraper.Domain
         {
             return new DateRangeImpl(from, to);
         }
+
+        public static IEnumerable<DateOnly> GetDatesWithinRange(this IDateRange dateRange)
+        {
+            var start = DateOnly.FromDateTime(dateRange.From);
+            var end = DateOnly.FromDateTime(dateRange.To);
+            for (var date = start; date <= end; date = date.AddDays(1))
+            {
+                yield return date;
+            }
+        }
+
         public static DateRangeReadModel AsDateRangeView(this IDateRange dateRange)
         {
             return new DateRangeReadModel(dateRange.From, dateRange.To);

@@ -10,6 +10,7 @@ using PoolScraper.Persistency.Consolidation;
 using PoolScraper.Service.Store;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PoolScraper.Service
 {
@@ -54,28 +55,7 @@ namespace PoolScraper.Service
                     var filter = Builders<PowerPoolUser>.Filter.Eq(u => u.ApiKey, apiKey);
 
                     await _powerPoolScrapingPersistency.InsertAsync(powerPoolData);
-                    foreach (var minerData in powerPoolData.Miners.Values)
-                    {
-                        var workersStatus = minerData.Workers.GetAllWorkerStatus();
-                        var workers = workersStatus.GetWorkerIdsStatus(_workerStore.GetWorkerIdMap(), powerPool);
-                        _log.LogInformation("Workers from current scraping matching count: {matchCount}, added count:{unmatchCount}, removed count:{removeCount}", workers.Matching.Count(), workers.Added.Count(), workers.Removed.Count());                        
-                        if (!workers.Added.IsEmpty())
-                        {
-                            _log.LogInformation("Adding new Workers");
-                            var newWorkerStatus = workersStatus.Where(w => workers.Added.Contains(w.GetExternalId(powerPool)));
-                            var newWorkers = newWorkerStatus.Select(w => w.AsNewWorker(powerPool));
-                            await _workerPersistency.InsertManyAsync(newWorkers);                            
-                        }
-                        if (!workers.Removed.IsEmpty())
-                        {
-                            _log.LogInformation("Removed Workers!! {removedId} ", string.Join(',',workers.Removed));                            
-                        }
-                        else
-                        {
-                            _log.LogInformation("Workers are equal, no new workers to insert");
-                        }
-
-                    }
+                    await UpdateWorkersFromScrapingInfo(powerPoolData);
 
                     _log.LogInformation("Data for API key {apiKey} stored successfully at {fetchedAt}", apiKey, powerPoolData.FetchedAt);
                 }
@@ -91,6 +71,56 @@ namespace PoolScraper.Service
                 throw new Exception($"Error storing data in MongoDB: {ex.Message} {ex.StackTrace}");
             }
         }
+        public async Task RecreateWorkersAsync(IDateRange dateRange)
+        {            
+            var datesInRange = dateRange.GetDatesWithinRange().ToList();
+            _log.LogInformation("RecreateWorkersAsync for dateRange: {date}", dateRange);
+
+            foreach (var date in datesInRange)
+            {
+                _log.LogInformation("RecreateWorkersAsync for date: {date}", date);
+                var powerPoolData = await _powerPoolScrapingPersistency.GetDataRangeAsync(date.GetBeginOfDay(), date.GetEndOfDay());
+                if (powerPoolData.IsEmpty())
+                {
+                    _log.LogWarning("RecreateWorkersAsync No data found for date: {date}", date);
+                    continue;
+                }
+                var firstScrapingOfTheDay = powerPoolData.OrderBy(p => p.FetchedAt).FirstOrDefault();
+                if (firstScrapingOfTheDay == null)
+                {
+                    _log.LogWarning("RecreateWorkersAsync No valid scraping data found for date: {date}", date);
+                    continue;
+                }
+                await UpdateWorkersFromScrapingInfo(firstScrapingOfTheDay);
+            }
+            _log.LogInformation("RecreateWorkersAsync for dateRange: {date} completed!", dateRange);
+
+        }
+        private async Task UpdateWorkersFromScrapingInfo(PowerPoolUser powerPoolData)
+        {
+            foreach (var minerData in powerPoolData.Miners.Values)
+            {
+                var workersStatus = minerData.Workers.GetAllWorkerStatus();
+                var workers = workersStatus.GetWorkerIdsStatus(_workerStore.GetWorkerIdMap(), powerPool);
+                _log.LogInformation("UpdateWorkersFromScrapingInfo Workers from current scraping matching count: {matchCount}, added count:{unmatchCount}, removed count:{removeCount}", workers.Matching.Count(), workers.Added.Count(), workers.Removed.Count());
+                if (!workers.Added.IsEmpty())
+                {
+                    _log.LogInformation("UpdateWorkersFromScrapingInfo Adding new Workers");
+                    var newWorkerStatus = workersStatus.Where(w => workers.Added.Contains(w.GetExternalId(powerPool)));
+                    var newWorkers = newWorkerStatus.Select(w => w.AsNewWorker(powerPool));
+                    await _workerPersistency.InsertManyAsync(newWorkers);
+                }
+                if (!workers.Removed.IsEmpty())
+                {
+                    _log.LogInformation("UpdateWorkersFromScrapingInfo Removed Workers!! {removedId} ", string.Join(',', workers.Removed));
+                }
+                else
+                {
+                    _log.LogInformation("UpdateWorkersFromScrapingInfo Workers are equal, no new workers to insert");
+                }
+            }
+        }
+
         public async Task<double> GetTodayCoverageAsync()
         {
             try

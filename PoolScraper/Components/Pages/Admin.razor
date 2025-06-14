@@ -7,6 +7,7 @@
 @using PoolScraper.Model.PowerPool
 @using PoolScraper.Model.Scheduler
 @using PoolScraper.Persistency.Consolidation
+@using PoolScraper.Persistency.Utils
 @using PoolScraper.Service
 @using PoolScraper.Service.Consolidation
 @using PoolScraper.View
@@ -20,6 +21,7 @@
 @inject IUptimeConsolidateServiceClient UptimeConsolidateServiceClient;
 @inject ISnapshotDataConsolidationPersistency SnapDataConsolidationPersistency;
 @inject IUptimeDataConsolidationPersistency UptimeDataConsolidationPersistency;
+@inject IMongoUtils MongoUtils;
 
 <PageTitle>Admin Page</PageTitle>
 <Tabs>
@@ -46,7 +48,7 @@
                                     <tr>
                                         <td>@dailyCons.DateRange.From.ToString("d")</td>
                                         <td>@dailyCons.SnapshotCount</td>
-                                            <td><Button Color="ButtonColor.Primary" @onclick="() => RemoveSnapDayConsolidation(dailyCons.DateRange)">Remove</Button></td>
+                                        <td><Button Color="ButtonColor.Primary" @onclick="() => RemoveSnapDayConsolidation(dailyCons.DateRange)">Remove</Button></td>
                                     </tr>
                                 }
                             </tbody>
@@ -171,6 +173,40 @@
             </Tabs>
         </Content>
     </Tab>
+    <Tab Title="Database">
+        <Content>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Collection Name</th>
+                        <th>Action</th>
+                        <th>Confirm</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var collectionName in MongoUtils.GetCollectionNames())
+                    {
+                        <tr>
+                            <td>@collectionName</td>
+                            <td>
+                                <Button Color="ButtonColor.Primary" @onclick="() => RemoveCollection(collectionName)">Remove</Button>
+                                <Button Color="ButtonColor.Primary" @onclick="() => GetCollectionInfo(collectionName)">GetInfo</Button>
+                            </td>
+                            <td> <TextInput TValue="string" @bind-Value="@collectionNameConfirmed" /> </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+			<TextAreaInput @bind-Value="@collectionInfo" Rows="10" ReadOnly="true" />
+        </Content>
+    </Tab>
+    <Tab Title="Workers">
+        <Content>
+            <DatePeriod OnSearch="@RecreateWorkers" ActionText="Recreate Workers"/> 
+        </Content>
+    </Tab>
+
 </Tabs>
 
 
@@ -243,6 +279,8 @@ else
     private DateOnly selectedDate;
     private string? workerId;
     private (bool success, string? message) consolidationDayResult = (false, null);
+    private string collectionNameConfirmed = string.Empty;
+    private string collectionInfo = string.Empty;
     protected override async Task OnInitializedAsync()
     {
         selectedDate = DateOnly.FromDateTime(DateTime.Now);
@@ -293,7 +331,7 @@ else
 
     private async Task ConsolidateUpTimeDays(IDateRange dateRange)
     {
-		await UptimeConsolidateServiceClient.ConsolidateDays(dateRange);
+        await UptimeConsolidateServiceClient.ConsolidateDays(dateRange);
     }
 
     private async Task ConsolidateDays(IDateRange dateRange)
@@ -305,15 +343,15 @@ else
         }
     }
 
-	private async Task<bool> RemoveSnapDayConsolidation(IDateRange dateRange)
-	{
-		if (dateRange != null)
-		{
+    private async Task<bool> RemoveSnapDayConsolidation(IDateRange dateRange)
+    {
+        if (dateRange != null)
+        {
             var result = await SnapshotConsolidateServiceClient.RemoveDayConsolidationAsync(dateRange);
-			return result.isSuccesfull;
-		}
-		return false;
-	}
+            return result.isSuccesfull;
+        }
+        return false;
+    }
     private async Task<bool> RemoveUptimeDayConsolidation(IDateRange dateRange)
     {
         if (dateRange != null)
@@ -323,5 +361,24 @@ else
         }
         return false;
     }
+
+    private void RemoveCollection(string collectionName)
+    {
+        if (collectionNameConfirmed == collectionName)
+        {
+            MongoUtils.RemoveCollection(collectionName);
+            collectionNameConfirmed = string.Empty;
+        }
+    }
+
+    private void GetCollectionInfo(string collectionName)
+    {
+        collectionInfo = MongoUtils.GetCollectionStructure(collectionName);
+    }
+
+    private async Task RecreateWorkers(IDateRange dateRange)
+    {
+        await PowerPoolScrapingService.RecreateWorkersAsync(dateRange);
+	}
 
 }
