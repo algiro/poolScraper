@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoolScraper", "PoolScraper\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoolScraper.Tests", "PoolScraper.Tests\PoolScraper.Tests.csproj", "{EDB37005-6B17-41EA-92C2-56B57A917B47}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoolScraper.Daemon", "PoolScraper.Daemon\PoolScraper.Daemon.csproj", "{B2F24E7C-E032-4C50-A89F-C7299A05D864}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoolScraper.Lib", "PoolScraper.Lib\PoolScraper.Lib.csproj", "{4ED7D9D4-06D9-4E81-905D-C4083A0BEA65}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{EDB37005-6B17-41EA-92C2-56B57A917B47}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EDB37005-6B17-41EA-92C2-56B57A917B47}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EDB37005-6B17-41EA-92C2-56B57A917B47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2F24E7C-E032-4C50-A89F-C7299A05D864}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2F24E7C-E032-4C50-A89F-C7299A05D864}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2F24E7C-E032-4C50-A89F-C7299A05D864}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2F24E7C-E032-4C50-A89F-C7299A05D864}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4ED7D9D4-06D9-4E81-905D-C4083A0BEA65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4ED7D9D4-06D9-4E81-905D-C4083A0BEA65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4ED7D9D4-06D9-4E81-905D-C4083A0BEA65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4ED7D9D4-06D9-4E81-905D-C4083A0BEA65}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -16,4 +16,9 @@ echo Version: %appVersion%
 [Environment]::SetEnvironmentVariable("ps_version", "appVersion", "User")
 set varCheck=[Environment]::GetEnvironmentVariable("ps_version", "User")
 echo %varCheck%
-docker build . -t algiro/pool-scraper:%appVersion%
+
+echo docker build -f .\PoolScraper\Dockerfile . -t algiro/pool-scraper:%appVersion%
+docker build -f .\PoolScraper\Dockerfile . -t algiro/pool-scraper:%appVersion%
+
+echo docker build -f .\PoolScraper\Dockerfile . -t algiro/pool-scraper:%appVersion%
+docker build -f .\PoolScraper.Daemon\Dockerfile . -t algiro/pool-scraper-daemon:%appVersion%

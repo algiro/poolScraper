@@ -16,12 +16,13 @@
 
   <ItemGroup>
     <PackageReference Include="Blazor.Bootstrap" Version="3.3.1" />
-    <PackageReference Include="MongoDB.Driver" Version="3.3.0" />
+    <PackageReference Include="MongoDB.Driver" Version="3.4.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CommonUtils\CommonUtils.csproj" />
+    <ProjectReference Include="..\PoolScraper.Lib\PoolScraper.Lib.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -31,6 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Model\" />
     <Folder Include="Utils\" />
   </ItemGroup>
 

@@ -30,11 +30,12 @@ builder.Services.AddConsoleLogger();
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddBlazorBootstrap();
 builder.Services.AddSingleton<IInitApp, InitApp>();
-builder.Services.AddSingleton<IPowerPoolScrapingService, PowePoolScrapingService>();
 builder.Services.AddSingleton<IPoolScraperConfig>(PoolScraperConfig.Instance);
 builder.Services.AddSingleton<IMongoUtils,MongoUtils>();
 builder.Services.AddSingleton<IAdminService,AdminService>();
 builder.Services.AddSingleton<IAppEventsPersistency, AppEventsPersistency>();
+builder.Services.AddSingleton<IScrapingServiceClient, ScrapingServiceClient>();
+builder.Services.AddSingleton<IPowerPoolScrapingService, PowePoolScrapingService>();
 
 //builder.Services.AddSingleton<IWorkerIdMap>((sp) => WorkerIdMap.Create(sp.GetService<IWorkerPersistency>().CheckNotNull()));
 builder.Services.AddSingleton<IPowerPoolScrapingPersistency,PowerPoolScrapingPersistency>();
@@ -51,18 +52,13 @@ builder.Services.AddSingleton<IUptimeDailyConsolidationPersistency, UptimeDailyC
 
 builder.Services.AddSingleton<IWorkerPersistency,WorkerPersistency>();
 
-builder.Services.AddSingleton<IUptimeConsolidateServiceClient, UptimeConsolidateServiceClient>();
 
 
 builder.Services.AddSingleton<IUptimeService, UptimeService>();
-builder.Services.AddSingleton<IScrapingServiceClient, ScrapingServiceClient>();
 builder.Services.AddSingleton<IUptimeServiceClient, UptimeServiceClient>();
-builder.Services.AddSingleton<ISnapshotConsolidateServiceClient, SnapshotConsolidateServiceClient>();
 builder.Services.AddSingleton<IWorkersReportService, WorkersReportService>();
 builder.Services.AddSingleton<IWorkerStore, WorkerStore>();
 
-
-builder.Services.AddHostedService<ScheduledService>();
 
 var app = builder.Build();
 

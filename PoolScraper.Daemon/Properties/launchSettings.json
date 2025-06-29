@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "PoolScraper.Daemon": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
