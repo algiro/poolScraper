@@ -36,6 +36,8 @@ builder.Services.AddSingleton<IAdminService,AdminService>();
 builder.Services.AddSingleton<IAppEventsPersistency, AppEventsPersistency>();
 builder.Services.AddSingleton<IScrapingServiceClient, ScrapingServiceClient>();
 builder.Services.AddSingleton<IPowerPoolScrapingService, PowePoolScrapingService>();
+builder.Services.AddSingleton<IUptimeConsolidateServiceClient, UptimeConsolidateServiceClient>();
+builder.Services.AddSingleton<ISnapshotConsolidateServiceClient, SnapshotConsolidateServiceClient>();
 
 //builder.Services.AddSingleton<IWorkerIdMap>((sp) => WorkerIdMap.Create(sp.GetService<IWorkerPersistency>().CheckNotNull()));
 builder.Services.AddSingleton<IPowerPoolScrapingPersistency,PowerPoolScrapingPersistency>();

@@ -24,7 +24,7 @@ string databaseName = PoolScraperConfig.Instance.MongoDatabaseName;
 
 builder.Services.AddSingleton<IPoolScraperConfig>(PoolScraperConfig.Instance);
 builder.Services.AddSingleton<IInitApp, InitApp>();
-builder.Services.AddSingleton<IScrapingServiceClient, ScrapingServiceClient>();
+builder.Services.AddSingleton<IFetchServiceClient, ScrapingServiceClient>();
 builder.Services.AddSingleton<IPowerPoolScrapingService, PowePoolScrapingService>();
 builder.Services.AddSingleton<IPowerPoolScrapingPersistency, PowerPoolScrapingPersistency>();
 builder.Services.AddSingleton<IAppEventsPersistency, AppEventsPersistency>();

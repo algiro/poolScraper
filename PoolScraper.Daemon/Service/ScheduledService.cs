@@ -10,7 +10,7 @@ using PoolScraper.Service.Consolidation;
 
 namespace PoolScraper.Service
 {
-    public class ScheduledService(ILogger<ScheduledService> logger, IInitApp initApp, IScrapingServiceClient scrapingServiceClient, 
+    public class ScheduledService(ILogger<ScheduledService> logger, IInitApp initApp, IFetchServiceClient fetchServiceClient, 
         ISnapshotConsolidateServiceClient snapshotConsolidateServiceClient, IUptimeConsolidateServiceClient uptimeConsolidateServiceClient) : BackgroundService
     {
         private CancellationToken cancellationToken;
@@ -40,7 +40,7 @@ namespace PoolScraper.Service
 
         private async Task ImportAction()
         {
-            await scrapingServiceClient.FetchAndStoreUserDataAsync();
+            await fetchServiceClient.FetchAndStoreUserDataAsync();
         }
         private async Task ConsolidateAction()
         {
